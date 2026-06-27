@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -550,12 +551,26 @@ CAMPANHA: ${S.campanha}
 MUNDO: ${m.nome} (${m.era}) — ${m.desc}
 CONFLITO: ${m.conflito}
 
+REGRA PRINCIPAL DE INTERPRETAÇÃO:
+Antes de responder, identifique a intenção real do jogador:
+- Está perguntando? Atacando? Investigando? Mentindo? Convencendo? Falando com NPC?
+
+NUNCA use respostas genéricas como "Você entra na sala e vê..." ou "O NPC responde...".
+SEMPRE reaja diretamente ao que o jogador disse ou fez.
+
+NPCs devem responder como personagens vivos: com personalidade, emoções, medo, raiva, dúvida, memória do que aconteceu antes.
+
+Exemplo ERRADO: "O guarda permite sua entrada."
+Exemplo CORRETO: "O guarda estreita os olhos, segura a lança com mais força: 'Enviado de Bane? Isso pode te abrir portas... ou te colocar numa cela. Prove.' Faça um teste de Enganação ou Intimidação."
+
+A fala do jogador SEMPRE muda a cena, a reação dos NPCs ou o rumo da narrativa.
+
 ESTILO DE NARRAÇÃO:
 - Máximo 3 parágrafos por resposta
 - Use **negrito** para momentos épicos e *itálico* para atmosfera
-- Em CRÍTICO (d20=20): narre façanha épica
-- Em FUMBLE (1): narre falha catastrófica
-- Sempre narre resultado das rolagens de forma dramática e imersiva
+- Em CRÍTICO (d20=20): narre façanha épica com consequências épicas
+- Em FUMBLE (1): narre falha catastrófica e humilhante
+- Cada resposta deve ser viva, contextual e imprevisível
 - Responda SEMPRE em português brasileiro`;
 }
 
@@ -1129,4 +1144,3 @@ selProvedor(savedProv);
 </script>
 </body>
 </html>
-
