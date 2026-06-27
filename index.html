@@ -134,7 +134,7 @@ textarea,input,select{font-family:Georgia,serif}
 
   <div id="apikey-wrap">
     <label class="lbl">Provedor de IA <span id="apikey-lbl" style="text-transform:none;letter-spacing:0;font-size:10px">(para Mestre IA)</span></label>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 12px">
       <div id="prov-claude" onclick="selProvedor('claude')" style="padding:10px;border-radius:10px;cursor:pointer;text-align:center;border:2px solid #d4af37;background:rgba(212,175,55,.1)">
         <div style="font-size:20px;margin-bottom:4px">🤖</div>
         <div style="font-size:12px;font-weight:700;color:#d4af37">Claude</div>
@@ -144,6 +144,11 @@ textarea,input,select{font-family:Georgia,serif}
         <div style="font-size:20px;margin-bottom:4px">💬</div>
         <div style="font-size:12px;font-weight:700;color:#d4af37">ChatGPT</div>
         <div style="font-size:10px;color:#b8b0a4">OpenAI</div>
+      </div>
+      <div id="prov-gemini" onclick="selProvedor('gemini')" style="padding:10px;border-radius:10px;cursor:pointer;text-align:center;border:2px solid rgba(139,92,246,.25);background:rgba(0,0,0,.2)">
+        <div style="font-size:20px;margin-bottom:4px">✨</div>
+        <div style="font-size:12px;font-weight:700;color:#d4af37">Gemini</div>
+        <div style="font-size:10px;color:#b8b0a4">Google</div>
       </div>
     </div>
     <input class="inp" id="e-key" type="password" placeholder="sk-ant-... ou sk-...">
@@ -435,18 +440,23 @@ let hist=[];
 
 function selProvedor(p){
   S.provedor=p;
-  document.getElementById('prov-claude').style.borderColor=p==='claude'?'#d4af37':'rgba(139,92,246,.25)';
-  document.getElementById('prov-claude').style.background=p==='claude'?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
-  document.getElementById('prov-openai').style.borderColor=p==='openai'?'#d4af37':'rgba(139,92,246,.25)';
-  document.getElementById('prov-openai').style.background=p==='openai'?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
+  ['claude','openai','gemini'].forEach(id=>{
+    const el=document.getElementById('prov-'+id);
+    if(!el)return;
+    el.style.borderColor=p===id?'#d4af37':'rgba(139,92,246,.25)';
+    el.style.background=p===id?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
+  });
   const hint=document.getElementById('apikey-hint');
   const inp=document.getElementById('e-key');
   if(p==='claude'){
     if(hint)hint.innerHTML='Grátis em <a href="https://console.anthropic.com" target="_blank" style="color:#8b5cf6">console.anthropic.com</a>. Salva no navegador.';
     if(inp)inp.placeholder='sk-ant-...';
-  }else{
+  }else if(p==='openai'){
     if(hint)hint.innerHTML='Grátis em <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#8b5cf6">platform.openai.com</a>. Salva no navegador.';
     if(inp)inp.placeholder='sk-...';
+  }else{
+    if(hint)hint.innerHTML='Grátis em <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#8b5cf6">aistudio.google.com</a>. Salva no navegador.';
+    if(inp)inp.placeholder='AIza...';
   }
   localStorage.setItem('mesa_provedor',p);
 }
@@ -469,6 +479,20 @@ async function claude(system,user,withHist){
       const d=await res.json();
       if(d.error){addMsg({tipo:'sys',txt:'⚠️ OpenAI: '+d.error.message});return null;}
       txt=d.choices?.[0]?.message?.content||'';
+    }else if(S.provedor==='gemini'){
+      // Gemini / Google
+      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          system_instruction:{parts:[{text:system}]},
+          contents:messages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),
+          generationConfig:{maxOutputTokens:700},
+        }),
+      });
+      const d=await res.json();
+      if(d.error){addMsg({tipo:'sys',txt:'⚠️ Gemini: '+d.error.message});return null;}
+      txt=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
     }else{
       // Claude / Anthropic
       const res=await fetch('https://api.anthropic.com/v1/messages',{
