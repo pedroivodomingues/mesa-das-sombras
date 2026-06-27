@@ -6,21 +6,29 @@
 <title>Mesa das Sombras</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Georgia,serif;background:#0d0a0e;color:#e8e0d4;height:100vh;overflow:hidden}
+body{font-family:Georgia,serif;background:#0d0a0e;color:#e8e0d4;min-height:100vh;overflow-y:auto}
 button{font-family:Georgia,serif;cursor:pointer}
 button:active{opacity:.75}
 textarea,input,select{font-family:Georgia,serif}
 ::-webkit-scrollbar{width:3px}
 ::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:2px}
 .hidden{display:none!important}
+@keyframes floatSword{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+.card{animation:fadeInUp .6s ease}
+.page{animation:fadeInUp .4s ease}
 
 /* PAGE */
-.page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#1a0d2e,#0d0a0e);padding:16px}
-.card{background:#1a1225;border:1px solid rgba(139,92,246,.3);border-radius:14px;padding:24px;width:100%;max-width:440px}
-.lbl{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8b5cf6;margin-bottom:5px;margin-top:12px;font-weight:700}
-.inp{width:100%;padding:10px 13px;background:rgba(0,0,0,.5);border:1px solid rgba(139,92,246,.35);border-radius:9px;color:#e8e0d4;font-size:15px;outline:none}
-.btn-v{width:100%;padding:13px;background:linear-gradient(135deg,#8b5cf6,#5b3fa6);border:none;border-radius:9px;color:#fff;font-size:14px;font-weight:700;letter-spacing:1px}
-.btn-g{width:100%;padding:13px;background:linear-gradient(135deg,#d4af37,#a8882a);border:none;border-radius:9px;color:#0d0a0e;font-size:14px;font-weight:700}
+.page{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;background:radial-gradient(ellipse at 50% 20%,#2a0d4e,#0d0a0e 70%);padding:16px;overflow-y:auto}
+.card{background:linear-gradient(160deg,#1a1225,#0f0a1a);border:1px solid rgba(139,92,246,.4);border-radius:16px;padding:20px;width:100%;max-width:440px;box-shadow:0 0 40px rgba(139,92,246,.15)}
+.lbl{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8b5cf6;margin-bottom:4px;margin-top:10px;font-weight:700}
+.inp{width:100%;padding:11px 14px;background:rgba(0,0,0,.4);border:1px solid rgba(139,92,246,.3);border-radius:9px;color:#e8e0d4;font-size:15px;outline:none;transition:border-color .2s}
+.inp:focus{border-color:rgba(139,92,246,.7);background:rgba(0,0,0,.6)}
+.btn-v{width:100%;padding:14px;background:linear-gradient(135deg,#8b5cf6,#5b3fa6);border:none;border-radius:9px;color:#fff;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;box-shadow:0 4px 20px rgba(139,92,246,.4);transition:all .2s}
+.btn-v:active{transform:scale(.97);box-shadow:0 2px 10px rgba(139,92,246,.3)}
+.btn-g{width:100%;padding:14px;background:linear-gradient(135deg,#d4af37,#a8882a);border:none;border-radius:9px;color:#0d0a0e;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;box-shadow:0 4px 20px rgba(212,175,55,.4);transition:all .2s}
+.btn-g:active{transform:scale(.97)}
 .btn-s{width:100%;padding:11px;background:transparent;border:1px solid rgba(139,92,246,.3);border-radius:9px;color:#b8b0a4;font-size:13px}
 .err{padding:10px 14px;background:rgba(204,51,51,.12);border:1px solid rgba(204,51,51,.4);border-radius:8px;color:#ff8080;font-size:13px;margin-top:10px}
 
@@ -97,10 +105,11 @@ textarea,input,select{font-family:Georgia,serif}
 <!-- ENTRADA -->
 <div id="pg-entrada" class="page">
 <div class="card">
-  <div style="text-align:center;margin-bottom:24px">
-    <div style="font-size:52px;margin-bottom:10px">⚔️</div>
-    <h1 style="font-size:28px;font-weight:900;color:#d4af37;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px">Mesa das Sombras</h1>
-    <p style="font-size:11px;color:#8b5cf6;letter-spacing:4px;text-transform:uppercase">RPG com Inteligência Artificial</p>
+  <div style="text-align:center;margin-bottom:16px;position:relative">
+    <div style="font-size:48px;margin-bottom:6px;animation:floatSword 3s ease-in-out infinite">⚔️</div>
+    <h1 style="font-size:clamp(24px,6vw,36px);font-weight:900;color:#d4af37;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 0 20px rgba(212,175,55,.5)">Mesa das Sombras</h1>
+    <p style="font-size:10px;color:#8b5cf6;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px">RPG com Inteligência Artificial</p>
+    <div style="width:50px;height:1px;background:linear-gradient(90deg,transparent,#d4af37,transparent);margin:8px auto"></div>
   </div>
 
   <label class="lbl">Seu nome de aventureiro</label>
@@ -124,9 +133,21 @@ textarea,input,select{font-family:Georgia,serif}
   </div>
 
   <div id="apikey-wrap">
-    <label class="lbl">API Key do Claude <span id="apikey-lbl" style="text-transform:none;letter-spacing:0;font-size:10px">(obrigatória para Mestre IA)</span></label>
-    <input class="inp" id="e-key" type="password" placeholder="sk-ant-...">
-    <p style="font-size:11px;color:#b8b0a4;margin-top:6px;line-height:1.5">Grátis em <a href="https://console.anthropic.com" target="_blank" style="color:#8b5cf6">console.anthropic.com</a>. Salva no navegador.</p>
+    <label class="lbl">Provedor de IA <span id="apikey-lbl" style="text-transform:none;letter-spacing:0;font-size:10px">(para Mestre IA)</span></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 12px">
+      <div id="prov-claude" onclick="selProvedor('claude')" style="padding:10px;border-radius:10px;cursor:pointer;text-align:center;border:2px solid #d4af37;background:rgba(212,175,55,.1)">
+        <div style="font-size:20px;margin-bottom:4px">🤖</div>
+        <div style="font-size:12px;font-weight:700;color:#d4af37">Claude</div>
+        <div style="font-size:10px;color:#b8b0a4">Anthropic</div>
+      </div>
+      <div id="prov-openai" onclick="selProvedor('openai')" style="padding:10px;border-radius:10px;cursor:pointer;text-align:center;border:2px solid rgba(139,92,246,.25);background:rgba(0,0,0,.2)">
+        <div style="font-size:20px;margin-bottom:4px">💬</div>
+        <div style="font-size:12px;font-weight:700;color:#d4af37">ChatGPT</div>
+        <div style="font-size:10px;color:#b8b0a4">OpenAI</div>
+      </div>
+    </div>
+    <input class="inp" id="e-key" type="password" placeholder="sk-ant-... ou sk-...">
+    <p id="apikey-hint" style="font-size:11px;color:#b8b0a4;margin-top:6px;line-height:1.5">Grátis em <a href="https://console.anthropic.com" target="_blank" style="color:#8b5cf6">console.anthropic.com</a>. Salva no navegador.</p>
   </div>
 
   <div id="e-err" style="display:none" class="err"></div>
@@ -263,7 +284,7 @@ textarea,input,select{font-family:Georgia,serif}
 // ESTADO
 // ════════════════════════════════════════════════════════
 const S={
-  modo:'ia', nome:'', campanha:'', apiKey:'',
+  modo:'ia', nome:'', campanha:'', apiKey:'', provedor:'claude',
   mundo:null, cod:'', isHost:false,
   fichas:[], msgs:[], digitando:false,
   vozAuto:false, falando:false, falandoId:null,
@@ -366,6 +387,7 @@ function salvar(){try{localStorage.setItem('mesa',JSON.stringify({fichas:S.ficha
 function carregar(){
   try{
     const k=localStorage.getItem('mesa_key');if(k)S.apiKey=k;
+    const p=localStorage.getItem('mesa_provedor');if(p){S.provedor=p;}
     const raw=localStorage.getItem('mesa');if(!raw)return;
     const d=JSON.parse(raw);
     if(d.fichas)S.fichas=d.fichas;
@@ -407,23 +429,57 @@ function togVozAuto(){
 }
 
 // ════════════════════════════════════════════════════════
-// CLAUDE API
+// IA API — suporta Claude (Anthropic) e ChatGPT (OpenAI)
 // ════════════════════════════════════════════════════════
 let hist=[];
+
+function selProvedor(p){
+  S.provedor=p;
+  document.getElementById('prov-claude').style.borderColor=p==='claude'?'#d4af37':'rgba(139,92,246,.25)';
+  document.getElementById('prov-claude').style.background=p==='claude'?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
+  document.getElementById('prov-openai').style.borderColor=p==='openai'?'#d4af37':'rgba(139,92,246,.25)';
+  document.getElementById('prov-openai').style.background=p==='openai'?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
+  const hint=document.getElementById('apikey-hint');
+  const inp=document.getElementById('e-key');
+  if(p==='claude'){
+    if(hint)hint.innerHTML='Grátis em <a href="https://console.anthropic.com" target="_blank" style="color:#8b5cf6">console.anthropic.com</a>. Salva no navegador.';
+    if(inp)inp.placeholder='sk-ant-...';
+  }else{
+    if(hint)hint.innerHTML='Grátis em <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#8b5cf6">platform.openai.com</a>. Salva no navegador.';
+    if(inp)inp.placeholder='sk-...';
+  }
+  localStorage.setItem('mesa_provedor',p);
+}
+
 async function claude(system,user,withHist){
   const k=S.apiKey||localStorage.getItem('mesa_key')||'';
   if(!k)return null;
   if(withHist)hist=[...hist.slice(-18),{role:'user',content:user}];
   const messages=withHist?hist:[{role:'user',content:user}];
+
   try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system,messages}),
-    });
-    const d=await res.json();
-    if(d.error){if(d.error.type==='authentication_error')addMsg({tipo:'sys',txt:'⚠️ API Key inválida. Clique em ⚙️ no header para corrigir.'});return null;}
-    const txt=d.content?.[0]?.text||'';
+    let txt='';
+    if(S.provedor==='openai'){
+      // OpenAI / ChatGPT
+      const res=await fetch('https://api.openai.com/v1/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
+        body:JSON.stringify({model:'gpt-4o-mini',max_tokens:700,messages:[{role:'system',content:system},...messages]}),
+      });
+      const d=await res.json();
+      if(d.error){addMsg({tipo:'sys',txt:'⚠️ OpenAI: '+d.error.message});return null;}
+      txt=d.choices?.[0]?.message?.content||'';
+    }else{
+      // Claude / Anthropic
+      const res=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system,messages}),
+      });
+      const d=await res.json();
+      if(d.error){if(d.error.type==='authentication_error')addMsg({tipo:'sys',txt:'⚠️ API Key inválida.'});return null;}
+      txt=d.content?.[0]?.text||'';
+    }
     if(withHist)hist=[...hist,{role:'assistant',content:txt}];
     return txt;
   }catch(e){return null;}
@@ -473,6 +529,7 @@ function iniciar(){
   if(S.modo==='ia'&&!key)return mostrarErro('e-err','Digite sua API Key do Claude para usar o Mestre IA!\n(Grátis em console.anthropic.com)');
   S.nome=nome;S.campanha=camp;S.apiKey=key;
   if(key)localStorage.setItem('mesa_key',key);
+  localStorage.setItem('mesa_provedor',S.provedor);
   S.mundo=MUNDOS[Math.floor(Math.random()*MUNDOS.length)];
   renderMundo();pg('mundo');
 }
@@ -1004,6 +1061,9 @@ function salvarKey(){const k=document.getElementById('api-inp')?.value.trim();if
 carregar();
 pg('entrada');
 document.getElementById('e-key').value=S.apiKey||localStorage.getItem('mesa_key')||'';
+const savedProv=localStorage.getItem('mesa_provedor')||'claude';
+S.provedor=savedProv;
+selProvedor(savedProv);
 </script>
 </body>
 </html>
