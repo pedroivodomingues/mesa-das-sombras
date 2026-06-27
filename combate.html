@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Mesa das Sombras — Combate</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a1a1a;color:#e8e0d4;font-family:Arial,sans-serif;user-select:none}
+button{cursor:pointer;font-family:Arial,sans-serif}
+button:active{opacity:.8}
+
+/* ── LAYOUT ── */
+#app{display:flex;flex-direction:column;height:100vh}
+
+/* ── TOOLBAR TOPO ── */
+#toolbar{
+  height:44px;background:#2a2a2a;border-bottom:2px solid #444;
+  display:flex;align-items:center;gap:4px;padding:0 6px;
+  flex-shrink:0;overflow-x:auto;overflow-y:hidden;
+}
+.tbtn{
+  height:32px;padding:0 10px;border-radius:5px;font-size:12px;font-weight:700;
+  border:1px solid #555;background:#333;color:#ccc;white-space:nowrap;flex-shrink:0;
+  display:flex;align-items:center;gap:4px;
+}
+.tbtn:hover{background:#444;color:#fff}
+.tbtn.on{background:#4a7c3f;border-color:#6ab05f;color:#fff}
+.tbtn.blue{background:#1a3a5c;border-color:#2a6ab0;color:#7ab8f0}
+.tbtn.red{background:#5c1a1a;border-color:#b02a2a;color:#f08080}
+.tbtn.gold{background:#4a3a00;border-color:#b09000;color:#f0d060}
+.tbtn.purple{background:#3a1a5c;border-color:#7a2ab0;color:#c080f0}
+.tbtn.green{background:#1a4a1a;border-color:#2ab02a;color:#80f080}
+.sep{width:1px;height:28px;background:#444;flex-shrink:0;margin:0 2px}
+
+/* ── BODY ── */
+#body{flex:1;display:flex;overflow:hidden}
+
+/* ── PAINEL ESQUERDO ── */
+#left{
+  width:200px;background:#1e1e1e;border-right:2px solid #333;
+  display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;
+}
+#left-tabs{display:flex;border-bottom:2px solid #333;flex-shrink:0}
+.ltab{flex:1;height:32px;border:none;background:#252525;color:#888;font-size:11px;font-weight:700;border-right:1px solid #333}
+.ltab:last-child{border-right:none}
+.ltab.on{background:#1e1e1e;color:#fff;border-bottom:2px solid #4a7c3f}
+#left-content{flex:1;overflow-y:auto;padding:6px}
+
+/* ── MAPA ── */
+#map-wrap{flex:1;overflow:hidden;position:relative;background:#111;cursor:crosshair}
+#canvas{display:block}
+
+/* ── STATUS BAR ── */
+#statusbar{
+  height:24px;background:#1a1a1a;border-top:1px solid #333;
+  display:flex;align-items:center;padding:0 8px;gap:12px;
+  font-size:11px;color:#888;flex-shrink:0;
+}
+#statusbar span{color:#aaa}
+
+/* ── FICHA CARD ── */
+.ficha-card{
+  background:#252525;border:1px solid #444;border-radius:5px;
+  margin-bottom:5px;padding:6px;cursor:pointer;
+}
+.ficha-card:hover{border-color:#666;background:#2a2a2a}
+.ficha-card.ativo{border-color:#f0d060;background:#2a2800}
+.ficha-card.sel{border-color:#7ab8f0;background:#001a30}
+.fc-top{display:flex;align-items:center;gap:5px}
+.fc-av{font-size:20px;flex-shrink:0}
+.fc-info{flex:1;min-width:0}
+.fc-nome{font-size:12px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-sub{font-size:10px;color:#888}
+.fc-pv{font-size:10px;margin-top:3px}
+.fc-pv-bar{height:5px;background:#333;border-radius:3px;margin-top:2px;overflow:hidden}
+.fc-pv-fill{height:100%;border-radius:3px;transition:width .3s}
+.fc-btns{display:flex;gap:3px;margin-top:5px}
+.fc-btn{flex:1;height:22px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid}
+
+.init-badge{
+  min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;flex-shrink:0;border:2px solid;
+}
+
+/* ── MODAL ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;
+  display:flex;align-items:center;justify-content:center;padding:10px;
+}
+.modal{
+  background:#252525;border:2px solid #555;border-radius:8px;
+  padding:16px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;
+}
+.modal h3{font-size:15px;color:#f0d060;margin-bottom:12px;border-bottom:1px solid #444;padding-bottom:8px}
+.minp{width:100%;padding:7px 10px;background:#1a1a1a;border:1px solid #555;border-radius:5px;color:#fff;font-size:13px;outline:none;margin-bottom:6px}
+.minp:focus{border-color:#7ab8f0}
+.mlbl{font-size:10px;color:#888;font-weight:700;letter-spacing:1px;margin-bottom:3px;margin-top:8px;display:block}
+.mgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mbtn{width:100%;padding:9px;border-radius:5px;font-size:13px;font-weight:700;border:none;margin-top:6px;cursor:pointer}
+.mbtn-g{background:#4a7c3f;color:#fff}
+.mbtn-b{background:#1a3a5c;color:#7ab8f0;border:1px solid #2a6ab0}
+.mbtn-r{background:#5c1a1a;color:#f08080;border:1px solid #b02a2a}
+.av-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.av-btn{font-size:20px;padding:4px;border-radius:5px;border:2px solid #444;background:#1a1a1a;cursor:pointer}
+.av-btn.on{border-color:#f0d060;background:#2a2800}
+.tipo-btn{padding:5px 10px;border-radius:5px;border:1px solid #555;background:#333;color:#aaa;font-size:11px;cursor:pointer;margin:2px}
+.tipo-btn:hover{border-color:#888;color:#fff}
+.tipo-btn.on{border-color:#f0d060;background:#2a2800;color:#f0d060}
+.cor-btn{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex-shrink:0}
+.cor-btn.on{border-color:#fff;transform:scale(1.2)}
+.sec-h{font-size:10px;color:#888;font-weight:700;letter-spacing:1px;padding:4px 0;border-bottom:1px solid #333;margin-bottom:5px;text-transform:uppercase}
+
+/* ── TOOLTIP ── */
+#tooltip{
+  position:fixed;background:#1a1a1a;border:1px solid #555;border-radius:6px;
+  padding:8px 10px;font-size:11px;pointer-events:none;z-index:100;
+  display:none;min-width:130px;box-shadow:0 4px 12px rgba(0,0,0,.6);
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOOLBAR -->
+<div id="toolbar">
+  <!-- Ferramentas -->
+  <button class="tbtn on" id="t-sel" onclick="setTool('sel')" title="Selecionar">↖ Selecionar</button>
+  <button class="tbtn" id="t-mover" onclick="setTool('mover')" title="Mover token">🖐 Mover</button>
+  <button class="tbtn" id="t-atq" onclick="setTool('atq')" title="Atacar">⚔️ Atacar</button>
+  <button class="tbtn" id="t-area" onclick="setTool('area')" title="Área de efeito">🔮 Área</button>
+  <button class="tbtn" id="t-dist" onclick="setTool('dist')" title="Medir distância">📏 Medir</button>
+  <div class="sep"></div>
+  <!-- Ações rápidas -->
+  <button class="tbtn blue" onclick="abrirMod('mod-pj')" title="Adicionar personagem">+ PJ</button>
+  <button class="tbtn red" onclick="abrirMod('mod-ini')" title="Adicionar inimigo">+ Inimigo</button>
+  <button class="tbtn purple" onclick="abrirMod('mod-obj')" title="Adicionar objeto">+ Objeto</button>
+  <div class="sep"></div>
+  <!-- Iniciativa -->
+  <button class="tbtn gold" onclick="rolarInit()" title="Rolar toda iniciativa">🎲 Rolar Init</button>
+  <button class="tbtn green" onclick="proxTurno()" title="Próximo turno">▶ Próximo Turno</button>
+  <div class="sep"></div>
+  <!-- Mapa -->
+  <button class="tbtn" onclick="abrirMod('mod-mapa')" title="Mudar cenário">🗺️ Cenário</button>
+  <button class="tbtn" onclick="zoom(1.2)" title="Zoom in">🔍+</button>
+  <button class="tbtn" onclick="zoom(0.8)" title="Zoom out">🔍-</button>
+  <button class="tbtn" onclick="centralizar()" title="Centralizar mapa">⊕ Centro</button>
+  <div class="sep"></div>
+  <button class="tbtn red" onclick="limparEfeitos()">🧹 Limpar</button>
+  <button class="tbtn green" onclick="salvar()">💾 Salvar</button>
+</div>
+
+<!-- BODY -->
+<div id="body">
+
+  <!-- PAINEL ESQUERDO -->
+  <div id="left">
+    <div id="left-tabs">
+      <button class="ltab on" id="lt-init" onclick="setLeftTab('init')">⚔️ Init</button>
+      <button class="ltab" id="lt-fichas" onclick="setLeftTab('fichas')">👥 PJs</button>
+      <button class="ltab" id="lt-dados" onclick="setLeftTab('dados')">🎲 Dados</button>
+    </div>
+    <div id="left-content"></div>
+  </div>
+
+  <!-- MAPA -->
+  <div id="map-wrap">
+    <canvas id="canvas"></canvas>
+  </div>
+
+</div>
+
+<!-- STATUS -->
+<div id="statusbar">
+  <span id="st-tool">Ferramenta: Selecionar</span>
+  <span>|</span>
+  <span id="st-pos">Pos: —</span>
+  <span>|</span>
+  <span id="st-rodada">Rodada: 1</span>
+  <span>|</span>
+  <span id="st-turno">Aguardando iniciativa...</span>
+</div>
+
+</div><!-- #app -->
+
+<!-- TOOLTIP -->
+<div id="tooltip">
+  <div id="tip-nome" style="font-weight:700;color:#f0d060;margin-bottom:4px"></div>
+  <div id="tip-pv" style="color:#80f080"></div>
+  <div id="tip-ca" style="color:#80c0f0"></div>
+  <div id="tip-tipo" style="color:#888;font-size:10px;margin-top:2px"></div>
+</div>
+
+<!-- MOD PJ -->
+<div class="modal-bg" id="mod-pj" style="display:none" onclick="if(event.target===this)fecharMod('mod-pj')">
+<div class="modal">
+  <h3>👤 Adicionar Personagem</h3>
+  <span class="mlbl">Avatar</span>
+  <div class="av-grid" id="pj-av-grid"></div>
+  <span class="mlbl">Cor do token</span>
+  <div style="display:flex;gap:6px;margin-bottom:8px" id="pj-cor-grid"></div>
+  <div class="mgrid2">
+    <div><span class="mlbl">Nome</span><input class="minp" id="pj-nome" placeholder="Thorin"></div>
+    <div><span class="mlbl">Tipo</span><select class="minp" id="pj-tipo"><option value="aliado">PJ Aliado</option><option value="npc">NPC Aliado</option></select></div>
+    <div><span class="mlbl">PV</span><input class="minp" type="number" id="pj-pv" value="30"></div>
+    <div><span class="mlbl">PV Máx</span><input class="minp" type="number" id="pj-pvm" value="30"></div>
+    <div><span class="mlbl">CA</span><input class="minp" type="number" id="pj-ca" value="15"></div>
+    <div><span class="mlbl">Movimento (sq)</span><input class="minp" type="number" id="pj-mov" value="6"></div>
+    <div><span class="mlbl">Ataque (bônus)</span><input class="minp" id="pj-atq" placeholder="+5" value="+5"></div>
+    <div><span class="mlbl">Dano</span><input class="minp" id="pj-dano" placeholder="1d8+3" value="1d8+3"></div>
+  </div>
+  <button class="mbtn mbtn-g" onclick="addPJ()">✅ Adicionar ao Mapa</button>
+  <button class="mbtn mbtn-b" onclick="fecharMod('mod-pj')">Cancelar</button>
+</div>
+</div>
+
+<!-- MOD INIMIGO -->
+<div class="modal-bg" id="mod-ini" style="display:none" onclick="if(event.target===this)fecharMod('mod-ini')">
+<div class="modal">
+  <h3>💀 Adicionar Inimigo</h3>
+  <span class="mlbl">Predefinidos</span>
+  <div id="ini-tipos" style="display:flex;flex-wrap:wrap;margin-bottom:8px"></div>
+  <span class="mlbl">Avatar</span>
+  <div class="av-grid" id="ini-av-grid"></div>
+  <div class="mgrid2">
+    <div><span class="mlbl">Nome</span><input class="minp" id="ini-nome" placeholder="Goblin"></div>
+    <div><span class="mlbl">Quantidade</span><input class="minp" type="number" id="ini-qtd" value="1" min="1" max="10"></div>
+    <div><span class="mlbl">PV</span><input class="minp" type="number" id="ini-pv" value="10"></div>
+    <div><span class="mlbl">CA</span><input class="minp" type="number" id="ini-ca" value="13"></div>
+    <div><span class="mlbl">Movimento (sq)</span><input class="minp" type="number" id="ini-mov" value="6"></div>
+    <div><span class="mlbl">Dano</span><input class="minp" id="ini-dano" placeholder="1d6+2" value="1d6"></div>
+  </div>
+  <button class="mbtn mbtn-r" onclick="addInimigo()">💀 Adicionar ao Mapa</button>
+  <button class="mbtn mbtn-b" onclick="fecharMod('mod-ini')">Cancelar</button>
+</div>
+</div>
+
+<!-- MOD OBJETO -->
+<div class="modal-bg" id="mod-obj" style="display:none" onclick="if(event.target===this)fecharMod('mod-obj')">
+<div class="modal">
+  <h3>📦 Adicionar Objeto</h3>
+  <span class="mlbl">Tipo</span>
+  <div id="obj-tipos" style="display:flex;flex-wrap:wrap;margin-bottom:10px"></div>
+  <span class="mlbl">Emoji personalizado</span>
+  <input class="minp" id="obj-emoji" placeholder="🪨" value="🪨">
+  <span class="mlbl">Descrição</span>
+  <input class="minp" id="obj-desc" placeholder="Pedra grande">
+  <span class="mlbl">Passável?</span>
+  <select class="minp" id="obj-pass"><option value="1">Sim (pode passar por cima)</option><option value="0">Não (bloqueia movimento)</option></select>
+  <button class="mbtn mbtn-g" onclick="addObjeto()">📦 Colocar no Mapa</button>
+  <button class="mbtn mbtn-b" onclick="fecharMod('mod-obj')">Cancelar</button>
+</div>
+</div>
+
+<!-- MOD MAPA -->
+<div class="modal-bg" id="mod-mapa" style="display:none" onclick="if(event.target===this)fecharMod('mod-mapa')">
+<div class="modal">
+  <h3>🗺️ Configurar Cenário</h3>
+  <span class="mlbl">Tipo de Ambiente</span>
+  <div id="cen-tipos" style="display:flex;flex-wrap:wrap;margin-bottom:12px"></div>
+  <div class="mgrid2">
+    <div><span class="mlbl">Largura (quadrados)</span><input class="minp" type="number" id="mp-w" value="25" min="10" max="50"></div>
+    <div><span class="mlbl">Altura (quadrados)</span><input class="minp" type="number" id="mp-h" value="18" min="8" max="40"></div>
+  </div>
+  <span class="mlbl">Densidade de obstáculos</span>
+  <input type="range" min="0" max="30" value="10" id="mp-dens" style="width:100%;margin-bottom:6px">
+  <div style="font-size:11px;color:#888;margin-bottom:10px">Obstáculos: <span id="dens-val">10</span>%</div>
+  <button class="mbtn mbtn-g" onclick="gerarCenario()">🗺️ Gerar Cenário</button>
+  <button class="mbtn mbtn-b" onclick="fecharMod('mod-mapa')">Cancelar</button>
+</div>
+</div>
+
+<!-- MOD AÇÃO -->
+<div class="modal-bg" id="mod-acao" style="display:none" onclick="if(event.target===this)fecharMod('mod-acao')">
+<div class="modal">
+  <h3 id="acao-tit">⚔️ Ação</h3>
+  <div id="acao-body" style="text-align:center;padding:10px 0"></div>
+  <button class="mbtn" style="background:#333;color:#aaa;border:1px solid #555" onclick="fecharMod('mod-acao')">Fechar</button>
+</div>
+</div>
+
+<!-- MOD TOKEN EDIT -->
+<div class="modal-bg" id="mod-edit" style="display:none" onclick="if(event.target===this)fecharMod('mod-edit')">
+<div class="modal">
+  <h3 id="edit-tit">✏️ Editar Token</h3>
+  <div class="mgrid2">
+    <div><span class="mlbl">PV Atual</span><input class="minp" type="number" id="ed-pv"></div>
+    <div><span class="mlbl">PV Máximo</span><input class="minp" type="number" id="ed-pvm"></div>
+  </div>
+  <span class="mlbl">Condições</span>
+  <div id="ed-conds" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px"></div>
+  <button class="mbtn mbtn-g" onclick="salvarEdit()">💾 Salvar</button>
+  <button class="mbtn mbtn-r" onclick="removerToken()">🗑 Remover Token</button>
+  <button class="mbtn mbtn-b" onclick="fecharMod('mod-edit')">Cancelar</button>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// DADOS
+// ══════════════════════════════════════════════════════════
+const CENARIOS={
+  floresta: {n:'Floresta',e:'🌲',bg:'#1e3a1e',grid:'rgba(0,60,0,.4)',cel:'#243a24',obst:['🌲','🌳','🪨','🌿','🍄'],prob:.10},
+  dungeon:  {n:'Dungeon', e:'🏰',bg:'#1a1a1a',grid:'rgba(80,80,80,.5)',cel:'#222',  obst:['🪨','💀','🕯️','⛓️','🗡️'],prob:.15},
+  deserto:  {n:'Deserto', e:'🏜️',bg:'#3a2e10',grid:'rgba(100,80,0,.4)',cel:'#3d3010',obst:['🪨','🌵','💀','🦂'],prob:.08},
+  cidade:   {n:'Cidade',  e:'🏙️',bg:'#1a1a2a',grid:'rgba(60,60,100,.5)',cel:'#20202e',obst:['🧱','🪟','🚪','🪑'],prob:.18},
+  taverna:  {n:'Taverna', e:'🍺',bg:'#2a1a08',grid:'rgba(80,50,10,.5)',cel:'#3a2510',obst:['🪑','🛢️','🍺','🧱','🪵'],prob:.20},
+  campo:    {n:'Campo',   e:'🌾',bg:'#1e2a0a',grid:'rgba(50,70,0,.4)',cel:'#263510', obst:['🌾','🪨','🌿','🌻'],prob:.06},
+  caverna:  {n:'Caverna', e:'🕳️',bg:'#0d0d0d',grid:'rgba(40,40,40,.6)',cel:'#151515',obst:['🪨','💎','🦇','🕸️'],prob:.20},
+  navio:    {n:'Navio',   e:'⛵',bg:'#0a1520',grid:'rgba(0,50,100,.4)',cel:'#0e1f30',obst:['⚓','🪝','🧭','🛢️'],prob:.12},
+};
+
+const INIMIGOS=[
+  {n:'Goblin',   av:'👺',pv:7,  ca:15,mov:6, dano:'1d6'},
+  {n:'Orc',      av:'👹',pv:15, ca:13,mov:6, dano:'1d12+3'},
+  {n:'Esqueleto',av:'💀',pv:13, ca:13,mov:6, dano:'1d6+2'},
+  {n:'Lobo',     av:'🐺',pv:11, ca:13,mov:8, dano:'2d4+2'},
+  {n:'Dragão',   av:'🐉',pv:100,ca:17,mov:6, dano:'3d10+7'},
+  {n:'Troll',    av:'👾',pv:84, ca:15,mov:6, dano:'2d6+6'},
+  {n:'Vampiro',  av:'🧛',pv:77, ca:16,mov:6, dano:'1d8+4'},
+  {n:'Zumbi',    av:'🧟',pv:22, ca:8, mov:4, dano:'1d6+1'},
+  {n:'Aranha',   av:'🕷️',pv:26, ca:13,mov:6, dano:'1d8+3'},
+  {n:'Cultista', av:'🧙',pv:9,  ca:12,mov:6, dano:'1d6'},
+  {n:'Basilisco',av:'🦎',pv:52, ca:15,mov:6, dano:'2d6+4'},
+  {n:'Gnoll',    av:'🦊',pv:22, ca:15,mov:6, dano:'2d4+3'},
+];
+
+const OBJETOS_TIPOS=[
+  {e:'🪨',n:'Pedra'},{e:'🌲',n:'Árvore'},{e:'🧱',n:'Parede'},{e:'🛢️',n:'Barril'},
+  {e:'🪑',n:'Cadeira'},{e:'🕯️',n:'Tocha'},{e:'⛩️',n:'Portal'},{e:'🪵',n:'Tronco'},
+  {e:'💎',n:'Cristal'},{e:'🏺',n:'Urna'},{e:'🗡️',n:'Espada'},{e:'🎁',n:'Baú'},
+];
+
+const CONDICOES=[
+  {e:'💀',n:'Inconsciente'},{e:'🔥',n:'Em Chamas'},{e:'❄️',n:'Congelado'},
+  {e:'⚡',n:'Eletrificado'},{e:'🤢',n:'Envenenado'},{e:'😵',n:'Atordoado'},
+  {e:'🩸',n:'Sangrando'},{e:'🛡️',n:'Protegido'},{e:'⬆️',n:'Vantagem'},
+];
+
+const CORES=['#60a5fa','#4ade80','#f59e0b','#f87171','#c084fc','#fb923c','#34d399','#e879f9','#fff'];
+const AVS_PJ=['⚔️','🏹','🔮','🛡️','⚡','🔥','❄️','🌿','☀️','🌙','👑','🎭','🦅','🐺','🧝','🧙'];
+const AVS_INI=['👺','👹','💀','🐺','🐉','👾','🧛','🧟','🕷️','🧙','👿','🦎','🐗','🦂','🦊','🐍'];
+
+// ══════════════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════════════
+let tokens=[], objetos=[], efeitos=[];
+let grade=[], gridW=25, gridH=18;
+let cenAtual='floresta';
+let rodada=1, turnoIdx=0, ordemInit=[];
+let sel=null; // idx token selecionado
+let tool='sel';
+let leftTab='init';
+let CELL=36;
+let offX=0, offY=0, escala=1;
+let drag=null, dragOrig=null;
+let movRange=[];
+let distOrigem=null;
+let pjAv='⚔️', pjCor='#60a5fa';
+let iniAv='👺';
+let objEmoji='🪨';
+let editIdx=null;
+let panStart=null, panOrig=null;
+
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+
+// ══════════════════════════════════════════════════════════
+// RESIZE
+// ══════════════════════════════════════════════════════════
+function resize(){
+  const w=document.getElementById('map-wrap');
+  canvas.width=w.clientWidth;
+  canvas.height=w.clientHeight;
+  draw();
+}
+window.addEventListener('resize',resize);
+
+// ══════════════════════════════════════════════════════════
+// GERAR CENÁRIO
+// ══════════════════════════════════════════════════════════
+function gerarCenario(){
+  gridW=+document.getElementById('mp-w').value||25;
+  gridH=+document.getElementById('mp-h').value||18;
+  const dens=+document.getElementById('mp-dens').value/100;
+  const cen=CENARIOS[cenAtual];
+  grade=[];
+  for(let y=0;y<gridH;y++){
+    grade[y]=[];
+    for(let x=0;x<gridW;x++){
+      const borda=x===0||y===0||x===gridW-1||y===gridH-1;
+      const temObst=!borda&&Math.random()<dens;
+      grade[y][x]={obst:temObst?pick(cen.obst):null,pass:!temObst};
+    }
+  }
+  // Limpar centro
+  const cx=Math.floor(gridW/2),cy=Math.floor(gridH/2);
+  for(let dy=-3;dy<=3;dy++)for(let dx=-4;dx<=4;dx++){
+    if(grade[cy+dy]?.[cx+dx]){grade[cy+dy][cx+dx]={obst:null,pass:true};}
+  }
+  fecharMod('mod-mapa');
+  centralizar();
+  draw();
+}
+
+function centralizar(){
+  const tw=gridW*CELL*escala, th=gridH*CELL*escala;
+  offX=Math.max(0,(canvas.width-tw)/2);
+  offY=Math.max(0,(canvas.height-th)/2);
+  draw();
+}
+
+// ══════════════════════════════════════════════════════════
+// ZOOM
+// ══════════════════════════════════════════════════════════
+function zoom(f){
+  const prev=escala;
+  escala=Math.max(0.3,Math.min(3,escala*f));
+  const rat=escala/prev;
+  const cx=canvas.width/2, cy=canvas.height/2;
+  offX=cx-(cx-offX)*rat;
+  offY=cy-(cy-offY)*rat;
+  draw();
+}
+
+// ══════════════════════════════════════════════════════════
+// DRAW
+// ══════════════════════════════════════════════════════════
+function draw(){
+  const W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+  const cen=CENARIOS[cenAtual];
+  const cs=CELL*escala;
+
+  // Fundo geral
+  ctx.fillStyle='#111';
+  ctx.fillRect(0,0,W,H);
+
+  if(grade.length===0){
+    ctx.fillStyle='rgba(74,124,63,.15)';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#888';ctx.font='bold 16px Arial';ctx.textAlign='center';
+    ctx.fillText('Clique em 🗺️ Cenário para gerar o mapa',W/2,H/2-16);
+    ctx.font='13px Arial';
+    ctx.fillText('Depois adicione PJs e Inimigos com os botões + acima',W/2,H/2+12);
+    ctx.textAlign='left';
+    drawTokensEObj();
+    return;
+  }
+
+  // Células
+  for(let y=0;y<gridH;y++){
+    for(let x=0;x<gridW;x++){
+      const px=offX+x*cs, py=offY+y*cs;
+      if(px+cs<0||py+cs<0||px>W||py>H) continue;
+      const cell=grade[y]?.[x];
+
+      // Fundo célula
+      ctx.fillStyle=cen.cel;
+      ctx.fillRect(px,py,cs,cs);
+
+      // Range de movimento
+      if(movRange.some(([mx,my])=>mx===x&&my===y)){
+        ctx.fillStyle='rgba(74,200,120,.18)';
+        ctx.fillRect(px+1,py+1,cs-2,cs-2);
+      }
+
+      // Obstáculo
+      if(cell?.obst){
+        ctx.font=`${cs*0.58}px serif`;
+        ctx.textAlign='center';
+        ctx.fillText(cell.obst,px+cs/2,py+cs*0.73);
+        ctx.textAlign='left';
+      }
+
+      // Linha de grade — VISÍVEL
+      ctx.strokeStyle=cen.grid;
+      ctx.lineWidth=1;
+      ctx.strokeRect(px,py,cs,cs);
+    }
+  }
+
+  // Numeração de coordenadas
+  ctx.fillStyle='rgba(255,255,255,.25)';
+  ctx.font=`${Math.max(8,cs*0.22)}px monospace`;
+  ctx.textAlign='center';
+  for(let x=0;x<gridW;x+=5){
+    ctx.fillText(x,offX+x*cs+cs/2,offY-3);
+  }
+  for(let y=0;y<gridH;y+=5){
+    ctx.textAlign='right';
+    ctx.fillText(y,offX-3,offY+y*cs+cs*0.6);
+  }
+  ctx.textAlign='left';
+
+  // Efeitos de área
+  efeitos.forEach(e=>{
+    const px=offX+e.x*cs+cs/2, py=offY+e.y*cs+cs/2;
+    const r=e.raio*cs;
+    ctx.beginPath();ctx.arc(px,py,r,0,Math.PI*2);
+    ctx.fillStyle=e.cor+'28';ctx.fill();
+    ctx.strokeStyle=e.cor;ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=e.cor;ctx.font='10px Arial';ctx.textAlign='center';
+    ctx.fillText(e.label||'',px,py-r-4);
+    ctx.textAlign='left';
+  });
+
+  // Linha de medição
+  if(distOrigem && tool==='dist'){
+    const px=offX+distOrigem.x*cs+cs/2, py=offY+distOrigem.y*cs+cs/2;
+    ctx.beginPath();ctx.moveTo(px,py);
+    ctx.lineTo(canvas.width/2,canvas.height/2); // placeholder
+    ctx.strokeStyle='#f0d060';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  drawObjetos();
+  drawTokensEObj();
+}
+
+function drawObjetos(){
+  const cs=CELL*escala;
+  objetos.forEach(o=>{
+    const px=offX+o.x*cs, py=offY+o.y*cs;
+    ctx.font=`${cs*0.6}px serif`;ctx.textAlign='center';
+    ctx.fillText(o.emoji,px+cs/2,py+cs*0.73);
+    ctx.textAlign='left';
+    if(!o.pass){
+      ctx.strokeStyle='rgba(255,80,80,.5)';ctx.lineWidth=1.5;
+      ctx.strokeRect(px+1,py+1,cs-2,cs-2);
+    }
+  });
+}
+
+function drawTokensEObj(){
+  const cs=CELL*escala;
+  tokens.forEach((t,i)=>{
+    const px=offX+t.x*cs, py=offY+t.y*cs;
+    const isAtivo=ordemInit.length>0&&ordemInit[turnoIdx%ordemInit.length]?.i===i;
+    const isSel=sel===i;
+    const pvPct=Math.max(0,t.pv/t.pvMax);
+    const pvCor=pvPct>0.5?'#4ade80':pvPct>0.25?'#f59e0b':'#f87171';
+
+    // Sombra
+    ctx.shadowColor=t.tipo==='inimigo'?'#ff000066':'#0000ff44';
+    ctx.shadowBlur=cs*0.3;
+
+    // Círculo
+    const r=cs/2-3;
+    ctx.beginPath();ctx.arc(px+cs/2,py+cs/2,r,0,Math.PI*2);
+    ctx.fillStyle=t.tipo==='inimigo'?'#4a1010':(t.cor||'#103040');
+    ctx.fill();
+    ctx.strokeStyle=isAtivo?'#f0d060':isSel?'#fff':(t.tipo==='inimigo'?'#f87171':(t.cor||'#60a5fa'));
+    ctx.lineWidth=isAtivo?3:isSel?2.5:1.5;
+    ctx.stroke();
+    ctx.shadowBlur=0;
+
+    // Avatar emoji
+    ctx.font=`${cs*0.46}px serif`;ctx.textAlign='center';
+    ctx.fillText(t.avatar,px+cs/2,py+cs/2+cs*0.17);
+
+    // Nome
+    ctx.font=`bold ${Math.max(7,cs*0.2)}px Arial`;
+    ctx.fillStyle='#fff';
+    ctx.fillText(t.nome.slice(0,7),px+cs/2,py+cs-4);
+    ctx.textAlign='left';
+
+    // Barra PV
+    const bw=cs-8,bx=px+4,by=py+3;
+    ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(bx,by,bw,5);
+    ctx.fillStyle=pvCor;ctx.fillRect(bx,by,bw*pvPct,5);
+
+    // Anel de turno ativo
+    if(isAtivo){
+      ctx.beginPath();ctx.arc(px+cs/2,py+cs/2,r+3,0,Math.PI*2);
+      ctx.strokeStyle='#f0d060';ctx.lineWidth=2;
+      ctx.setLineDash([5,3]);ctx.stroke();ctx.setLineDash([]);
+    }
+
+    // Número de iniciativa
+    if(ordemInit.length>0){
+      const ini=ordemInit.find(o=>o.i===i);
+      if(ini){
+        const nx=px+cs-10,ny=py+cs-10;
+        ctx.fillStyle=isAtivo?'#f0d060':'#333';
+        ctx.beginPath();ctx.arc(nx,ny,9,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle=isAtivo?'#000':'#aaa';
+        ctx.font=`bold 9px Arial`;ctx.textAlign='center';
+        ctx.fillText(ini.roll,nx,ny+3);ctx.textAlign='left';
+      }
+    }
+
+    // Condições
+    if(t.conds?.length){
+      t.conds.forEach((c,ci)=>{
+        ctx.font=`${cs*0.22}px serif`;ctx.textAlign='center';
+        ctx.fillText(c,px+8+ci*14,py+cs-10);
+        ctx.textAlign='left';
+      });
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// INICIATIVA
+// ══════════════════════════════════════════════════════════
+function rolarInit(){
+  tokens.forEach(t=>t.init=Math.floor(Math.random()*20)+1);
+  ordemInit=tokens.map((t,i)=>({i,roll:t.init,nome:t.nome})).sort((a,b)=>b.roll-a.roll);
+  turnoIdx=0;rodada=1;
+  updateUI();draw();
+}
+
+function proxTurno(){
+  if(ordemInit.length===0){rolarInit();return;}
+  turnoIdx=(turnoIdx+1)%ordemInit.length;
+  if(turnoIdx===0)rodada++;
+  movRange=[];
+  updateUI();draw();
+}
+
+// ══════════════════════════════════════════════════════════
+// ADD TOKENS
+// ══════════════════════════════════════════════════════════
+function posLivre(isInimigo){
+  const w=Math.max(gridW,8), h=Math.max(gridH,8);
+  for(let t=0;t<200;t++){
+    let x,y;
+    if(gridW>0&&gridH>0){
+      x=isInimigo?Math.floor(Math.random()*(gridW-2))+1:Math.floor(Math.random()*(gridW-2))+1;
+      y=isInimigo?Math.floor(Math.random()*(Math.min(4,gridH))):Math.floor(Math.random()*gridH);
+    }else{x=Math.floor(Math.random()*10);y=Math.floor(Math.random()*8);}
+    const ocup=tokens.some(tk=>tk.x===x&&tk.y===y)||objetos.some(o=>!o.pass&&o.x===x&&o.y===y);
+    const bloc=grade[y]?.[x]?.pass===false;
+    if(!ocup&&!bloc)return{x,y};
+  }
+  return{x:Math.floor(Math.random()*8),y:Math.floor(Math.random()*6)};
+}
+
+function addPJ(){
+  const nome=document.getElementById('pj-nome').value.trim()||'Herói';
+  const pv=+document.getElementById('pj-pv').value||20;
+  const pvm=+document.getElementById('pj-pvm').value||20;
+  const pos=posLivre(false);
+  tokens.push({
+    nome,avatar:pjAv,tipo:'aliado',cor:pjCor,
+    x:pos.x,y:pos.y,pv,pvMax:pvm,
+    ca:+document.getElementById('pj-ca').value||15,
+    mov:+document.getElementById('pj-mov').value||6,
+    atq:document.getElementById('pj-atq').value||'+5',
+    dano:document.getElementById('pj-dano').value||'1d8',
+    init:0,conds:[],
+  });
+  fecharMod('mod-pj');updateUI();draw();
+}
+
+function addInimigo(){
+  const nome=document.getElementById('ini-nome').value.trim()||'Inimigo';
+  const pv=+document.getElementById('ini-pv').value||10;
+  const qtd=Math.min(10,+document.getElementById('ini-qtd').value||1);
+  for(let i=0;i<qtd;i++){
+    const pos=posLivre(true);
+    tokens.push({
+      nome:qtd>1?nome+' '+(i+1):nome,avatar:iniAv,tipo:'inimigo',cor:'#f87171',
+      x:pos.x,y:pos.y,pv,pvMax:pv,
+      ca:+document.getElementById('ini-ca').value||12,
+      mov:+document.getElementById('ini-mov').value||6,
+      atq:'+3',dano:document.getElementById('ini-dano').value||'1d6',
+      init:0,conds:[],
+    });
+  }
+  fecharMod('mod-ini');updateUI();draw();
+}
+
+function addObjeto(){
+  const e=document.getElementById('obj-emoji').value||'🪨';
+  const pass=document.getElementById('obj-pass').value==='1';
+  const cs=CELL*escala;
+  const x=Math.floor((canvas.width/2-offX)/cs);
+  const y=Math.floor((canvas.height/2-offY)/cs);
+  objetos.push({emoji:e,x:Math.max(0,x),y:Math.max(0,y),pass,desc:document.getElementById('obj-desc').value});
+  fecharMod('mod-obj');draw();
+}
+
+// ══════════════════════════════════════════════════════════
+// MOUSE / TOUCH
+// ══════════════════════════════════════════════════════════
+function evPos(e){
+  const r=canvas.getBoundingClientRect();
+  const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+  const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+  const cs=CELL*escala;
+  const gx=Math.floor((cx-offX)/cs);
+  const gy=Math.floor((cy-offY)/cs);
+  return{px:cx,py:cy,gx,gy};
+}
+function tokenAt(gx,gy){return tokens.findIndex(t=>t.x===gx&&t.y===gy);}
+function objetoAt(gx,gy){return objetos.findIndex(o=>o.x===gx&&o.y===gy);}
+
+canvas.addEventListener('pointerdown',e=>{
+  const{px,py,gx,gy}=evPos(e);
+  const ti=tokenAt(gx,gy);
+  const oi=objetoAt(gx,gy);
+
+  if(tool==='sel'||tool==='mover'){
+    if(ti>=0){
+      sel=ti;
+      calcMovRange(tokens[ti]);
+      drag={idx:ti,startX:gx,startY:gy};
+      dragOrig={x:tokens[ti].x,y:tokens[ti].y};
+      canvas.setPointerCapture(e.pointerId);
+    } else if(oi>=0){
+      // Selecionar objeto
+      drag={objIdx:oi,startX:gx,startY:gy};
+      dragOrig={x:objetos[oi].x,y:objetos[oi].y};
+      canvas.setPointerCapture(e.pointerId);
+    } else {
+      sel=null;movRange=[];
+      // Pan
+      panStart={px,py};panOrig={offX,offY};
+    }
+  } else if(tool==='atq'){
+    if(sel!==null&&ti>=0&&ti!==sel){
+      resolverAtaque(sel,ti);
+    }
+  } else if(tool==='area'){
+    efeitos.push({x:gx,y:gy,raio:3,cor:'#c084fc',label:'Área'});
+  } else if(tool==='dist'){
+    if(!distOrigem){distOrigem={x:gx,y:gy};}
+    else{
+      const dx=Math.abs(gx-distOrigem.x),dy=Math.abs(gy-distOrigem.y);
+      const dist=dx+dy;
+      mostrarAcao('📏 Distância',`<div style="font-size:36px;font-weight:900;color:#f0d060">${dist} sq</div><div style="color:#888;margin-top:6px">${(dist*1.5).toFixed(1)} metros</div>`);
+      distOrigem=null;
+    }
+  }
+  draw();
+});
+
+canvas.addEventListener('pointermove',e=>{
+  const{px,py,gx,gy}=evPos(e);
+
+  // Pan
+  if(panStart&&!drag){
+    offX=panOrig.offX+(px-panStart.px);
+    offY=panOrig.offY+(py-panStart.py);
+    draw();return;
+  }
+
+  // Drag token
+  if(drag?.idx!==undefined){
+    const t=tokens[drag.idx];
+    const podeIr=movRange.some(([mx,my])=>mx===gx&&my===gy);
+    if(podeIr&&!tokens.some((o,i)=>i!==drag.idx&&o.x===gx&&o.y===gy)){
+      t.x=gx;t.y=gy;draw();
+    }
+  }
+  // Drag objeto
+  if(drag?.objIdx!==undefined){
+    objetos[drag.objIdx].x=Math.max(0,Math.min(gridW-1,gx));
+    objetos[drag.objIdx].y=Math.max(0,Math.min(gridH-1,gy));
+    draw();
+  }
+
+  // Status bar pos
+  document.getElementById('st-pos').textContent=`Pos: ${gx},${gy}`;
+
+  // Tooltip
+  const ti=tokenAt(gx,gy);
+  const tip=document.getElementById('tooltip');
+  if(ti>=0&&!drag){
+    const t=tokens[ti];
+    document.getElementById('tip-nome').textContent=`${t.avatar} ${t.nome}`;
+    document.getElementById('tip-pv').textContent=`❤️ PV: ${t.pv}/${t.pvMax}`;
+    document.getElementById('tip-ca').textContent=`🛡️ CA: ${t.ca} | Mov: ${t.mov}sq`;
+    document.getElementById('tip-tipo').textContent=`${t.tipo==='inimigo'?'Inimigo':'Aliado'} | Init: ${t.init||'?'}${t.conds?.length?' | '+t.conds.join(' '):''}`;
+    tip.style.display='block';
+    tip.style.left=(px+14)+'px';
+    tip.style.top=(py-8)+'px';
+  } else {
+    tip.style.display='none';
+  }
+},{passive:true});
+
+canvas.addEventListener('pointerup',e=>{
+  drag=null;panStart=null;
+});
+
+canvas.addEventListener('mouseleave',()=>{
+  document.getElementById('tooltip').style.display='none';
+});
+
+// Double click = editar token
+canvas.addEventListener('dblclick',e=>{
+  const{gx,gy}=evPos(e);
+  const ti=tokenAt(gx,gy);
+  if(ti>=0) abrirEdit(ti);
+  const oi=objetoAt(gx,gy);
+  if(oi>=0&&ti<0){
+    if(confirm(`Remover ${objetos[oi].emoji}?`)){objetos.splice(oi,1);draw();}
+  }
+});
+
+// Pinch zoom
+let lastDist=0;
+canvas.addEventListener('touchstart',e=>{if(e.touches.length===2)lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);},{passive:true});
+canvas.addEventListener('touchmove',e=>{
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    if(lastDist>0)zoom(d/lastDist);
+    lastDist=d;
+  }
+},{passive:true});
+
+// Scroll to zoom
+canvas.addEventListener('wheel',e=>{
+  e.preventDefault();
+  zoom(e.deltaY<0?1.1:0.9);
+},{passive:false});
+
+// ══════════════════════════════════════════════════════════
+// MOV RANGE
+// ══════════════════════════════════════════════════════════
+function calcMovRange(t){
+  movRange=[];
+  const mov=t.mov||6;
+  for(let dy=-mov;dy<=mov;dy++){
+    for(let dx=-mov;dx<=mov;dx++){
+      if(Math.abs(dx)+Math.abs(dy)>mov)continue;
+      const nx=t.x+dx,ny=t.y+dy;
+      if(nx<0||ny<0||nx>=Math.max(gridW,50)||ny>=Math.max(gridH,30))continue;
+      if(grade[ny]?.[nx]?.pass===false)continue;
+      if(objetos.some(o=>!o.pass&&o.x===nx&&o.y===ny))continue;
+      if(tokens.some((o,i)=>i!==sel&&o.x===nx&&o.y===ny))continue;
+      movRange.push([nx,ny]);
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// COMBATE
+// ══════════════════════════════════════════════════════════
+function resolverAtaque(atcIdx,alvIdx){
+  const atc=tokens[atcIdx],alv=tokens[alvIdx];
+  if(!atc||!alv)return;
+  const roll=Math.floor(Math.random()*20)+1;
+  const bonAtq=parseInt(atc.atq||'+0')||0;
+  const total=roll+bonAtq;
+  const acerta=roll===20||total>=alv.ca;
+  const crit=roll===20,fumble=roll===1;
+  let dano=0;
+  if(acerta&&!fumble){
+    dano=rolarExpr(atc.dano||'1d6');
+    if(crit)dano=dano*2;
+    alv.pv=Math.max(0,alv.pv-dano);
+    if(alv.pv===0&&!alv.conds?.includes('💀'))alv.conds=[...(alv.conds||[]),'💀'];
+  }
+  const cor=crit?'#f0d060':fumble?'#f87171':acerta?'#4ade80':'#888';
+  const titulo=crit?'💥 CRÍTICO NATURAL!':fumble?'💀 FUMBLE!':acerta?'✅ Acertou!':'❌ Errou!';
+  mostrarAcao(`⚔️ ${atc.nome} → ${alv.nome}`,`
+    <div style="margin-bottom:8px;font-size:12px;color:#888">Rolagem de Ataque vs CA ${alv.ca}</div>
+    <div style="font-size:52px;font-weight:900;color:${cor};line-height:1;margin:10px 0">${roll}</div>
+    ${bonAtq!==0?`<div style="font-size:13px;color:#aaa;margin-bottom:8px">Total: ${roll} ${atc.atq||'+0'} = ${total}</div>`:''}
+    <div style="font-size:20px;font-weight:700;color:${cor};margin-bottom:12px">${titulo}</div>
+    ${acerta&&!fumble?`<div style="font-size:32px;font-weight:900;color:#f87171;margin-bottom:6px">-${dano} PV${crit?' (Crítico x2)':''}</div><div style="font-size:13px;color:#888">${alv.nome}: ${alv.pv}/${alv.pvMax} PV restantes</div>`:''}
+    ${alv.pv===0?`<div style="font-size:16px;color:#f87171;margin-top:10px;font-weight:700">💀 ${alv.nome} foi derrubado!</div>`:''}
+  `);
+  updateUI();draw();
+}
+
+function rolarExpr(expr){
+  if(!expr)return 1;
+  const m=expr.match(/(\d*)d(\d+)([+-]\d+)?/i);
+  if(!m)return parseInt(expr)||1;
+  const n=parseInt(m[1])||1,l=parseInt(m[2]);
+  let tot=parseInt(m[3]||0);
+  for(let i=0;i<n;i++)tot+=Math.floor(Math.random()*l)+1;
+  return Math.max(1,tot);
+}
+
+// ══════════════════════════════════════════════════════════
+// UI ESQUERDA
+// ══════════════════════════════════════════════════════════
+function updateUI(){
+  document.getElementById('st-rodada').textContent='Rodada: '+rodada;
+  const ativo=ordemInit.length>0?tokens[ordemInit[turnoIdx%ordemInit.length]?.i]:null;
+  document.getElementById('st-turno').textContent=ativo?`Vez de: ${ativo.avatar} ${ativo.nome}`:'Aguardando iniciativa...';
+
+  if(leftTab==='init') renderInit();
+  else if(leftTab==='fichas') renderFichas();
+  else renderDados();
+}
+
+function renderInit(){
+  const lc=document.getElementById('left-content');
+  if(tokens.length===0){
+    lc.innerHTML='<div style="color:#666;font-size:12px;text-align:center;padding:20px">Adicione PJs e Inimigos para ver a iniciativa</div>';
+    return;
+  }
+  const lista=ordemInit.length>0?ordemInit.map(o=>({...o,t:tokens[o.i]})).filter(o=>o.t):
+    tokens.map((t,i)=>({i,roll:t.init||0,nome:t.nome,t}));
+
+  lc.innerHTML=lista.map((o,oi)=>{
+    const t=o.t;if(!t)return'';
+    const isAtivo=oi===(turnoIdx%(ordemInit.length||1))&&ordemInit.length>0;
+    const pvPct=Math.max(0,t.pv/t.pvMax);
+    const pvCor=pvPct>0.5?'#4ade80':pvPct>0.25?'#f59e0b':'#f87171';
+    return `<div class="ficha-card${isAtivo?' ativo':''}" onclick="selecionarToken(${o.i})">
+      <div class="fc-top">
+        <div class="init-badge" style="background:${isAtivo?'#4a3a00':'#222'};border-color:${isAtivo?'#f0d060':'#444'};color:${isAtivo?'#f0d060':'#888'}">${o.roll||'?'}</div>
+        <div class="fc-av">${t.avatar}</div>
+        <div class="fc-info">
+          <div class="fc-nome">${t.nome}</div>
+          <div class="fc-sub" style="color:${t.tipo==='inimigo'?'#f08080':'#80c0f0'}">${t.tipo==='inimigo'?'Inimigo':'Aliado'} • CA ${t.ca}</div>
+        </div>
+      </div>
+      <div class="fc-pv"><span style="color:${pvCor}">❤️ ${t.pv}/${t.pvMax}</span></div>
+      <div class="fc-pv-bar"><div class="fc-pv-fill" style="width:${pvPct*100}%;background:${pvCor}"></div></div>
+      <div class="fc-btns" style="margin-top:5px">
+        <button class="fc-btn" style="background:#3a0a0a;border-color:#b02a2a;color:#f08080" onclick="event.stopPropagation();ajPV(${o.i},-5)">-5</button>
+        <button class="fc-btn" style="background:#3a0a0a;border-color:#b02a2a;color:#f08080" onclick="event.stopPropagation();ajPV(${o.i},-1)">-1</button>
+        <button class="fc-btn" style="background:#0a3a0a;border-color:#2ab02a;color:#80f080" onclick="event.stopPropagation();ajPV(${o.i},+1)">+1</button>
+        <button class="fc-btn" style="background:#0a3a0a;border-color:#2ab02a;color:#80f080" onclick="event.stopPropagation();ajPV(${o.i},+5)">+5</button>
+        <button class="fc-btn" style="background:#2a1a00;border-color:#806000;color:#f0d060;flex:none;padding:0 6px" onclick="event.stopPropagation();abrirEdit(${o.i})">✏️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderFichas(){
+  const lc=document.getElementById('left-content');
+  lc.innerHTML=`<div class="sec-h">Todos os Tokens (${tokens.length})</div>`+
+  tokens.map((t,i)=>{
+    const pvPct=Math.max(0,t.pv/t.pvMax);
+    const pvCor=pvPct>0.5?'#4ade80':pvPct>0.25?'#f59e0b':'#f87171';
+    return `<div class="ficha-card${sel===i?' sel':''}" onclick="selecionarToken(${i})">
+      <div class="fc-top">
+        <div class="fc-av">${t.avatar}</div>
+        <div class="fc-info">
+          <div class="fc-nome">${t.nome}</div>
+          <div class="fc-sub" style="color:${t.tipo==='inimigo'?'#f08080':'#80c0f0'}">${t.tipo==='inimigo'?'💀':'👤'} ${t.tipo} • Mov:${t.mov}sq</div>
+        </div>
+        <button onclick="event.stopPropagation();abrirEdit(${i})" style="background:transparent;border:none;color:#888;font-size:13px">✏️</button>
+      </div>
+      <div class="fc-pv"><span style="color:${pvCor}">❤️ ${t.pv}/${t.pvMax} PV</span> <span style="color:#888">| 🛡️CA ${t.ca}</span></div>
+      <div class="fc-pv-bar"><div class="fc-pv-fill" style="width:${pvPct*100}%;background:${pvCor}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderDados(){
+  const lc=document.getElementById('left-content');
+  lc.innerHTML=`
+    <div class="sec-h">Dados Rápidos</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:10px">
+      ${[4,6,8,10,12,20,100].map(d=>`<button onclick="rolarDadoQuick(${d})" style="padding:10px 6px;background:#1a3a1a;border:1px solid #2ab02a;border-radius:5px;color:#80f080;font-size:13px;font-weight:700">D${d}</button>`).join('')}
+      <button onclick="rolar2d6Quick()" style="padding:10px 6px;background:#1a3a1a;border:1px solid #2ab02a;border-radius:5px;color:#80f080;font-size:12px;font-weight:700">2D6</button>
+    </div>
+    <div class="sec-h">Rolagem Personalizada</div>
+    <input class="minp" id="dado-custom" placeholder="Ex: 2d6+3" style="margin-bottom:5px">
+    <button onclick="rolarCustom()" style="width:100%;padding:8px;background:#1a4a1a;border:1px solid #2ab02a;border-radius:5px;color:#80f080;font-size:12px;font-weight:700">🎲 Rolar</button>
+    <div class="sec-h" style="margin-top:10px">Histórico</div>
+    <div id="dados-hist" style="font-size:11px;color:#888;max-height:200px;overflow-y:auto"></div>
+  `;
+}
+
+let dadosHist=[];
+function rolarDadoQuick(l){
+  const r=Math.floor(Math.random()*l)+1;
+  addHist(`D${l}`,r,l);
+}
+function rolar2d6Quick(){
+  const a=Math.floor(Math.random()*6)+1,b=Math.floor(Math.random()*6)+1;
+  addHist('2D6',a+b,12,`[${a}+${b}]`);
+}
+function rolarCustom(){
+  const expr=document.getElementById('dado-custom')?.value||'1d20';
+  const r=rolarExpr(expr);
+  addHist(expr,r,20);
+}
+function addHist(expr,r,max,extra=''){
+  dadosHist.unshift({expr,r,max,extra,ts:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
+  if(dadosHist.length>20)dadosHist.pop();
+  const h=document.getElementById('dados-hist');
+  if(h)h.innerHTML=dadosHist.map(d=>{
+    const pct=d.r/d.max;
+    const cor=pct===1?'#f0d060':pct<=0.05?'#f87171':pct>0.8?'#4ade80':'#aaa';
+    return `<div style="padding:4px 0;border-bottom:1px solid #333;display:flex;justify-content:space-between">
+      <span style="color:#888">${d.ts} ${d.expr}${d.extra}</span>
+      <span style="font-weight:700;color:${cor}">${d.r}</span>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// EDIT TOKEN
+// ══════════════════════════════════════════════════════════
+function abrirEdit(idx){
+  editIdx=idx;const t=tokens[idx];
+  document.getElementById('edit-tit').textContent=`✏️ ${t.avatar} ${t.nome}`;
+  document.getElementById('ed-pv').value=t.pv;
+  document.getElementById('ed-pvm').value=t.pvMax;
+  document.getElementById('ed-conds').innerHTML=CONDICOES.map(c=>
+    `<button onclick="togCond('${c.e}')" class="tipo-btn${t.conds?.includes(c.e)?' on':''}" id="cond-${c.e.codePointAt(0)}">${c.e} ${c.n}</button>`
+  ).join('');
+  abrirMod('mod-edit');
+}
+function togCond(e){
+  const t=tokens[editIdx];if(!t)return;
+  t.conds=t.conds||[];
+  if(t.conds.includes(e))t.conds=t.conds.filter(c=>c!==e);
+  else t.conds.push(e);
+  const btn=document.getElementById('cond-'+e.codePointAt(0));
+  if(btn)btn.classList.toggle('on',t.conds.includes(e));
+  draw();
+}
+function salvarEdit(){
+  const t=tokens[editIdx];if(!t)return;
+  t.pv=Math.max(0,+document.getElementById('ed-pv').value||0);
+  t.pvMax=Math.max(1,+document.getElementById('ed-pvm').value||1);
+  fecharMod('mod-edit');updateUI();draw();
+}
+function removerToken(){
+  if(editIdx===null)return;
+  if(confirm(`Remover ${tokens[editIdx]?.nome}?`)){
+    tokens.splice(editIdx,1);
+    if(sel===editIdx)sel=null;
+    editIdx=null;
+    ordemInit=ordemInit.filter(o=>o.i!==editIdx).map(o=>({...o,i:o.i>editIdx?o.i-1:o.i}));
+    fecharMod('mod-edit');updateUI();draw();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function selecionarToken(idx){
+  sel=idx;
+  if(tokens[idx])calcMovRange(tokens[idx]);
+  updateUI();draw();
+}
+function ajPV(idx,d){
+  const t=tokens[idx];if(!t)return;
+  t.pv=Math.max(0,Math.min(t.pvMax,t.pv+d));
+  if(t.pv===0&&!t.conds?.includes('💀'))t.conds=[...(t.conds||[]),'💀'];
+  updateUI();draw();
+}
+function limparEfeitos(){efeitos=[];draw();}
+function salvar(){
+  localStorage.setItem('mesa_combate',JSON.stringify({tokens,objetos,rodada,cenAtual,gridW,gridH}));
+  alert('Salvo!');
+}
+function setTool(t){
+  tool=t;
+  ['sel','mover','atq','area','dist'].forEach(id=>{
+    document.getElementById('t-'+id)?.classList.toggle('on',id===t);
+  });
+  document.getElementById('st-tool').textContent='Ferramenta: '+{sel:'Selecionar',mover:'Mover',atq:'Atacar',area:'Área de Efeito',dist:'Medir Distância'}[t];
+  if(t!=='dist')distOrigem=null;
+}
+function setLeftTab(t){
+  leftTab=t;
+  ['init','fichas','dados'].forEach(id=>document.getElementById('lt-'+id)?.classList.toggle('on',id===t));
+  updateUI();
+}
+function mostrarAcao(tit,html){
+  document.getElementById('acao-tit').textContent=tit;
+  document.getElementById('acao-body').innerHTML=html;
+  abrirMod('mod-acao');
+}
+function abrirMod(id){document.getElementById(id).style.display='flex';}
+function fecharMod(id){document.getElementById(id).style.display='none';}
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+// ══════════════════════════════════════════════════════════
+// INIT MODAIS
+// ══════════════════════════════════════════════════════════
+function initModais(){
+  // PJ avatares
+  document.getElementById('pj-av-grid').innerHTML=AVS_PJ.map(av=>
+    `<button class="av-btn${av===pjAv?' on':''}" onclick="selPjAv('${av}')">${av}</button>`).join('');
+  // PJ cores
+  document.getElementById('pj-cor-grid').innerHTML=CORES.map(c=>
+    `<button class="cor-btn${c===pjCor?' on':''}" onclick="selPjCor('${c}')" style="background:${c}"></button>`).join('');
+  // INI avatares
+  document.getElementById('ini-av-grid').innerHTML=AVS_INI.map(av=>
+    `<button class="av-btn${av===iniAv?' on':''}" onclick="selIniAv('${av}')">${av}</button>`).join('');
+  // INI tipos
+  document.getElementById('ini-tipos').innerHTML=INIMIGOS.map(t=>
+    `<button class="tipo-btn" onclick="preencherIni('${t.n}','${t.av}',${t.pv},${t.ca},${t.mov},'${t.dano}')">${t.av} ${t.n}</button>`).join('');
+  // Objetos
+  document.getElementById('obj-tipos').innerHTML=OBJETOS_TIPOS.map(o=>
+    `<button class="tipo-btn" onclick="document.getElementById('obj-emoji').value='${o.e}'">${o.e} ${o.n}</button>`).join('');
+  // Cenários
+  document.getElementById('cen-tipos').innerHTML=Object.entries(CENARIOS).map(([k,v])=>
+    `<button class="tipo-btn${k===cenAtual?' on':''}" id="cbt-${k}" onclick="selCen('${k}')">${v.e} ${v.n}</button>`).join('');
+  // Range slider
+  document.getElementById('mp-dens').oninput=function(){document.getElementById('dens-val').textContent=this.value};
+}
+function selPjAv(av){pjAv=av;document.querySelectorAll('#pj-av-grid .av-btn').forEach(b=>b.classList.toggle('on',b.textContent===av));}
+function selPjCor(c){pjCor=c;document.querySelectorAll('.cor-btn').forEach(b=>b.classList.toggle('on',b.style.background===c));}
+function selIniAv(av){iniAv=av;document.querySelectorAll('#ini-av-grid .av-btn').forEach(b=>b.classList.toggle('on',b.textContent===av));}
+function selCen(k){
+  cenAtual=k;
+  document.querySelectorAll('[id^="cbt-"]').forEach(b=>b.classList.toggle('on',b.id==='cbt-'+k));
+}
+function preencherIni(n,av,pv,ca,mov,dano){
+  iniAv=av;
+  document.getElementById('ini-nome').value=n;
+  document.getElementById('ini-pv').value=pv;
+  document.getElementById('ini-ca').value=ca;
+  document.getElementById('ini-mov').value=mov;
+  document.getElementById('ini-dano').value=dano;
+  document.querySelectorAll('#ini-av-grid .av-btn').forEach(b=>b.classList.toggle('on',b.textContent===av));
+}
+
+// ══════════════════════════════════════════════════════════
+// START
+// ══════════════════════════════════════════════════════════
+// Carregar salvo
+try{
+  const s=localStorage.getItem('mesa_combate');
+  if(s){const d=JSON.parse(s);tokens=d.tokens||[];objetos=d.objetos||[];rodada=d.rodada||1;cenAtual=d.cenAtual||'floresta';gridW=d.gridW||25;gridH=d.gridH||18;}
+}catch(e){}
+
+initModais();
+resize();
+updateUI();
+
+// Gerar mapa inicial
+setTimeout(()=>{
+  gridW=25;gridH=18;
+  document.getElementById('mp-w').value=25;
+  document.getElementById('mp-h').value=18;
+  gerarCenario();
+},200);
+</script>
+</body>
+</html>
