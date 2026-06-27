@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -356,7 +355,128 @@ const mdS=v=>{const m=mdV(v);return(m>=0?'+':'')+m;};
 const pbV=n=>Math.ceil((n||1)/4)+1;
 const getRar=v=>RARS.find(x=>v>=x.r[0]&&v<=x.r[1])||RARS[0];
 const genCod=()=>['DRAGAO','GOBLIN','ELFO','ANAO','RUNA','CRIPTA'][Math.floor(Math.random()*6)]+'-'+Math.floor(10+Math.random()*90);
-const fichaBase=()=>({id:Date.now(),nome:'',jogador:'',raca:'Humano',classe:'Guerreiro',nivel:1,pv:10,pvMax:10,ca:10,xp:0,FOR:10,DES:10,CON:10,INT:10,SAB:10,CAR:10,pericias:{},equipamentos:'',magias:'',habilidades:'',background:'',tracos:'',notas:'',avatar:'⚔️'});
+const fichaBase=()=>({
+  id:Date.now(),avatar:'⚔️',
+  // Identidade
+  nome:'',jogador:'',raca:'Humano',classe:'Guerreiro',subclasse:'',antecedente:'',tendencia:'Neutro',nivel:1,xp:0,
+  // Atributos base
+  FOR:10,DES:10,CON:10,INT:10,SAB:10,CAR:10,
+  // Calculados automaticamente
+  get modFOR(){return Math.floor((this.FOR-10)/2)},
+  get modDES(){return Math.floor((this.DES-10)/2)},
+  get modCON(){return Math.floor((this.CON-10)/2)},
+  get modINT(){return Math.floor((this.INT-10)/2)},
+  get modSAB(){return Math.floor((this.SAB-10)/2)},
+  get modCAR(){return Math.floor((this.CAR-10)/2)},
+  // PV calculado pelo dado de vida da classe + CON
+  pv:10,pvMax:10,pvTemp:0,
+  // CA: 10 + modDES por padrão (armadura muda isso)
+  ca:10,iniciativa:0,deslocamento:9,
+  // Dados de vida
+  dadosVida:1,dadosVidaMax:1,
+  // Testes de resistência com proficiência
+  trSalvos:{FOR:false,DES:false,CON:false,INT:false,SAB:false,CAR:false},
+  // Perícias
+  pericias:{},
+  // Inspiração
+  inspiracao:false,
+  // Tendências
+  tracoPersonalidade:'',ideal:'',ligacao:'',defeito:'',
+  // Proficiências e idiomas
+  proficiencias:'',idiomas:'',
+  // Combate
+  ataques:[{nome:'',bonus:'',dano:''}],
+  // Itens e magias
+  equipamentos:'',cp:0,pp:0,po:0,pe:0,pp2:0,
+  // Magias
+  classeConjuracao:'',habilidadeConjuracao:'',cdTR:0,bonusAtaque:0,
+  magiasTruques:'',magias1:'',magias2:'',magias3:'',magias4:'',magias5:'',magias6:'',magias7:'',magias8:'',magias9:'',
+  espacosMagia:{1:{total:0,usado:0},2:{total:0,usado:0},3:{total:0,usado:0},4:{total:0,usado:0},5:{total:0,usado:0}},
+  // Aparência
+  idade:'',altura:'',peso:'',olhos:'',pele:'',cabelos:'',
+  aparencia:'',aliados:'',historiaPersonagem:'',tesouro:'',
+  // Misc
+  habilidades:'',background:'',notas:'',
+});
+
+
+// ════════════════════════════════════════════════════════
+// CÁLCULOS AUTOMÁTICOS D&D 5e
+// ════════════════════════════════════════════════════════
+const XP_NIVEL=[0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
+const PV_CLASSE={Bárbaro:12,Bardo:8,Clérigo:8,Druida:8,Guerreiro:10,Ladino:8,Mago:6,Monge:8,Paladino:10,Patrulheiro:10,Bruxo:8,Feiticeiro:6};
+const ATRIB_CONJURACAO={Clérigo:'SAB',Druida:'SAB',Paladino:'CAR',Patrulheiro:'SAB',Bruxo:'CAR',Feiticeiro:'CAR',Bardo:'CAR',Mago:'INT'};
+const TR_PROFICIENCIAS={Guerreiro:['FOR','CON'],Mago:['INT','SAB'],Clérigo:['SAB','CAR'],Druida:['INT','SAB'],Ladino:['DES','INT'],Monge:['FOR','DES'],Paladino:['SAB','CAR'],Patrulheiro:['FOR','DES'],Bárbaro:['FOR','CON'],Bardo:['DES','CAR'],Bruxo:['SAB','CAR'],Feiticeiro:['CON','CAR']};
+
+function calcNivelPorXP(xp){
+  for(let i=XP_NIVEL.length-1;i>=0;i--)if(xp>=XP_NIVEL[i])return i+1;
+  return 1;
+}
+function calcXPProximoNivel(nivel){return XP_NIVEL[Math.min(nivel,19)]||355000;}
+function calcPVMax(f){
+  const dado=PV_CLASSE[f.classe]||8;
+  const modCON=Math.floor(((f.CON||10)-10)/2);
+  const nivel=f.nivel||1;
+  // Nível 1: máximo do dado + CON. Níveis seguintes: média+1 + CON
+  const pvBase=dado+modCON; // nível 1
+  const pvExtra=Math.floor((dado/2)+1+modCON)*(nivel-1); // nívs 2+
+  return Math.max(1, pvBase+pvExtra);
+}
+function calcCA(f){
+  // Sem armadura: 10 + modDES
+  // Com armadura leve: CA armadura + modDES
+  // Com armadura média: CA armadura + modDES (max 2)
+  // Com armadura pesada: CA armadura (sem DES)
+  const modDES=Math.floor(((f.DES||10)-10)/2);
+  const modCON=Math.floor(((f.CON||10)-10)/2);
+  const modSAB=Math.floor(((f.SAB||10)-10)/2);
+  const equip=(f.equipamentos||'').toLowerCase();
+  // Verificar tipo de armadura equipada
+  if(equip.includes('placas'))return 18;
+  if(equip.includes('cota de malha'))return 16;
+  if(equip.includes('brunea'))return 14+Math.min(modDES,2);
+  if(equip.includes('couro batido'))return 13+Math.min(modDES,2);
+  if(equip.includes('camisão de malha'))return 13+Math.min(modDES,2);
+  if(equip.includes('couro'))return 11+modDES;
+  if(equip.includes('acolchoado'))return 11+modDES;
+  // Sem armadura por classe
+  if(f.classe==='Bárbaro')return 10+modDES+modCON;
+  if(f.classe==='Monge')return 10+modDES+modSAB;
+  return 10+modDES; // padrão
+}
+function calcIniciativa(f){return Math.floor(((f.DES||10)-10)/2);}
+function calcBonusProf(nivel){const n=nivel||1;if(n<=4)return 2;if(n<=8)return 3;if(n<=12)return 4;if(n<=16)return 5;return 6;}
+function calcModAtrib(v){return Math.floor(((v||10)-10)/2);}
+function calcCDMagia(f){
+  const atrib=ATRIB_CONJURACAO[f.classe];
+  if(!atrib)return 0;
+  return 8+calcBonusProf(f.nivel)+calcModAtrib(f[atrib]);
+}
+function calcBonusAtaqueMagia(f){
+  const atrib=ATRIB_CONJURACAO[f.classe];
+  if(!atrib)return 0;
+  return calcBonusProf(f.nivel)+calcModAtrib(f[atrib]);
+}
+function autoCalcFicha(f){
+  // Calcular nível por XP
+  const nivelXP=calcNivelPorXP(f.xp||0);
+  if(nivelXP>f.nivel)f.nivel=nivelXP;
+  // PV Máx automático
+  const pvMaxCalc=calcPVMax(f);
+  if(!f._pvManual)f.pvMax=pvMaxCalc;
+  // CA automático
+  f.ca=calcCA(f);
+  // Iniciativa automática
+  f.iniciativa=calcIniciativa(f);
+  // Testes de resistência com proficiência da classe
+  const trProf=TR_PROFICIENCIAS[f.classe]||[];
+  if(!f.trSalvos)f.trSalvos={};
+  trProf.forEach(a=>{if(f.trSalvos[a]===undefined)f.trSalvos[a]=true;});
+  // CD e bônus de magia
+  f.cdTR=calcCDMagia(f);
+  f.bonusAtaqueMagia=calcBonusAtaqueMagia(f);
+  return f;
+}
 
 function detAcao(t){
   const x=t.toLowerCase();
@@ -781,30 +901,187 @@ function salvarF(){
 function cancelarF(){S.editFicha=null;aba('pj');}
 
 function renderFichaEd(){
-  const f=S.editFicha;const pb=pbV(f.nivel);
-  const tabs={basico:'📋 Básico',atribs:'💪 Atribs',pericias:'🎯 Perícias',equip:'⚔️ Equip',notas:'📝 Notas'};
+  const f=S.editFicha;
+  // Calcular automaticamente antes de renderizar
+  const nivel=calcNivelPorXP(f.xp||0);
+  if(nivel>f.nivel)f.nivel=nivel;
+  const pb=calcBonusProf(f.nivel);
+  const caAuto=calcCA(f);
+  if(!f._caManual)f.ca=caAuto;
+  f.iniciativa=calcIniciativa(f);
+  const pvMaxAuto=calcPVMax(f);
+  if(!f._pvManual)f.pvMax=pvMaxAuto;
+  f.cdTR=calcCDMagia(f);
+  f.bonusAtaqueMagia=calcBonusAtaqueMagia(f);
+  const xpProx=calcXPProximoNivel(f.nivel);
+
+  const tabs={basico:'📋 Básico',atribs:'💪 Atribs',pericias:'🎯 Perícias',equip:'⚔️ Equip',magia:'✨ Magias',bio:'🧬 Bio'};
   const tabsH=Object.entries(tabs).map(([k,v])=>`<button class="ftab${S.fichaTab===k?' on':''}" onclick="setFTab('${k}')">${v}</button>`).join('');
 
   let body='';
   if(S.fichaTab==='basico'){
-    const avtsH=AVTS.map(av=>`<button onclick="setFF('avatar','${av}');this.closest('.main').querySelectorAll('.av-btn').forEach(b=>b.style.borderColor='rgba(139,92,246,.2)');this.style.borderColor='#d4af37'" class="av-btn" style="font-size:22px;padding:5px;background:${f.avatar===av?'rgba(212,175,55,.2)':'rgba(0,0,0,.3)'};border:2px solid ${f.avatar===av?'#d4af37':'rgba(139,92,246,.2)'};border-radius:7px">${av}</button>`).join('');
+    const avtsH=AVTS.map(av=>`<button onclick="setFF('avatar','${av}');this.closest('.main').querySelectorAll('.av-btn').forEach(b=>b.style.borderColor='rgba(139,92,246,.2)');this.style.borderColor='#d4af37'" class="av-btn" style="font-size:22px;padding:5px;background:transparent;border:2px solid rgba(139,92,246,.2);border-radius:8px;cursor:pointer">${av}</button>`).join('');
     const racasH=RACAS.map(r=>`<option${r===f.raca?' selected':''}>${r}</option>`).join('');
     const classesH=CLASSES.map(c=>`<option${c===f.classe?' selected':''}>${c}</option>`).join('');
-    body=`<label class="lbl">Avatar</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">${avtsH}</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div><label class="lbl">Nome *</label><input class="inp" value="${f.nome}" onchange="setFF('nome',this.value)" placeholder="Nome"></div>
-      <div><label class="lbl">Jogador</label><input class="inp" value="${f.jogador||''}" onchange="setFF('jogador',this.value)" placeholder="Seu nome"></div>
-      <div><label class="lbl">Raça</label><select class="inp" onchange="setFF('raca',this.value)">${racasH}</select></div>
-      <div><label class="lbl">Classe</label><select class="inp" onchange="setFF('classe',this.value)">${classesH}</select></div>
-      <div><label class="lbl">Nível</label><input class="inp" type="number" value="${f.nivel}" min="1" max="20" onchange="setFF('nivel',+this.value)"></div>
-      <div><label class="lbl">CA</label><input class="inp" type="number" value="${f.ca}" onchange="setFF('ca',+this.value)"></div>
-      <div><label class="lbl">PV / PV Máx</label><div style="display:flex;gap:6px"><input class="inp" type="number" value="${f.pv}" onchange="setFF('pv',+this.value)" placeholder="Atual"><input class="inp" type="number" value="${f.pvMax}" onchange="setFF('pvMax',+this.value)" placeholder="Máx"></div></div>
-      <div><label class="lbl">XP</label><input class="inp" type="number" value="${f.xp||0}" onchange="setFF('xp',+this.value)"></div>
+    const xpPct=Math.min(100,((f.xp||0)/xpProx)*100).toFixed(0);
+    body=`
+    <!-- HEADER DA FICHA -->
+    <div style="background:rgba(0,0,0,.3);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:36px">${f.avatar||'⚔️'}</div>
+        <div style="flex:1">
+          <input class="inp" value="${f.nome}" onchange="setFF('nome',this.value)" placeholder="Nome do Personagem *" style="font-size:15px;font-weight:700;margin-bottom:4px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <select class="inp" style="flex:1;min-width:100px" onchange="setFF('classe',this.value);aba('pj')">${classesH}</select>
+            <select class="inp" style="flex:1;min-width:100px" onchange="setFF('raca',this.value)">${racasH}</select>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <input class="inp" style="flex:1;min-width:80px" value="${f.jogador||''}" onchange="setFF('jogador',this.value)" placeholder="Jogador">
+        <input class="inp" style="flex:1;min-width:100px" value="${f.antecedente||''}" onchange="setFF('antecedente',this.value)" placeholder="Antecedente">
+        <select class="inp" style="flex:1;min-width:100px" onchange="setFF('tendencia',this.value)">
+          ${['Leal e Bom','Neutro e Bom','Caótico e Bom','Leal e Neutro','Neutro','Caótico e Neutro','Leal e Mau','Neutro e Mau','Caótico e Mau'].map(t=>`<option${t===f.tendencia?' selected':''}>${t}</option>`).join('')}
+        </select>
+      </div>
     </div>
-    <label class="lbl">Background</label><textarea class="ta" rows="2" onchange="setFF('background',this.value)">${f.background||''}</textarea>`;
+
+    <!-- NÍVEL E XP (CALCULADO AUTOMÁTICO) -->
+    <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.3);border-radius:10px;padding:10px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <span style="font-size:10px;color:#8b5cf6;letter-spacing:2px">NÍVEL</span>
+          <div style="font-size:28px;font-weight:900;color:#d4af37;line-height:1">${f.nivel}</div>
+          <div style="font-size:10px;color:#b8b0a4">Bônus de Prof: <strong style="color:#f0d060">+${pb}</strong></div>
+        </div>
+        <div style="text-align:center">
+          <span style="font-size:10px;color:#8b5cf6;letter-spacing:2px">XP</span>
+          <input class="inp" type="number" value="${f.xp||0}" onchange="setFF('xp',+this.value);aba('pj')" style="width:90px;text-align:center;font-size:16px;font-weight:700">
+          <div style="font-size:10px;color:#b8b0a4">Próximo nível: ${xpProx.toLocaleString()}</div>
+        </div>
+        <div style="text-align:right">
+          <span style="font-size:10px;color:#8b5cf6;letter-spacing:2px">CLASSE</span>
+          <div style="font-size:14px;font-weight:700;color:#e8e0d4">${f.classe}</div>
+          <div style="font-size:10px;color:#b8b0a4">D${PV_CLASSE[f.classe]||8} Dado de vida</div>
+        </div>
+      </div>
+      <div style="height:6px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${xpPct}%;background:linear-gradient(90deg,#8b5cf6,#d4af37);border-radius:3px;transition:width .5s"></div>
+      </div>
+      <div style="font-size:10px;color:#888;margin-top:3px;text-align:center">${f.xp||0} / ${xpProx.toLocaleString()} XP (${xpPct}%)</div>
+    </div>
+
+    <!-- PV, CA, INICIATIVA, DESLOCAMENTO -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:rgba(204,51,51,.12);border:1px solid rgba(204,51,51,.3);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:#f87171;letter-spacing:1px;margin-bottom:2px">PV MÁXIMO</div>
+        <div style="font-size:18px;font-weight:900;color:#f87171">${f.pvMax}</div>
+        <div style="font-size:9px;color:#888">Auto: ${pvMaxAuto}</div>
+      </div>
+      <div style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:#60a5fa;letter-spacing:1px;margin-bottom:2px">CA</div>
+        <div style="font-size:18px;font-weight:900;color:#60a5fa">${f.ca}</div>
+        <div style="font-size:9px;color:#888">Auto: ${caAuto}</div>
+      </div>
+      <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:#4ade80;letter-spacing:1px;margin-bottom:2px">INICIATIVA</div>
+        <div style="font-size:18px;font-weight:900;color:#4ade80">${f.iniciativa>=0?'+':''}${f.iniciativa}</div>
+        <div style="font-size:9px;color:#888">mod DES</div>
+      </div>
+      <div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:8px;text-align:center">
+        <div style="font-size:9px;color:#fbbf24;letter-spacing:1px;margin-bottom:2px">DESLOCAMENTO</div>
+        <div style="font-size:18px;font-weight:900;color:#fbbf24">${f.deslocamento||9}m</div>
+        <div style="font-size:9px;color:#888">por turno</div>
+      </div>
+    </div>
+
+    <!-- PV ATUAL E TEMPORÁRIO -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <label class="lbl">❤️ PV Atuais</label>
+        <input class="inp" type="number" value="${f.pv}" onchange="setFF('pv',Math.min(+this.value,f.pvMax));setFF('_pvManual',true)" style="font-size:18px;font-weight:700;color:#f87171;text-align:center">
+      </div>
+      <div>
+        <label class="lbl">💙 PV Temporários</label>
+        <input class="inp" type="number" value="${f.pvTemp||0}" onchange="setFF('pvTemp',+this.value)" style="font-size:18px;font-weight:700;color:#60a5fa;text-align:center">
+      </div>
+    </div>
+
+    <!-- DADOS DE VIDA E TESTES CONTRA A MORTE -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px">
+        <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:6px">DADOS DE VIDA</div>
+        <div style="font-size:14px;color:#e8e0d4;text-align:center">${f.dadosVida||f.nivel}d${PV_CLASSE[f.classe]||8}</div>
+        <div style="font-size:10px;color:#888;text-align:center">Restantes: ${f.dadosVida||f.nivel}</div>
+      </div>
+      <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px">
+        <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:4px">TESTES CONTRA A MORTE</div>
+        <div style="font-size:10px;color:#4ade80;margin-bottom:3px">SUCESSO: ○ ○ ○</div>
+        <div style="font-size:10px;color:#f87171">FRACASSO: ○ ○ ○</div>
+      </div>
+    </div>
+
+    <!-- AVATAR -->
+    <label class="lbl">Avatar</label>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px">${avtsH}</div>
+
+    <!-- BACKGROUND -->
+    <label class="lbl">História / Background</label>
+    <textarea class="ta" rows="2" onchange="setFF('background',this.value)">${f.background||''}</textarea>
+    `;
   }else if(S.fichaTab==='atribs'){
-    const attrsH=['FOR','DES','CON','INT','SAB','CAR'].map(a=>`<div class="attr-c"><div style="font-size:10px;color:#8b5cf6;letter-spacing:2px;margin-bottom:6px;font-weight:700">${a}</div><input class="attr-val" type="number" value="${f[a]||10}" min="1" max="30" onchange="setFF('${a}',Math.max(1,Math.min(30,+this.value)));this.nextElementSibling.textContent=(+this.value-10>>1)>=0?'+'+(+this.value-10>>1):''+(+this.value-10>>1)" style="width:100%;font-size:24px;font-weight:900;text-align:center;background:transparent;border:none;color:#e8e0d4;outline:none;margin-bottom:2px"><div style="font-size:17px;color:#d4af37;font-weight:700">${mdS(f[a])}</div></div>`).join('');
-    body=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">${attrsH}</div><div style="padding:12px;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.2);border-radius:9px;font-size:12px;color:#b8b0a4"><strong style="color:#8b5cf6">Bônus de Proficiência: +${pb}</strong> (nível ${f.nivel})</div>`;
+    const ATRIBS=['FOR','DES','CON','INT','SAB','CAR'];
+    const ATRIB_NAMES={FOR:'Força',DES:'Destreza',CON:'Constituição',INT:'Inteligência',SAB:'Sabedoria',CAR:'Carisma'};
+    const TR_PROF=TR_PROFICIENCIAS[f.classe]||[];
+    const attrsH=ATRIBS.map(a=>{
+      const val=f[a]||10;
+      const mod=calcModAtrib(val);
+      const modStr=(mod>=0?'+':'')+mod;
+      const trProf=f.trSalvos?.[a]||TR_PROF.includes(a);
+      const trMod=mod+(trProf?pb:0);
+      const trStr=(trMod>=0?'+':'')+trMod;
+      return `<div style="background:rgba(0,0,0,.3);border:2px solid rgba(139,92,246,.3);border-radius:10px;padding:10px;text-align:center">
+        <div style="font-size:9px;color:#8b5cf6;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">${ATRIB_NAMES[a]}</div>
+        <input type="number" min="1" max="30" value="${val}" onchange="setFF('${a}',+this.value);aba('pj')"
+          style="width:60px;height:40px;background:transparent;border:none;color:#f0d060;font-size:24px;font-weight:900;text-align:center;outline:none">
+        <div style="font-size:18px;font-weight:700;color:#e8e0d4;background:rgba(0,0,0,.4);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin:4px auto">${modStr}</div>
+        <div style="font-size:9px;color:#888;margin-top:4px">Mod: <strong style="color:#b8b0a4">${modStr}</strong></div>
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(139,92,246,.2)">
+          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">TR: ${trStr}</div>
+          <label style="font-size:10px;color:#b8b0a4;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:3px">
+            <input type="checkbox" ${trProf?'checked':''} onchange="const ts={...(S.editFicha.trSalvos||{})};ts['${a}']=this.checked;setFF('trSalvos',ts);aba('pj')">
+            Prof.
+          </label>
+        </div>
+      </div>`;
+    }).join('');
+    body=`
+    <div style="font-size:11px;color:#b8b0a4;margin-bottom:12px">Bônus de Proficiência: <strong style="color:#d4af37">+${pb}</strong> (Nível ${f.nivel})</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">${attrsH}</div>
+    
+    <!-- TESTES DE RESISTÊNCIA RESUMO -->
+    <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="font-size:10px;color:#8b5cf6;letter-spacing:2px;margin-bottom:8px">TESTES DE RESISTÊNCIA</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        ${ATRIBS.map(a=>{
+          const trProf=f.trSalvos?.[a]||TR_PROF.includes(a);
+          const mod=calcModAtrib(f[a]||10);
+          const total=mod+(trProf?pb:0);
+          const totalStr=(total>=0?'+':'')+total;
+          return `<div style="display:flex;align-items:center;gap:6px;padding:4px">
+            <span style="color:${trProf?'#4ade80':'#666'};font-size:12px">${trProf?'●':'○'}</span>
+            <span style="font-size:12px;color:#e8e0d4">${totalStr} ${ATRIB_NAMES[a]}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- PERCEPÇÃO PASSIVA -->
+    <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:10px;text-align:center">
+      <div style="font-size:9px;color:#d4af37;letter-spacing:2px">PERCEPÇÃO PASSIVA (SABEDORIA)</div>
+      <div style="font-size:24px;font-weight:900;color:#d4af37">${10+calcModAtrib(f.SAB||10)+(f.pericias?.Percepção?pb:0)}</div>
+    </div>
+    `;
   }else if(S.fichaTab==='pericias'){
     const pH=PERICIAS.map(p=>{const pr=f.pericias?.[p.n];const tot=mdV(f[p.a]||10)+(pr?pb:0);return`<div onclick="togPericia('${p.n}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${pr?'rgba(139,92,246,.12)':'rgba(0,0,0,.25)'};border:1px solid ${pr?'rgba(139,92,246,.4)':'rgba(139,92,246,.1)'};border-radius:7px;cursor:pointer"><span style="width:13px;height:13px;border-radius:3px;background:${pr?'#8b5cf6':'transparent'};border:2px solid ${pr?'#8b5cf6':'rgba(139,92,246,.4)'};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">${pr?'✓':''}</span><span style="flex:1;font-size:12px;color:${pr?'#e8e0d4':'#b8b0a4'}">${p.n}</span><span style="font-family:monospace;font-size:12px;color:${tot>=0?'#4ade80':'#ff6b6b'};font-weight:700">${tot>=0?'+':''}${tot}</span></div>`;}).join('');
     body=`<div style="color:#b8b0a4;font-size:12px;margin-bottom:14px">Marque as perícias com proficiência (+${pb}):</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">${pH}</div>`;
@@ -812,10 +1089,67 @@ function renderFichaEd(){
     body=`<label class="lbl">Equipamentos</label><textarea class="ta" rows="3" onchange="setFF('equipamentos',this.value)">${f.equipamentos||''}</textarea>
     <label class="lbl" style="margin-top:10px">Magias</label><textarea class="ta" rows="3" onchange="setFF('magias',this.value)">${f.magias||''}</textarea>
     <label class="lbl" style="margin-top:10px">Habilidades</label><textarea class="ta" rows="2" onchange="setFF('habilidades',this.value)">${f.habilidades||''}</textarea>`;
+  }else if(S.fichaTab==='magia'){
+    const classeConj=ATRIB_CONJURACAO[f.classe]||'';
+    body=`
+    <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:12px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
+        <div>
+          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">CLASSE CONJURADORA</div>
+          <div style="font-size:14px;font-weight:700;color:#e8e0d4">${f.classe||'—'}</div>
+          <div style="font-size:10px;color:#888">${classeConj?'Hab: '+classeConj:'Não conjurador'}</div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">CD DO TR</div>
+          <div style="font-size:24px;font-weight:900;color:#c084fc">${f.cdTR||'—'}</div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">BÔNUS DE ATAQUE</div>
+          <div style="font-size:24px;font-weight:900;color:#c084fc">${f.bonusAtaqueMagia>=0?'+':''}${f.bonusAtaqueMagia||'—'}</div>
+        </div>
+      </div>
+    </div>
+    <label class="lbl">✨ Truques (Nível 0)</label>
+    <textarea class="ta" rows="2" onchange="setFF('magiasTruques',this.value)">${f.magiasTruques||''}</textarea>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      ${[1,2,3,4,5,6,7,8,9].map(n=>`
+      <div>
+        <label class="lbl">Nível ${n}</label>
+        <textarea class="ta" rows="2" onchange="setFF('magias${n}',this.value)" placeholder="Magias de nível ${n}...">${f['magias'+n]||''}</textarea>
+      </div>`).join('')}
+    </div>
+    `;
+  }else if(S.fichaTab==='bio'){
+    body=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div><label class="lbl">Idade</label><input class="inp" value="${f.idade||''}" onchange="setFF('idade',this.value)"></div>
+      <div><label class="lbl">Altura</label><input class="inp" value="${f.altura||''}" onchange="setFF('altura',this.value)"></div>
+      <div><label class="lbl">Peso</label><input class="inp" value="${f.peso||''}" onchange="setFF('peso',this.value)"></div>
+      <div><label class="lbl">Olhos</label><input class="inp" value="${f.olhos||''}" onchange="setFF('olhos',this.value)"></div>
+      <div><label class="lbl">Pele</label><input class="inp" value="${f.pele||''}" onchange="setFF('pele',this.value)"></div>
+      <div><label class="lbl">Cabelos</label><input class="inp" value="${f.cabelos||''}" onchange="setFF('cabelos',this.value)"></div>
+    </div>
+    <label class="lbl">Traços de Personalidade</label>
+    <textarea class="ta" rows="2" onchange="setFF('tracoPersonalidade',this.value)">${f.tracoPersonalidade||''}</textarea>
+    <label class="lbl" style="margin-top:8px">Ideal</label>
+    <textarea class="ta" rows="2" onchange="setFF('ideal',this.value)">${f.ideal||''}</textarea>
+    <label class="lbl" style="margin-top:8px">Ligação</label>
+    <textarea class="ta" rows="2" onchange="setFF('ligacao',this.value)">${f.ligacao||''}</textarea>
+    <label class="lbl" style="margin-top:8px">Defeito</label>
+    <textarea class="ta" rows="2" onchange="setFF('defeito',this.value)">${f.defeito||''}</textarea>
+    <label class="lbl" style="margin-top:8px">Aparência do Personagem</label>
+    <textarea class="ta" rows="2" onchange="setFF('aparencia',this.value)">${f.aparencia||''}</textarea>
+    <label class="lbl" style="margin-top:8px">Aliados e Organizações</label>
+    <textarea class="ta" rows="2" onchange="setFF('aliados',this.value)">${f.aliados||''}</textarea>
+    <label class="lbl" style="margin-top:8px">História do Personagem</label>
+    <textarea class="ta" rows="3" onchange="setFF('historiaPersonagem',this.value)">${f.historiaPersonagem||''}</textarea>
+    <label class="lbl" style="margin-top:8px">Tesouro</label>
+    <textarea class="ta" rows="2" onchange="setFF('tesouro',this.value)">${f.tesouro||''}</textarea>
+    <label class="lbl" style="margin-top:8px">Notas</label>
+    <textarea class="ta" rows="3" onchange="setFF('notas',this.value)">${f.notas||''}</textarea>
+    `;
   }else{
     body=`<label class="lbl">Traços</label><textarea class="ta" rows="2" onchange="setFF('tracos',this.value)">${f.tracos||''}</textarea>
-    <label class="lbl" style="margin-top:10px">Notas</label><textarea class="ta" rows="4" onchange="setFF('notas',this.value)">${f.notas||''}</textarea>`;
-  }
   return`<div style="max-width:680px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="color:#d4af37;font-size:17px">${f.nome?'✏️ '+f.nome:'+ Novo Personagem'}</span><div style="display:flex;gap:7px"><button class="btn-v" style="flex:none;padding:9px 20px;font-size:13px" onclick="salvarF()">💾 Salvar</button><button style="width:38px;height:38px;border-radius:8px;border:1px solid rgba(204,51,51,.3);background:rgba(204,51,51,.1);color:#ff6b6b;font-size:14px" onclick="cancelarF()">✖</button></div></div><div class="ftabs">${tabsH}</div>${body}</div>`;
 }
 
