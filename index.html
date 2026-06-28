@@ -2,12 +2,14 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob: https:; connect-src *;">
 <title>Mesa das Sombras</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#0a0608;font-family:'Segoe UI',Arial,sans-serif;user-select:none;color:#e8e0d4}
+html{height:-webkit-fill-available}
+body{min-height:-webkit-fill-available}
 button{cursor:pointer;font-family:inherit}
 input,textarea,select{font-family:inherit}
 
@@ -20,9 +22,13 @@ input,textarea,select{font-family:inherit}
 
 /* ── BARRA SUPERIOR ── */
 #topbar{
-  position:absolute;top:0;left:0;right:0;height:50px;
-  background:linear-gradient(to bottom,rgba(5,3,12,.92),transparent);
-  display:flex;align-items:center;padding:0 10px;gap:5px;
+  position:absolute;top:0;left:0;right:0;
+  height:calc(50px + env(safe-area-inset-top));
+  padding-top:env(safe-area-inset-top);
+  background:rgba(5,3,12,.88);
+  border-bottom:1px solid rgba(212,175,55,.1);
+  display:flex;align-items:center;padding-left:10px;padding-right:10px;gap:5px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
 }
 #pb-avatar{font-size:22px;filter:drop-shadow(0 0 4px rgba(212,175,55,.5))}
 #pb-nome{font-size:12px;font-weight:700;color:#d4af37;line-height:1.1}
@@ -52,8 +58,10 @@ input,textarea,select{font-family:inherit}
 
 /* ── PAINÉIS LATERAIS ── */
 #panel-left,#panel-right{
-  position:absolute;top:50%;transform:translateY(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:12px;padding:14px 5px;
+  position:absolute;
+  top:calc(50px + env(safe-area-inset-top));
+  bottom:64px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px 5px;
 }
 #panel-left{left:0;background:linear-gradient(to right,rgba(5,3,12,.75),transparent)}
 #panel-right{right:0;background:linear-gradient(to left,rgba(5,3,12,.75),transparent)}
@@ -81,7 +89,7 @@ input,textarea,select{font-family:inherit}
 
 /* ── MISSÃO ATUAL ── */
 #missao-box{
-  position:absolute;top:58px;right:8px;
+  position:absolute;top:calc(58px + env(safe-area-inset-top));right:8px;
   width:170px;padding:8px 10px;
   background:rgba(5,3,12,.82);
   border:1px solid rgba(212,175,55,.25);
@@ -94,7 +102,7 @@ input,textarea,select{font-family:inherit}
 
 /* ── LOCAL ATUAL ── */
 #local-box{
-  position:absolute;bottom:64px;right:8px;
+  position:absolute;bottom:calc(68px + env(safe-area-inset-bottom));right:8px;
   background:rgba(5,3,12,.8);
   border:1px solid rgba(255,255,255,.08);
   border-radius:6px;padding:5px 9px;
@@ -107,7 +115,7 @@ input,textarea,select{font-family:inherit}
 /* ── JANELA FLUTUANTE DO MESTRE ── */
 #fala-janela{
   position:absolute;
-  bottom:68px;left:64px;
+  bottom:calc(68px + env(safe-area-inset-bottom));left:64px;
   width:min(260px,calc(100vw - 140px));
   background:rgba(8,5,18,.94);
   border:1.5px solid rgba(212,175,55,.4);
@@ -144,7 +152,7 @@ input,textarea,select{font-family:inherit}
 
 /* ── DIGITANDO ── */
 #typing-ind{
-  position:absolute;bottom:64px;left:50%;transform:translateX(-50%);
+  position:absolute;bottom:calc(64px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);
   padding:5px 12px;border-radius:20px;font-size:11px;color:#888;
   background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.07);
   display:none;white-space:nowrap;z-index:26;
@@ -155,10 +163,12 @@ input,textarea,select{font-family:inherit}
 
 /* ── INPUT BAR ── */
 #input-bar{
-  position:absolute;bottom:0;left:0;right:0;height:56px;
+  position:absolute;bottom:0;left:0;right:0;
+  height:calc(56px + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
   background:rgba(5,3,12,.9);
   border-top:1px solid rgba(212,175,55,.12);
-  display:flex;align-items:center;gap:8px;padding:0 10px;
+  display:flex;align-items:center;gap:8px;padding-left:10px;padding-right:10px;
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
 }
 #msg-input{
@@ -235,7 +245,7 @@ input,textarea,select{font-family:inherit}
 
 /* DADOS MINI */
 #dice-mini{
-  position:absolute;top:56px;right:8px;
+  position:absolute;top:calc(56px + env(safe-area-inset-top));right:8px;
   display:flex;align-items:center;gap:4px;
   background:rgba(5,3,12,.75);border:1px solid rgba(212,175,55,.18);
   border-radius:16px;padding:4px 9px;cursor:pointer;
@@ -371,14 +381,14 @@ input,textarea,select{font-family:inherit}
   </div>
 
   <!-- MISSÃO ATUAL -->
-  <div id="missao-box">
+  <div id="missao-box" style="top:calc(56px + env(safe-area-inset-top))">
     <div id="missao-tit">— Missão Atual —</div>
     <div id="missao-nome">O Chamado da Aventura</div>
     <div id="missao-desc">Fale com o Mestre para começar.</div>
   </div>
 
   <!-- DADOS MINI -->
-  <div id="dice-mini" onclick="toggleDice()">
+  <div id="dice-mini" onclick="toggleDice()" style="top:calc(56px + env(safe-area-inset-top))">
     <span style="font-size:11px">🎲</span>
     <span id="dice-mini-val">—</span>
     <span id="dice-mini-lbl">Rolar</span>
@@ -565,10 +575,1200 @@ input,textarea,select{font-family:inherit}
   </div>
 </div>
 
-<!-- SCRIPTS -->
-<script src="mapa.js"></script>
-<script src="ia.js"></script>
-<script src="mestre.js"></script>
+<!-- SCRIPTS INLINE -->
+<script>
+// ═══════════════════════════════════════════════════════════
+// MAPA.JS — Motor Visual de Mapa Fantasy
+// Mesa das Sombras — Mapa em camadas, mundo vivo, sem grade
+// ═══════════════════════════════════════════════════════════
+
+const MAPA = (() => {
+
+// ── ESTADO DO MAPA ──────────────────────────────────────────
+const S = {
+  canvas: null, ctx: null,
+  W: 0, H: 0,
+  camX: 0, camY: 0,
+  zoom: 1,
+  frame: 0,
+  hora: 7,          // 0-23 (hora do dia)
+  clima: 'limpo',   // limpo | chuva | nevoa | tempestade
+  regiaoAtual: 'estrada_greenholt',
+  gradeAtiva: false,
+  tileSz: 64,
+  personagem: { x: 0, y: 0, tx: 0, ty: 0, estado: 'parado', dir: 'sul', animFrame: 0 },
+  arrastar: null,
+  ultimoToque: 0,
+  particulas: [],   // chuva, névoa, etc
+  tochas: [],       // posições de tochas
+  animTimer: null,
+};
+
+// ── REGIÕES DO MUNDO ────────────────────────────────────────
+// Cada região tem tiles definidos por código:
+// ' '=grama, '.'=estrada, '~'=água, 'T'=árvore grande,
+// 't'=arbusto, 'R'=rocha, 'H'=casa, '#'=parede, 'B'=ponte,
+// 'C'=acampamento, 'P'=placa, 'M'=montanha
+const REGIOES = {
+  estrada_greenholt: {
+    nome: 'Estrada para Greenholt',
+    largura: 20, altura: 16,
+    tiles: [
+      'MMMMM TTTTTT TTTTTT MMM',
+      'MM TTT   ttt   TTT   MM',
+      'M  TT  ...... .  TT   M',
+      '   TT .........  TT    ',
+      '  TTt ..CCCCC..  tTT   ',
+      '  TT  ..C   C..   TT   ',
+      '  TT  ...   ...   TT   ',
+      '  TT  ...P  ...   TT   ',
+      '   T  ....B....   T    ',
+      '   T  ....~....   T    ',
+      '   T  ....~....   T    ',
+      '   T  ....~....   T    ',
+      '  TT  .........   TT   ',
+      '  TT  ..HHHHH..   TT   ',
+      '  TTT ...HHH...  TTT   ',
+      '  TTTT .......  TTTT   ',
+    ],
+    spawnX: 9, spawnY: 8,
+    tochas: [{x:8,y:4},{x:11,y:4},{x:8,y:13},{x:11,y:13}],
+    transicoes: [
+      { x: 9, y: 0, destino: 'mundo' },
+      { x: 9, y: 15, destino: 'greenholt_cidade' },
+    ],
+    horaInicio: 7,
+    musica: 'floresta',
+  },
+  greenholt_cidade: {
+    nome: 'Greenholt',
+    largura: 20, altura: 16,
+    tiles: [
+      '  TTTTT  HHHHHHH  TTTTT  ',
+      '  TTT    HHHHHHH    TTT  ',
+      '   TT  ..HHHHHHH..  TT   ',
+      '   T  ....HHHHH....  T   ',
+      '      ..............      ',
+      '   H  ..H  HHH  H..  H   ',
+      '   HH ..H  HHH  H.. HH   ',
+      '   H  ....  H  ....  H   ',
+      '      ..H P H P H..       ',
+      '   H  ..H   H   H..  H   ',
+      '   HH ...............HH   ',
+      '   H  ..HHH   HHH..  H   ',
+      '      ..HHH   HHH..       ',
+      '   T  ...........  T     ',
+      '  TTT  .........  TTT    ',
+      '  TTTT  .......  TTTT    ',
+    ],
+    spawnX: 9, spawnY: 14,
+    tochas: [{x:5,y:4},{x:14,y:4},{x:5,y:10},{x:14,y:10},{x:9,y:8}],
+    transicoes: [
+      { x: 9, y: 0, destino: 'estrada_greenholt' },
+    ],
+    horaInicio: 7,
+    musica: 'cidade',
+  },
+  mundo: {
+    nome: 'Faenril — Mapa Mundial',
+    largura: 24, altura: 18,
+    tiles: [
+      'MMMMMMMMMMMMMMMMMMMMMMM',
+      'MM   TTTTTTTTTT    MM  ',
+      'M    TTTTTTTTTTT    M  ',
+      '     TTT  .....  TTT   ',
+      '     TT  .......  TT   ',
+      '    TT  .........  TT  ',
+      '    T  ...HHHHH...  T  ',
+      '    T  ..HHHHHHH..  T  ',
+      '    T  ...HHHHH...  T  ',
+      '    TT  .........  TT  ',
+      '    TTT ~~~~~~~~~  TTT  ',
+      '    TTTT~~~~~~~~~TTTT  ',
+      '     TTT~~~~~~~~~TTT   ',
+      '      TT .......  TT   ',
+      '      TTT ..... TTT    ',
+      '       TTTTTTTTTTT     ',
+      '        TTTTTTTTT      ',
+      'MMMMMMMMMMMMMMMMMMMMMMM',
+    ],
+    spawnX: 11, spawnY: 6,
+    tochas: [],
+    transicoes: [
+      { x: 11, y: 13, destino: 'estrada_greenholt' },
+    ],
+    horaInicio: 10,
+    musica: 'mundo',
+  },
+};
+
+// ── PALETA DE CORES POR HORA ─────────────────────────────────
+function corCeu(hora) {
+  if (hora >= 6  && hora < 8)  return { r:255, g:180, b:100 }; // amanhecer
+  if (hora >= 8  && hora < 17) return { r:135, g:180, b:230 }; // dia
+  if (hora >= 17 && hora < 19) return { r:255, g:140, b:80  }; // pôr
+  if (hora >= 19 && hora < 21) return { r:80,  g:60,  b:100 }; // crepúsculo
+  return { r:15, g:10, b:35 };                                   // noite
+}
+
+function brilhoHora(hora) {
+  if (hora >= 8 && hora < 17) return 1.0;
+  if (hora >= 6 && hora < 8)  return 0.6 + (hora - 6) * 0.2;
+  if (hora >= 17 && hora < 19) return 1.0 - (hora - 17) * 0.3;
+  if (hora >= 19 && hora < 21) return 0.4 - (hora - 19) * 0.1;
+  return 0.2; // noite
+}
+
+// ── DESENHAR TILE ────────────────────────────────────────────
+function desenharTile(ctx, tipo, px, py, sz, hora) {
+  const b = brilhoHora(hora);
+  const noite = hora < 6 || hora >= 20;
+
+  switch(tipo) {
+    case ' ': // grama
+      ctx.fillStyle = noite ? `rgb(${Math.floor(30*b)},${Math.floor(55*b)},${Math.floor(25*b)})` : `rgb(${Math.floor(80*b)},${Math.floor(130*b)},${Math.floor(60*b)})`;
+      ctx.fillRect(px, py, sz, sz);
+      // textura de grama
+      if (sz > 20 && !noite) {
+        ctx.fillStyle = `rgba(60,110,40,${0.3*b})`;
+        for (let i = 0; i < 4; i++) {
+          const gx = px + (sz * (i % 2 === 0 ? 0.2 : 0.7));
+          const gy = py + (sz * (i < 2 ? 0.25 : 0.75));
+          ctx.fillRect(gx, gy, 2, sz * 0.15);
+        }
+      }
+      break;
+
+    case '.': // estrada de terra
+      const rc = Math.floor(160 * b), gc = Math.floor(130 * b), bc = Math.floor(90 * b);
+      ctx.fillStyle = `rgb(${rc},${gc},${bc})`;
+      ctx.fillRect(px, py, sz, sz);
+      // textura pedras
+      ctx.fillStyle = `rgba(${Math.floor(140*b)},${Math.floor(110*b)},${Math.floor(75*b)},0.5)`;
+      ctx.beginPath(); ctx.ellipse(px+sz*.25, py+sz*.3, sz*.12, sz*.08, 0.3, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(px+sz*.7, py+sz*.65, sz*.1, sz*.07, -0.2, 0, Math.PI*2); ctx.fill();
+      break;
+
+    case '~': // água
+      const wa = Math.sin(S.frame * 0.04 + px * 0.05) * 0.1;
+      ctx.fillStyle = noite ? `rgba(10,20,60,0.9)` : `rgba(40,100,180,${0.8+wa})`;
+      ctx.fillRect(px, py, sz, sz);
+      // ondas
+      ctx.strokeStyle = `rgba(120,180,255,${0.3+wa})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(px + sz*0.1, py + sz*0.4 + Math.sin(S.frame*0.06+px)*sz*0.05);
+      ctx.bezierCurveTo(px+sz*.3, py+sz*.35, px+sz*.6, py+sz*.45, px+sz*.9, py+sz*.4);
+      ctx.stroke();
+      break;
+
+    case 'T': // árvore grande
+      ctx.fillStyle = noite ? `rgb(${Math.floor(25*b)},${Math.floor(45*b)},${Math.floor(20*b)})` : `rgb(${Math.floor(60*b)},${Math.floor(110*b)},${Math.floor(45*b)})`;
+      ctx.fillRect(px, py, sz, sz);
+      // sombra da árvore
+      ctx.fillStyle = `rgba(0,0,0,0.2)`;
+      ctx.beginPath(); ctx.ellipse(px+sz*.55, py+sz*.8, sz*.3, sz*.12, 0.1, 0, Math.PI*2); ctx.fill();
+      // tronco
+      ctx.fillStyle = noite ? `rgba(40,25,10,0.8)` : `rgba(100,65,25,0.9)`;
+      ctx.fillRect(px+sz*.42, py+sz*.6, sz*.16, sz*.4);
+      // copa
+      const cr = noite ? `rgba(20,45,15,0.95)` : `rgba(${Math.floor(40*b)},${Math.floor(100*b)},${Math.floor(30*b)},0.95)`;
+      ctx.fillStyle = cr;
+      ctx.beginPath(); ctx.arc(px+sz*.5, py+sz*.38, sz*.38, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = noite ? `rgba(30,60,20,0.7)` : `rgba(60,130,40,0.7)`;
+      ctx.beginPath(); ctx.arc(px+sz*.35, py+sz*.45, sz*.28, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(px+sz*.65, py+sz*.42, sz*.3, 0, Math.PI*2); ctx.fill();
+      break;
+
+    case 't': // arbusto
+      ctx.fillStyle = noite ? `rgb(${Math.floor(35*b)},${Math.floor(60*b)},${Math.floor(25*b)})` : `rgb(${Math.floor(80*b)},${Math.floor(130*b)},${Math.floor(60*b)})`;
+      ctx.fillRect(px, py, sz, sz);
+      ctx.fillStyle = noite ? 'rgba(20,50,15,0.9)' : `rgba(50,110,30,0.85)`;
+      ctx.beginPath(); ctx.arc(px+sz*.5, py+sz*.6, sz*.3, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(px+sz*.3, py+sz*.65, sz*.22, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(px+sz*.7, py+sz*.62, sz*.25, 0, Math.PI*2); ctx.fill();
+      break;
+
+    case 'R': // rocha
+      ctx.fillStyle = noite ? `rgb(${Math.floor(30*b)},${Math.floor(55*b)},${Math.floor(25*b)})` : `rgb(${Math.floor(80*b)},${Math.floor(130*b)},${Math.floor(60*b)})`;
+      ctx.fillRect(px, py, sz, sz);
+      ctx.fillStyle = `rgba(0,0,0,0.15)`;
+      ctx.beginPath(); ctx.ellipse(px+sz*.5, py+sz*.75, sz*.35, sz*.12, 0, 0, Math.PI*2); ctx.fill();
+      const rv = noite ? 90*b : 150*b;
+      ctx.fillStyle = `rgb(${Math.floor(rv)},${Math.floor(rv)},${Math.floor(rv)})`;
+      ctx.beginPath();
+      ctx.moveTo(px+sz*.2, py+sz*.75);
+      ctx.lineTo(px+sz*.15, py+sz*.45);
+      ctx.lineTo(px+sz*.35, py+sz*.3);
+      ctx.lineTo(px+sz*.65, py+sz*.28);
+      ctx.lineTo(px+sz*.85, py+sz*.42);
+      ctx.lineTo(px+sz*.82, py+sz*.72);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = `rgba(255,255,255,${0.15*b})`;
+      ctx.beginPath(); ctx.ellipse(px+sz*.35, py+sz*.42, sz*.1, sz*.06, -0.5, 0, Math.PI*2); ctx.fill();
+      break;
+
+    case 'H': // casa/edifício
+      ctx.fillStyle = noite ? `rgb(${Math.floor(30*b)},${Math.floor(55*b)},${Math.floor(25*b)})` : `rgb(${Math.floor(80*b)},${Math.floor(130*b)},${Math.floor(60*b)})`;
+      ctx.fillRect(px, py, sz, sz);
+      // base da casa
+      const hv = noite ? 55*b : 110*b;
+      ctx.fillStyle = `rgb(${Math.floor(hv*1.4)},${Math.floor(hv*1.1)},${Math.floor(hv*0.8)})`;
+      ctx.fillRect(px+sz*.1, py+sz*.45, sz*.8, sz*.55);
+      // telhado
+      ctx.fillStyle = noite ? `rgb(50,30,20)` : `rgb(120,70,40)`;
+      ctx.beginPath();
+      ctx.moveTo(px+sz*.05, py+sz*.48);
+      ctx.lineTo(px+sz*.5, py+sz*.18);
+      ctx.lineTo(px+sz*.95, py+sz*.48);
+      ctx.closePath(); ctx.fill();
+      // janela com luz à noite
+      if (noite) {
+        ctx.fillStyle = 'rgba(255,200,80,0.85)';
+      } else {
+        ctx.fillStyle = 'rgba(150,200,255,0.6)';
+      }
+      ctx.fillRect(px+sz*.22, py+sz*.55, sz*.2, sz*.2);
+      ctx.fillRect(px+sz*.58, py+sz*.55, sz*.2, sz*.2);
+      // porta
+      ctx.fillStyle = `rgb(80,45,20)`;
+      ctx.fillRect(px+sz*.38, py+sz*.7, sz*.24, sz*.3);
+      break;
+
+    case 'B': // ponte
+      // água embaixo
+      ctx.fillStyle = noite ? `rgba(10,20,60,0.9)` : `rgba(40,100,180,0.85)`;
+      ctx.fillRect(px, py, sz, sz);
+      // estrutura da ponte
+      ctx.fillStyle = noite ? `rgb(70,55,35)` : `rgb(140,110,70)`;
+      ctx.fillRect(px, py+sz*.3, sz, sz*.4);
+      // grades
+      ctx.fillStyle = noite ? `rgb(55,42,25)` : `rgb(110,85,50)`;
+      for(let i=0; i<4; i++){
+        ctx.fillRect(px+sz*(0.1+i*0.25), py+sz*.2, sz*.06, sz*.55);
+      }
+      break;
+
+    case 'C': // acampamento (fogueira/tenda)
+      ctx.fillStyle = noite ? `rgb(${Math.floor(30*b)},${Math.floor(55*b)},${Math.floor(25*b)})` : `rgb(${Math.floor(80*b)},${Math.floor(130*b)},${Math.floor(60*b)})`;
+      ctx.fillRect(px, py, sz, sz);
+      // tenda
+      ctx.fillStyle = noite ? `rgb(50,38,25)` : `rgb(100,75,50)`;
+      ctx.beginPath();
+      ctx.moveTo(px+sz*.1, py+sz*.8);
+      ctx.lineTo(px+sz*.5, py+sz*.3);
+      ctx.lineTo(px+sz*.9, py+sz*.8);
+      ctx.closePath(); ctx.fill();
+      // fogueira
+      if (noite || S.hora < 8) {
+        ctx.fillStyle = 'rgba(255,140,0,0.9)';
+        ctx.beginPath(); ctx.ellipse(px+sz*.5, py+sz*.65, sz*.08, sz*.14, 0, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = 'rgba(255,220,50,0.8)';
+        ctx.beginPath(); ctx.ellipse(px+sz*.5, py+sz*.68, sz*.05, sz*.09, 0, 0, Math.PI*2); ctx.fill();
+        // brilho
+        ctx.fillStyle = `rgba(255,150,0,${0.08+Math.sin(S.frame*.12)*0.04})`;
+        ctx.beginPath(); ctx.arc(px+sz*.5, py+sz*.65, sz*.4, 0, Math.PI*2); ctx.fill();
+      }
+      break;
+
+    case 'P': // placa
+      ctx.fillStyle = noite ? `rgb(${Math.floor(30*b)},${Math.floor(55*b)},${Math.floor(25*b)})` : `rgb(${Math.floor(80*b)},${Math.floor(130*b)},${Math.floor(60*b)})`;
+      ctx.fillRect(px, py, sz, sz);
+      ctx.fillStyle = `rgb(${Math.floor(100*b)},${Math.floor(70*b)},${Math.floor(35*b)})`;
+      ctx.fillRect(px+sz*.44, py+sz*.5, sz*.12, sz*.5);
+      ctx.fillStyle = `rgb(${Math.floor(130*b)},${Math.floor(95*b)},${Math.floor(50*b)})`;
+      ctx.fillRect(px+sz*.2, py+sz*.3, sz*.6, sz*.32);
+      break;
+
+    case 'M': // montanha
+      ctx.fillStyle = noite ? `rgb(15,12,10)` : `rgb(60,55,50)`;
+      ctx.fillRect(px, py, sz, sz);
+      const mv = noite ? 70*b : 120*b;
+      ctx.fillStyle = `rgb(${Math.floor(mv)},${Math.floor(mv*.9)},${Math.floor(mv*.8)})`;
+      ctx.beginPath();
+      ctx.moveTo(px, py+sz);
+      ctx.lineTo(px+sz*.5, py);
+      ctx.lineTo(px+sz, py+sz);
+      ctx.closePath(); ctx.fill();
+      // neve no topo
+      ctx.fillStyle = `rgba(240,245,255,${0.6*b})`;
+      ctx.beginPath();
+      ctx.moveTo(px+sz*.35, py+sz*.25);
+      ctx.lineTo(px+sz*.5, py);
+      ctx.lineTo(px+sz*.65, py+sz*.25);
+      ctx.closePath(); ctx.fill();
+      break;
+
+    default: // grama padrão
+      ctx.fillStyle = noite ? `rgb(25,45,20)` : `rgb(75,125,55)`;
+      ctx.fillRect(px, py, sz, sz);
+  }
+}
+
+// ── DESENHAR PERSONAGEM ──────────────────────────────────────
+function desenharPersonagem(ctx, px, py, sz, hora) {
+  const pers = S.personagem;
+  const b = brilhoHora(hora);
+  const f = pers.animFrame;
+  const bob = Math.sin(f * 0.25) * sz * 0.04;
+  const tamanho = sz * 1.3; // 30% maior
+
+  // sombra
+  ctx.fillStyle = 'rgba(0,0,0,0.35)';
+  ctx.beginPath();
+  ctx.ellipse(px + sz*.5, py + sz*.85, sz*.28, sz*.1, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  const cx = px + sz * .5;
+  const cy = py + sz * .1 + bob;
+
+  // capa/manto
+  ctx.fillStyle = `rgba(30,20,60,0.95)`;
+  ctx.beginPath();
+  ctx.moveTo(cx - tamanho*.22, cy + tamanho*.25);
+  ctx.lineTo(cx - tamanho*.28, cy + tamanho*.75);
+  ctx.lineTo(cx + tamanho*.28, cy + tamanho*.75);
+  ctx.lineTo(cx + tamanho*.22, cy + tamanho*.25);
+  ctx.closePath(); ctx.fill();
+
+  // corpo/armadura
+  ctx.fillStyle = `rgba(60,80,140,0.95)`;
+  ctx.fillRect(cx - tamanho*.16, cy + tamanho*.22, tamanho*.32, tamanho*.38);
+
+  // cabeça
+  ctx.fillStyle = `rgba(200,165,130,0.95)`;
+  ctx.beginPath(); ctx.arc(cx, cy + tamanho*.15, tamanho*.16, 0, Math.PI*2); ctx.fill();
+
+  // elmo/capuz
+  ctx.fillStyle = `rgba(50,40,80,0.95)`;
+  ctx.beginPath();
+  ctx.arc(cx, cy + tamanho*.13, tamanho*.17, Math.PI, Math.PI*2); ctx.fill();
+
+  // espada (estado atacando: inclinada)
+  const angEspada = pers.estado === 'atacando'
+    ? -0.7 + Math.sin(f * 0.5) * 0.8
+    : 0.15;
+  ctx.save();
+  ctx.translate(cx + tamanho*.18, cy + tamanho*.35);
+  ctx.rotate(angEspada);
+  ctx.fillStyle = `rgba(180,190,200,0.9)`;
+  ctx.fillRect(-sz*.03, -tamanho*.35, sz*.06, tamanho*.45);
+  ctx.fillStyle = `rgba(150,100,40,0.9)`;
+  ctx.fillRect(-sz*.08, -tamanho*.05, sz*.16, sz*.07);
+  ctx.restore();
+
+  // efeito magia (estado conjurando)
+  if (pers.estado === 'magia') {
+    const mg = 0.5 + Math.sin(f * 0.3) * 0.3;
+    ctx.fillStyle = `rgba(150,80,255,${mg})`;
+    ctx.beginPath(); ctx.arc(cx - tamanho*.3, cy + tamanho*.3, tamanho*.18 * mg, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = `rgba(200,150,255,${mg*0.6})`;
+    ctx.beginPath(); ctx.arc(cx - tamanho*.3, cy + tamanho*.3, tamanho*.28 * mg, 0, Math.PI*2); ctx.fill();
+  }
+
+  // seta indicadora de posição
+  ctx.fillStyle = '#f0d060';
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + tamanho*.85);
+  ctx.lineTo(cx - sz*.1, cy + tamanho*.65);
+  ctx.lineTo(cx + sz*.1, cy + tamanho*.65);
+  ctx.closePath(); ctx.fill();
+}
+
+// ── TOCHA ────────────────────────────────────────────────────
+function desenharTocha(ctx, px, py, sz, hora) {
+  const noite = hora < 6 || hora >= 19;
+  const intensidade = noite ? 1 : 0.4;
+  if (intensidade < 0.05) return;
+
+  const flicker = 0.7 + Math.sin(S.frame * 0.18 + px) * 0.3;
+  const cx = px + sz * .5, cy = py + sz * .4;
+
+  // brilho externo
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, sz * 1.8 * flicker);
+  grad.addColorStop(0, `rgba(255,180,60,${0.25 * intensidade * flicker})`);
+  grad.addColorStop(1, 'rgba(255,120,0,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath(); ctx.arc(cx, cy, sz * 1.8 * flicker, 0, Math.PI*2); ctx.fill();
+
+  // chama
+  ctx.fillStyle = `rgba(255,160,20,${0.9*intensidade*flicker})`;
+  ctx.beginPath(); ctx.ellipse(cx, cy, sz*.1, sz*.22*flicker, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = `rgba(255,230,80,${0.8*intensidade*flicker})`;
+  ctx.beginPath(); ctx.ellipse(cx, cy+sz*.04, sz*.06, sz*.14*flicker, 0, 0, Math.PI*2); ctx.fill();
+}
+
+// ── PARTÍCULAS (CHUVA / NÉVOA) ───────────────────────────────
+function atualizarParticulas() {
+  if (S.clima === 'chuva') {
+    // adicionar gotas
+    while (S.particulas.length < 120) {
+      S.particulas.push({
+        tipo: 'gota',
+        x: Math.random() * S.W,
+        y: Math.random() * S.H,
+        vy: 6 + Math.random() * 4,
+        vx: -1 + Math.random() * 0.5,
+        alpha: 0.4 + Math.random() * 0.4,
+        len: 8 + Math.random() * 12,
+      });
+    }
+  } else if (S.clima === 'nevoa') {
+    while (S.particulas.length < 30) {
+      S.particulas.push({
+        tipo: 'nevoa',
+        x: Math.random() * S.W,
+        y: S.H * 0.4 + Math.random() * S.H * 0.6,
+        vx: 0.2 + Math.random() * 0.4,
+        alpha: 0.05 + Math.random() * 0.1,
+        raio: 60 + Math.random() * 120,
+      });
+    }
+  } else {
+    S.particulas = [];
+    return;
+  }
+
+  // mover e remover
+  S.particulas = S.particulas.filter(p => {
+    if (p.tipo === 'gota') {
+      p.x += p.vx; p.y += p.vy;
+      return p.y < S.H + 20;
+    }
+    if (p.tipo === 'nevoa') {
+      p.x += p.vx;
+      return p.x < S.W + p.raio;
+    }
+    return true;
+  });
+}
+
+function desenharParticulas(ctx) {
+  S.particulas.forEach(p => {
+    if (p.tipo === 'gota') {
+      ctx.strokeStyle = `rgba(150,200,255,${p.alpha})`;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x + p.vx * 2, p.y + p.len);
+      ctx.stroke();
+    }
+    if (p.tipo === 'nevoa') {
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.raio);
+      g.addColorStop(0, `rgba(200,210,220,${p.alpha})`);
+      g.addColorStop(1, 'rgba(200,210,220,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.raio, 0, Math.PI*2); ctx.fill();
+    }
+  });
+}
+
+// ── GRADE TÁTICA ─────────────────────────────────────────────
+function desenharGrade(ctx, sz) {
+  if (!S.gradeAtiva) return;
+  ctx.strokeStyle = 'rgba(212,175,55,0.18)';
+  ctx.lineWidth = 0.5;
+  const regiao = REGIOES[S.regiaoAtual];
+  for (let y = 0; y <= regiao.altura; y++) {
+    ctx.beginPath();
+    ctx.moveTo(S.camX, S.camY + y * sz * S.zoom);
+    ctx.lineTo(S.camX + regiao.largura * sz * S.zoom, S.camY + y * sz * S.zoom);
+    ctx.stroke();
+  }
+  for (let x = 0; x <= regiao.largura; x++) {
+    ctx.beginPath();
+    ctx.moveTo(S.camX + x * sz * S.zoom, S.camY);
+    ctx.lineTo(S.camX + x * sz * S.zoom, S.camY + regiao.altura * sz * S.zoom);
+    ctx.stroke();
+  }
+}
+
+// ── CÉU / OVERLAY DE HORA ────────────────────────────────────
+function desenharCeu(ctx) {
+  const ceu = corCeu(S.hora);
+  const b = brilhoHora(S.hora);
+  const noite = S.hora < 6 || S.hora >= 20;
+
+  // overlay de hora sobre o mapa
+  if (!noite) {
+    // dia - filtro suave
+    ctx.fillStyle = `rgba(${ceu.r},${ceu.g},${ceu.b},${(1-b)*0.3})`;
+  } else {
+    // noite - overlay azul escuro
+    ctx.fillStyle = `rgba(10,5,30,${0.55 - b*0.3})`;
+  }
+  ctx.fillRect(0, 0, S.W, S.H);
+
+  // estrelas à noite
+  if (noite || S.hora < 5 || S.hora >= 21) {
+    const alpha = S.hora < 5 || S.hora >= 22 ? 0.9 : 0.4;
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    // fixar seed com posição para estrelas estáticas
+    for (let i = 0; i < 60; i++) {
+      const sx = ((i * 137 + 11) % S.W);
+      const sy = ((i * 89  + 7)  % (S.H * 0.5));
+      const raio = i % 5 === 0 ? 1.5 : 0.8;
+      const brilhoEst = 0.4 + Math.sin(S.frame * 0.05 + i) * 0.3;
+      ctx.globalAlpha = brilhoEst * alpha;
+      ctx.beginPath(); ctx.arc(sx, sy, raio, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // sol ou lua
+  if (S.hora >= 6 && S.hora < 19) {
+    const progSol = (S.hora - 6) / 13;
+    const sx = S.W * (0.1 + progSol * 0.8);
+    const sy = S.H * 0.15 - Math.sin(progSol * Math.PI) * S.H * 0.08;
+    const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, 30);
+    grad.addColorStop(0, 'rgba(255,240,150,0.9)');
+    grad.addColorStop(0.4, 'rgba(255,200,80,0.4)');
+    grad.addColorStop(1, 'rgba(255,150,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(sx, sy, 30, 0, Math.PI*2); ctx.fill();
+  } else if (noite) {
+    ctx.fillStyle = 'rgba(230,235,255,0.85)';
+    ctx.beginPath(); ctx.arc(S.W * 0.75, S.H * 0.1, 14, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(10,5,30,0.7)';
+    ctx.beginPath(); ctx.arc(S.W * 0.77, S.H * 0.09, 11, 0, Math.PI*2); ctx.fill();
+  }
+}
+
+// ── LOOP PRINCIPAL ───────────────────────────────────────────
+function desenharMapa() {
+  const ctx = S.ctx;
+  const sz = S.tileSz;
+  const regiao = REGIOES[S.regiaoAtual];
+
+  ctx.clearRect(0, 0, S.W, S.H);
+
+  // fundo
+  const b = brilhoHora(S.hora);
+  const noite = S.hora < 6 || S.hora >= 20;
+  ctx.fillStyle = noite ? `rgb(10,8,20)` : `rgb(${Math.floor(80*b)},${Math.floor(120*b)},${Math.floor(55*b)})`;
+  ctx.fillRect(0, 0, S.W, S.H);
+
+  // tiles
+  const tiles = regiao.tiles;
+  for (let ty = 0; ty < tiles.length; ty++) {
+    const linha = tiles[ty];
+    for (let tx = 0; tx < linha.length; tx++) {
+      const tipo = linha[tx];
+      const px = Math.floor(S.camX + tx * sz * S.zoom);
+      const py = Math.floor(S.camY + ty * sz * S.zoom);
+      const szz = Math.ceil(sz * S.zoom + 1);
+
+      if (px > -szz && px < S.W + szz && py > -szz && py < S.H + szz) {
+        desenharTile(ctx, tipo, px, py, szz, S.hora);
+      }
+    }
+  }
+
+  // tochas
+  regiao.tochas.forEach(t => {
+    const px = S.camX + t.x * sz * S.zoom;
+    const py = S.camY + t.y * sz * S.zoom;
+    desenharTocha(ctx, px, py, sz * S.zoom, S.hora);
+  });
+
+  // grade tática (antes do personagem)
+  desenharGrade(ctx, sz);
+
+  // personagem
+  const pers = S.personagem;
+  const ppx = S.camX + pers.x * sz * S.zoom;
+  const ppy = S.camY + pers.y * sz * S.zoom;
+  desenharPersonagem(ctx, ppx, ppy, sz * S.zoom, S.hora);
+
+  // overlay de hora/dia-noite
+  desenharCeu(ctx);
+
+  // partículas (chuva/névoa por cima)
+  atualizarParticulas();
+  desenharParticulas(ctx);
+
+  // avanço de frame e animação
+  S.frame++;
+  if (pers.estado !== 'parado') pers.animFrame++;
+  else if (S.frame % 3 === 0) pers.animFrame++;
+}
+
+function loop() {
+  desenharMapa();
+  requestAnimationFrame(loop);
+}
+
+// ── MOVER PERSONAGEM ─────────────────────────────────────────
+function moverPara(tx, ty, callback) {
+  const regiao = REGIOES[S.regiaoAtual];
+  const tiles = regiao.tiles;
+  // validar tile clicável
+  const linha = tiles[ty];
+  if (!linha) return;
+  const tipo = linha[tx] || ' ';
+  const bloqueado = ['T','M','R','~'].includes(tipo);
+  if (bloqueado) return;
+
+  S.personagem.estado = 'andando';
+  const ox = S.personagem.x, oy = S.personagem.y;
+  const dx = tx - ox, dy = ty - oy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  const passos = Math.max(Math.abs(dx), Math.abs(dy)) * 8;
+  let p = 0;
+
+  clearInterval(S.animTimer);
+  S.animTimer = setInterval(() => {
+    p++;
+    S.personagem.x = ox + (dx * p / passos);
+    S.personagem.y = oy + (dy * p / passos);
+
+    // câmera acompanha suavemente
+    const alvoX = S.W/2 - S.personagem.x * S.tileSz * S.zoom;
+    const alvoY = S.H/2 - S.personagem.y * S.tileSz * S.zoom;
+    S.camX += (alvoX - S.camX) * 0.1;
+    S.camY += (alvoY - S.camY) * 0.1;
+
+    if (p >= passos) {
+      S.personagem.x = tx;
+      S.personagem.y = ty;
+      S.personagem.estado = 'parado';
+      clearInterval(S.animTimer);
+      // verificar transições de local
+      const trans = regiao.transicoes.find(t => t.x === tx && t.y === ty);
+      if (trans) trocarRegiao(trans.destino);
+      if (callback) callback();
+    }
+  }, 16);
+}
+
+// ── TROCAR REGIÃO ────────────────────────────────────────────
+function trocarRegiao(nome) {
+  if (!REGIOES[nome]) return;
+  S.regiaoAtual = nome;
+  const reg = REGIOES[nome];
+  S.personagem.x = reg.spawnX;
+  S.personagem.y = reg.spawnY;
+  S.personagem.estado = 'parado';
+  centrarCamera();
+  // notificar HUD
+  if (typeof MUNDO !== 'undefined' && MUNDO.onTrocaRegiao) {
+    MUNDO.onTrocaRegiao(reg.nome);
+  }
+  // atualizar label
+  const labelEl = document.getElementById('local-nome');
+  if (labelEl) labelEl.textContent = reg.nome;
+}
+
+// ── CÂMERA ───────────────────────────────────────────────────
+function centrarCamera() {
+  const sz = S.tileSz * S.zoom;
+  S.camX = S.W/2 - S.personagem.x * sz - sz/2;
+  S.camY = S.H/2 - S.personagem.y * sz - sz/2;
+}
+
+// ── TOQUE / CLIQUE ───────────────────────────────────────────
+function aoClicar(e) {
+  const rect = S.canvas.getBoundingClientRect();
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+  const tx = Math.floor((cx - S.camX) / (S.tileSz * S.zoom));
+  const ty = Math.floor((cy - S.camY) / (S.tileSz * S.zoom));
+  const regiao = REGIOES[S.regiaoAtual];
+  if (tx >= 0 && tx < regiao.largura && ty >= 0 && ty < regiao.altura) {
+    moverPara(tx, ty);
+  }
+}
+
+let _arrastando = false, _arrX = 0, _arrY = 0, _arrCX = 0, _arrCY = 0;
+function onPointerDown(e) {
+  _arrastando = true;
+  _arrX = e.touches ? e.touches[0].clientX : e.clientX;
+  _arrY = e.touches ? e.touches[0].clientY : e.clientY;
+  _arrCX = S.camX; _arrCY = S.camY;
+  S.canvas.setPointerCapture && S.canvas.setPointerCapture(e.pointerId);
+}
+function onPointerMove(e) {
+  if (!_arrastando) return;
+  const cx = e.touches ? e.touches[0].clientX : e.clientX;
+  const cy = e.touches ? e.touches[0].clientY : e.clientY;
+  const dx = cx - _arrX, dy = cy - _arrY;
+  if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+    S.camX = _arrCX + dx;
+    S.camY = _arrCY + dy;
+  }
+}
+function onPointerUp(e) { _arrastando = false; }
+
+// ── API PÚBLICA ──────────────────────────────────────────────
+function init(canvasId) {
+  S.canvas = document.getElementById(canvasId);
+  if (!S.canvas) return;
+  S.ctx = S.canvas.getContext('2d');
+  S.W = window.innerWidth;
+  S.H = window.innerHeight;
+  S.canvas.width = S.W;
+  S.canvas.height = S.H;
+
+  // personagem inicia no spawn
+  const reg = REGIOES[S.regiaoAtual];
+  S.personagem.x = reg.spawnX;
+  S.personagem.y = reg.spawnY;
+  centrarCamera();
+
+  // eventos
+  S.canvas.addEventListener('pointerdown', onPointerDown);
+  S.canvas.addEventListener('pointermove', onPointerMove);
+  S.canvas.addEventListener('pointerup', onPointerUp);
+  // duplo toque para mover
+  let lastTap = 0;
+  S.canvas.addEventListener('pointerdown', e => {
+    const now = Date.now();
+    if (now - lastTap < 280) aoClicar(e);
+    lastTap = now;
+  });
+  // zoom
+  S.canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    S.zoom = Math.max(0.5, Math.min(3, S.zoom * (e.deltaY < 0 ? 1.1 : 0.9)));
+    centrarCamera();
+  }, { passive: false });
+
+  window.addEventListener('resize', () => {
+    S.W = window.innerWidth; S.H = window.innerHeight;
+    S.canvas.width = S.W; S.canvas.height = S.H;
+  });
+
+  requestAnimationFrame(loop);
+}
+
+return {
+  init,
+  moverPara,
+  trocarRegiao,
+  setClima: (c) => { S.clima = c; S.particulas = []; },
+  setHora:  (h) => { S.hora = h; },
+  avancarHora: (delta) => { S.hora = (S.hora + delta) % 24; },
+  ativarGrade: (v) => { S.gradeAtiva = v; },
+  setEstadoPersonagem: (e) => { S.personagem.estado = e; setTimeout(() => { S.personagem.estado = 'parado'; }, 1200); },
+  getRegiao: () => S.regiaoAtual,
+  getHora: () => S.hora,
+  REGIOES,
+};
+
+})(); // fim MAPA
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// IA.JS — Motor de Inteligência Artificial com Fallback
+// Mesa das Sombras
+// OpenAI → Gemini → Claude (automático, sem mostrar erro)
+// ═══════════════════════════════════════════════════════════
+
+const IA = (() => {
+
+const S = {
+  prov: 'claude',    // provedor preferido
+  apiKey: '',
+  hist: [],          // histórico de mensagens
+  sistema: '',       // prompt de sistema atual
+};
+
+// ── CHAMADAS POR PROVEDOR ───────────────────────────────────
+
+function chamarOpenAI(key, sys, msgs) {
+  return new Promise(resolve => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://api.openai.com/v1/chat/completions', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + key);
+    xhr.timeout = 22000;
+    xhr.onload = () => {
+      try {
+        const d = JSON.parse(xhr.responseText);
+        if (d.error) {
+          const msg = (d.error.message || '').toLowerCase();
+          const quota = msg.includes('quota') || msg.includes('billing') ||
+                        msg.includes('exceeded') || msg.includes('limit') ||
+                        xhr.status === 429;
+          resolve({ txt: '', quota, err: d.error.message });
+        } else {
+          resolve({ txt: d.choices?.[0]?.message?.content || '', quota: false, err: null });
+        }
+      } catch(e) { resolve({ txt: '', quota: false, err: 'parse' }); }
+    };
+    xhr.onerror = () => resolve({ txt: '', quota: false, err: 'network' });
+    xhr.ontimeout = () => resolve({ txt: '', quota: false, err: 'timeout' });
+    xhr.send(JSON.stringify({
+      model: 'gpt-4o-mini',
+      max_tokens: 600,
+      messages: [{ role: 'system', content: sys }, ...msgs.slice(-6)]
+    }));
+  });
+}
+
+// Gemini usa fetch() — funciona em Safari/iOS/Android/Chrome sem bloqueio CORS
+function chamarGemini(key, sys, msgs) {
+  const model = 'gemini-1.5-flash';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+  const contents = msgs.slice(-6).map(m => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }]
+  }));
+  // Injetar system no primeiro turn
+  if (contents.length > 0 && contents[0].role === 'user') {
+    contents[0].parts[0].text = sys + '\n\n' + contents[0].parts[0].text;
+  } else {
+    contents.unshift({ role: 'user', parts: [{ text: sys + '\n\nInício.' }] });
+  }
+  return fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents,
+      generationConfig: { maxOutputTokens: 600, temperature: 0.85 }
+    })
+  })
+  .then(r => {
+    if (!r.ok) return r.json().then(d => { throw new Error(d.error?.message || 'HTTP '+r.status); });
+    return r.json();
+  })
+  .then(d => {
+    if (d.error) {
+      const msg = (d.error.message || '').toLowerCase();
+      const quota = msg.includes('quota') || msg.includes('limit') || d.error.code === 429;
+      return { txt: '', quota, err: d.error.message };
+    }
+    const txt = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    return { txt, quota: false, err: txt ? null : 'empty_response' };
+  })
+  .catch(e => ({ txt: '', quota: false, err: e.message || 'network' }));
+}
+
+function chamarClaude(key, sys, msgs) {
+  return new Promise(resolve => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'https://api.anthropic.com/v1/messages', true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('x-api-key', key);
+    xhr.setRequestHeader('anthropic-version', '2023-06-01');
+    xhr.setRequestHeader('anthropic-dangerous-direct-browser-access', 'true');
+    xhr.timeout = 22000;
+    xhr.onload = () => {
+      try {
+        const d = JSON.parse(xhr.responseText);
+        if (d.error) {
+          const msg = (d.error.message || '').toLowerCase();
+          const quota = msg.includes('quota') || msg.includes('limit') ||
+                        msg.includes('credit') || xhr.status === 429;
+          resolve({ txt: '', quota, err: d.error.message });
+        } else {
+          resolve({ txt: d.content?.[0]?.text || '', quota: false, err: null });
+        }
+      } catch(e) { resolve({ txt: '', quota: false, err: 'parse' }); }
+    };
+    xhr.onerror = () => resolve({ txt: '', quota: false, err: 'network' });
+    xhr.ontimeout = () => resolve({ txt: '', quota: false, err: 'timeout' });
+    xhr.send(JSON.stringify({
+      model: 'claude-haiku-4-5',
+      max_tokens: 600,
+      system: sys,
+      messages: msgs.slice(-6)
+    }));
+  });
+}
+
+// ── FUNÇÃO PRINCIPAL COM FALLBACK ───────────────────────────
+async function chamar(userMsg, comHistorico = true) {
+  const key = S.apiKey || localStorage.getItem('mesa_key') || '';
+  if (!key) return null;
+
+  if (comHistorico) {
+    S.hist = [...S.hist.slice(-10), { role: 'user', content: userMsg }];
+  }
+  const msgs = comHistorico ? S.hist : [{ role: 'user', content: userMsg }];
+
+  // Ordem de tentativa baseada no provedor preferido
+  const ordem =
+    S.prov === 'openai' ? ['openai', 'gemini', 'claude'] :
+    S.prov === 'gemini' ? ['gemini', 'openai', 'claude'] :
+                          ['claude', 'openai', 'gemini'];
+
+  let ajustou = false;
+  for (const prov of ordem) {
+    let res;
+    try {
+      if (prov === 'openai')      res = await chamarOpenAI(key, S.sistema, msgs);
+      else if (prov === 'gemini') res = await chamarGemini(key, S.sistema, msgs);
+      else                        res = await chamarClaude(key, S.sistema, msgs);
+    } catch(e) {
+      res = { txt: '', quota: false, err: e.message };
+    }
+
+    if (res.txt) {
+      if (ajustou) {
+        // Notificação discreta no jornal
+        if (typeof addJornal === 'function') {
+          addJornal('sistema', 'A conexão do Mestre foi ajustada automaticamente.', '#666');
+        }
+      }
+      if (comHistorico) {
+        S.hist = [...S.hist, { role: 'assistant', content: res.txt }];
+      }
+      return res.txt;
+    }
+    ajustou = true;
+  }
+  return null; // todos falharam
+}
+
+// ── TESTAR API ───────────────────────────────────────────────
+async function testar(key, prov) {
+  const testMsg = [{ role: 'user', content: 'oi' }];
+  const sys = 'Responda apenas: OK';
+  let res;
+  if (prov === 'gemini')      res = await chamarGemini(key, sys, testMsg);
+  else if (prov === 'openai') res = await chamarOpenAI(key, sys, testMsg);
+  else                        res = await chamarClaude(key, sys, testMsg);
+  return res.txt ? '✅ API funcionando!' : '❌ ' + (res.err || 'Sem resposta');
+}
+
+return {
+  chamar,
+  testar,
+  setKey:    (k) => { S.apiKey = k; localStorage.setItem('mesa_key', k); },
+  setProv:   (p) => { S.prov = p; localStorage.setItem('mesa_prov', p); },
+  setSys:    (s) => { S.sistema = s; },
+  limparHist:() => { S.hist = []; },
+  getHist:   () => S.hist,
+  getProv:   () => S.prov,
+};
+
+})();
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════
+// MESTRE.JS — Motor de Narração e Janela do Mestre/NPC
+// Mesa das Sombras
+// ═══════════════════════════════════════════════════════════
+
+const MESTRE = (() => {
+
+let _timerFechar = null;
+let _timerBarra  = null;
+
+// ── DETECTAR QUEM FALA ───────────────────────────────────────
+function detectarFalante(txt) {
+  // NPC com nome explícito: "Gareth diz:", "A estalajadeira responde:"
+  const m1 = txt.match(/^[""«]?([A-ZÁÉÍÓÚÀÃÕÂÊÔÇ][a-záéíóúàãõâêôç]+(?:\s[A-Z][a-z]+)?)[,:]?\s*["«]?\s*(diz|responde|grita|sussurra|murmura|fala|exclama|pergunta|sorri|franze|olha|aponta|ergue|recua|avança)/);
+  if (m1) return { titulo: m1[1], icone: '🧑', cor: '#c084fc' };
+
+  if (/\b(guard[ao]|sentinela)\b/i.test(txt.slice(0,80)))  return { titulo: 'Guarda',       icone: '⚔️',  cor: '#60a5fa' };
+  if (/\b(taverne[io]ro|estalajad)/i.test(txt.slice(0,80))) return { titulo: 'Taverneiro',   icone: '🍺',  cor: '#f59e0b' };
+  if (/\b(mago|feiticeiro|arcanist)/i.test(txt.slice(0,80)))return { titulo: 'Mago',         icone: '🧙',  cor: '#a78bfa' };
+  if (/\b(comerciant|mercador)\b/i.test(txt.slice(0,80)))   return { titulo: 'Mercador',     icone: '💰',  cor: '#34d399' };
+  if (/\b(rei|rainha|lord|lorde)\b/i.test(txt.slice(0,80))) return { titulo: 'Nobreza',      icone: '👑',  cor: '#fbbf24' };
+  if (/\b(sacerdot|clérigo|padre)\b/i.test(txt.slice(0,80)))return { titulo: 'Sacerdote',   icone: '⛪',  cor: '#818cf8' };
+
+  return { titulo: 'Mestre', icone: '📜', cor: '#d4af37' };
+}
+
+// ── JANELA FLUTUANTE ─────────────────────────────────────────
+function mostrarJanelaFala(titulo, icone, cor, txt, durMs) {
+  const jan = document.getElementById('fala-janela');
+  if (!jan) return;
+
+  document.getElementById('fala-titulo').textContent = titulo;
+  document.getElementById('fala-icone').textContent  = icone;
+  document.getElementById('fala-titulo').style.color = cor;
+
+  // formatar texto: **negrito**, *itálico*, quebras
+  document.getElementById('fala-txt').innerHTML = txt
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,   '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+
+  // re-trigger animação CSS
+  jan.classList.remove('fala-visivel');
+  void jan.offsetWidth;
+  jan.classList.add('fala-visivel');
+  document.getElementById('fala-corpo').scrollTop = 0;
+
+  // barra de tempo
+  const dur = durMs || Math.max(7000, txt.length * 55);
+  const prog = document.getElementById('fala-progresso');
+  if (prog) {
+    prog.style.transition = 'none';
+    prog.style.width = '100%';
+    void prog.offsetWidth;
+    prog.style.transition = `width ${dur}ms linear`;
+    prog.style.width = '0%';
+  }
+
+  clearTimeout(_timerFechar);
+  _timerFechar = setTimeout(fecharJanelaFala, dur);
+}
+
+function fecharJanelaFala() {
+  const jan = document.getElementById('fala-janela');
+  if (jan) jan.classList.remove('fala-visivel');
+  clearTimeout(_timerFechar);
+}
+
+// ── DETECTAR CLIMA NA RESPOSTA ───────────────────────────────
+function detectarClima(txt) {
+  if (!txt || typeof MAPA === 'undefined') return;
+  const t = txt.toLowerCase();
+  if (/come[cç]a a chover|chuva forte|cai chuva|tempestade/.test(t)) {
+    MAPA.setClima('chuva');
+    MAPA.setHora(15); // tarde nublada
+  }
+  if (/nevo[ea]|névoa|neblina|bruma/.test(t))  MAPA.setClima('nevoa');
+  if (/sol volta|céu limpo|clima melhora/.test(t)) MAPA.setClima('limpo');
+  if (/anoitec|ficou escuro|noite cai|lua/.test(t)) MAPA.setHora(21);
+  if (/amanheceu|sol nasce|aurora|manhã clar/.test(t)) MAPA.setHora(7);
+  if (/meio[- ]dia|sol a pino/.test(t)) MAPA.setHora(12);
+}
+
+// ── PROMPT DO SISTEMA ────────────────────────────────────────
+function buildPromptSistema(G) {
+  const pj = G.pj;
+  const pb = pj.nivel <= 4 ? 2 : pj.nivel <= 8 ? 3 : pj.nivel <= 12 ? 4 : 5;
+  const mod = v => Math.floor(((v||10)-10)/2);
+  const modStr = v => { const m=mod(v); return (m>=0?'+':'')+m; };
+
+  return `Você é um Mestre de D&D 5ª Edição experiente, criativo e profundamente imersivo. Aplique as regras com naturalidade.
+
+━━━ SESSÃO ━━━
+Campanha: "${G.campanha}"
+Herói: ${pj.nome} | ${pj.classe} Nível ${pj.nivel} | ${pj.raca}
+PV: ${pj.pv}/${pj.pvMax} | CA: ${pj.ca} | Prof: +${pb}
+FOR ${pj.FOR}(${modStr(pj.FOR)}) DES ${pj.DES}(${modStr(pj.DES)}) CON ${pj.CON}(${modStr(pj.CON)}) INT ${pj.INT}(${modStr(pj.INT)}) SAB ${pj.SAB}(${modStr(pj.SAB)}) CAR ${pj.CAR}(${modStr(pj.CAR)})
+Condições: ${(pj.condicoes||[]).join(', ')||'Nenhuma'}
+
+━━━ REGRA PRINCIPAL DE INTERPRETAÇÃO ━━━
+Você NÃO responde com frases prontas, genéricas ou mecânicas.
+Você interpreta a fala do jogador ANTES de responder.
+
+Para cada mensagem, siga esta ordem:
+1. ENTENDA a intenção real: pergunta, ataque, investigação, mentira, persuasão, ação, fala com NPC, descrição?
+2. RESPONDA de forma contextual, reagindo DIRETAMENTE ao que o jogador disse ou fez.
+3. NPCs são VIVOS: personalidade própria, emoções, medo, raiva, dúvida, memória do que aconteceu.
+4. Se a ação exigir teste, determine o CORRETO: Persuasão | Intimidação | Enganação | Investigação | Percepção | Furtividade | Atletismo | Ataque.
+5. A fala do jogador SEMPRE muda a cena, a reação dos NPCs ou o rumo da narrativa.
+
+PROIBIDO: "Você entra e vê..." | "O NPC responde..." | frases genéricas.
+
+EXEMPLO:
+Jogador: "Eu olho pro guarda e digo que sou enviado de Bane."
+❌ ERRADO: "O guarda deixa você entrar."
+✅ CERTO: "O guarda estreita os olhos e aperta a lança: 'Enviado de Bane? Aqui isso abre portas... ou te coloca numa cela. Prove.' — Faça Enganação ou Intimidação CD 14."
+
+━━━ MUNDO VIVO ━━━
+Quando a situação mudar clima ou hora, mencione naturalmente:
+- chuva, névoa, neblina, tempestade → descreva o clima
+- noite, amanhecer, meio-dia → descreva a luz
+
+━━━ D&D 5e ━━━
+- COMBATE: Sempre rolar Iniciativa para TODOS antes de atacar (D20+mod.DES)
+- CRÍTICO (20): narre façanha épica | FUMBLE (1): narre falha catastrófica
+- Condições automáticas: Envenenado, Caído, Atordoado, etc.
+- Quando houver rolagem: [ROLAGEM: tipo | CD X | resultado]
+
+━━━ ESTILO ━━━
+- Máximo 3 parágrafos por resposta
+- **negrito** para épico | *itálico* para atmosfera
+- Sempre em português brasileiro`;
+}
+
+// ── FUNÇÃO CENTRAL: responderMestre ─────────────────────────
+async function responderMestre(msgJogador, G, ehInicio = false) {
+  const indicador = document.getElementById('typing-ind');
+  if (indicador) indicador.style.display = 'block';
+
+  // Atualizar prompt do sistema com estado atual
+  IA.setSys(buildPromptSistema(G));
+
+  let resp = null;
+  try {
+    resp = await IA.chamar(msgJogador, !ehInicio);
+  } catch(e) {
+    console.error('responderMestre erro:', e);
+  } finally {
+    if (indicador) indicador.style.display = 'none';
+  }
+
+  // Fallback se silêncio total
+  if (!resp || resp.trim() === '') {
+    const fallback = 'O Mestre ficou em silêncio por um instante... tente novamente.';
+    mostrarJanelaFala('Mestre', '📜', '#888', fallback, 5000);
+    if (typeof addJornal === 'function') addJornal('sistema', fallback, '#666');
+    return;
+  }
+
+  // Detectar clima na resposta e atualizar mapa
+  detectarClima(resp);
+
+  // Detectar combate
+  if (/inicia(r)?( o)? combate|rolagem de iniciativa/i.test(resp)) {
+    if (typeof iniciarCombate === 'function') iniciarCombate();
+  }
+
+  // Extrair rolagens
+  const rolM = resp.match(/\[ROLAGEM:\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\]/);
+  if (rolM && typeof addJornal === 'function') {
+    addJornal('dado', `🎲 ${rolM[1]} — ${rolM[3]}`, '#d4af37');
+  }
+  const txt = resp.replace(/\[ROLAGEM:[^\]]*\]/g, '').trim();
+
+  // Detectar falante
+  const { titulo, icone, cor } = detectarFalante(txt);
+
+  // Mostrar janela flutuante
+  mostrarJanelaFala(titulo, icone, cor, txt);
+
+  // Salvar no jornal
+  if (typeof addJornal === 'function') {
+    addJornal(titulo === 'Mestre' ? 'mestre' : 'npc', txt, cor);
+  }
+
+  // TTS
+  if (typeof falarTTS === 'function' && (G.tts || G.narracao === 'voz')) {
+    falarTTS(txt);
+  }
+}
+
+// ── PROMPT DE INÍCIO ─────────────────────────────────────────
+function promptInicio(G) {
+  const pj = G.pj;
+  return `Você é o Mestre da campanha "${G.campanha}".
+O jogador acaba de entrar como ${pj.nome}, um(a) ${pj.classe} nível ${pj.nivel} da raça ${pj.raca}.
+
+Narre o INÍCIO da aventura:
+- Descreva onde ${pj.nome} está: local, ambiente, sons, cheiros, atmosfera
+- Mostre o que está acontecendo ao redor neste exato momento
+- Apresente algo que crie tensão ou curiosidade imediata
+- Termine com uma situação que exija uma DECISÃO ou AÇÃO
+- NÃO use "Sua aventura começa..." nem frases genéricas
+- Seja específico, sensorial e imersivo
+- 2 a 3 parágrafos em português brasileiro`;
+}
+
+return {
+  responderMestre,
+  mostrarJanelaFala,
+  fecharJanelaFala,
+  buildPromptSistema,
+  promptInicio,
+  detectarFalante,
+  detectarClima,
+};
+
+})();
+
+</script>
 <script>
 // ═══════════════════════════════════════════════════════
 // ESTADO GLOBAL
@@ -611,8 +1811,10 @@ function iniciarJogo(){
   const key=document.getElementById('e-key').value.trim();
   G.nome=nome;G.campanha=camp;G.apiKey=key;G.pj.nome=nome;
 
-  IA.setKey(key);
+  const keyFinal = key || localStorage.getItem('mesa_key') || '';
+  IA.setKey(keyFinal);
   IA.setProv(G.prov);
+  console.log('Iniciando com provedor:', G.prov, '| Key:', keyFinal ? keyFinal.slice(0,8)+'...' : 'VAZIA');
 
   const sala=document.getElementById('e-sala').value.trim();
   G.sala=sala||genSala();
@@ -904,7 +2106,13 @@ async function testarAPI(){
   const k=document.getElementById('e-key').value.trim();
   if(!k){alert('Cole sua API Key primeiro!');return;}
   if(location.protocol==='file:'){alert('❌ Abra no navegador:\nhttps://pedroivodomingues.github.io/mesa-das-sombras/');return;}
-  const r=await IA.testar(k,G.prov);alert(r);
+  alert('Testando '+G.prov+'...');
+  try{
+    const r=await IA.testar(k,G.prov);
+    alert(r);
+  }catch(e){
+    alert('Erro: '+e.message);
+  }
 }
 
 // ── INIT ─────────────────────────────────────────────────
