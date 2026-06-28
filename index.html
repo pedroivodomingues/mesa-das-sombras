@@ -2,1479 +2,1682 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Mesa das Sombras</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Georgia,serif;background:#0d0a0e;color:#e8e0d4;min-height:100vh;overflow-y:auto}
-button{font-family:Georgia,serif;cursor:pointer}
-button:active{opacity:.75}
-textarea,input,select{font-family:Georgia,serif}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:2px}
-.hidden{display:none!important}
-@keyframes floatSword{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
-@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
-.card{animation:fadeInUp .6s ease}
-.page{animation:fadeInUp .4s ease}
+/* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Segoe UI',Arial,sans-serif;user-select:none;color:#e8e0d4}
+button{cursor:pointer;font-family:inherit}
+input,textarea,select{font-family:inherit}
 
-/* PAGE */
-.page{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;background:radial-gradient(ellipse at 50% 20%,#2a0d4e,#0d0a0e 70%);padding:16px;overflow-y:auto}
-.card{background:linear-gradient(160deg,#1a1225,#0f0a1a);border:1px solid rgba(139,92,246,.4);border-radius:16px;padding:20px;width:100%;max-width:440px;box-shadow:0 0 40px rgba(139,92,246,.15)}
-.lbl{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#8b5cf6;margin-bottom:4px;margin-top:10px;font-weight:700}
-.inp{width:100%;padding:11px 14px;background:rgba(0,0,0,.4);border:1px solid rgba(139,92,246,.3);border-radius:9px;color:#e8e0d4;font-size:15px;outline:none;transition:border-color .2s}
-.inp:focus{border-color:rgba(139,92,246,.7);background:rgba(0,0,0,.6)}
-.btn-v{width:100%;padding:14px;background:linear-gradient(135deg,#8b5cf6,#5b3fa6);border:none;border-radius:9px;color:#fff;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;box-shadow:0 4px 20px rgba(139,92,246,.4);transition:all .2s}
-.btn-v:active{transform:scale(.97);box-shadow:0 2px 10px rgba(139,92,246,.3)}
-.btn-g{width:100%;padding:14px;background:linear-gradient(135deg,#d4af37,#a8882a);border:none;border-radius:9px;color:#0d0a0e;font-size:15px;font-weight:700;letter-spacing:2px;text-transform:uppercase;box-shadow:0 4px 20px rgba(212,175,55,.4);transition:all .2s}
-.btn-g:active{transform:scale(.97)}
-.btn-s{width:100%;padding:11px;background:transparent;border:1px solid rgba(139,92,246,.3);border-radius:9px;color:#b8b0a4;font-size:13px}
-.err{padding:10px 14px;background:rgba(204,51,51,.12);border:1px solid rgba(204,51,51,.4);border-radius:8px;color:#ff8080;font-size:13px;margin-top:10px}
+/* GLASSMORPHISM */
+.glass{background:rgba(10,8,20,.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.glass-light{background:rgba(20,15,35,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.06)}
 
-/* SALA */
-#sala{height:100vh;display:flex;flex-direction:column;overflow:hidden}
-.hdr{height:50px;background:#1a1225;border-bottom:1px solid rgba(139,92,246,.25);display:flex;align-items:center;justify-content:space-between;padding:0 12px;flex-shrink:0}
-.hdr-abas{display:flex;gap:2px}
-.hab{padding:5px 10px;border:none;background:transparent;color:#b8b0a4;font-size:11px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;border-radius:4px 4px 0 0}
-.hab.on{color:#d4af37;border-bottom-color:#d4af37}
-.sala-body{flex:1;display:flex;overflow:hidden}
+/* ═══════════════════════════════════════════
+   MAPA (98% da tela)
+═══════════════════════════════════════════ */
+#map-container{position:fixed;inset:0;z-index:0}
+#map-canvas{display:block;image-rendering:pixelated}
 
-/* SIDEBAR */
-.sb{width:195px;background:#130e20;border-right:1px solid rgba(139,92,246,.2);padding:10px;overflow-y:auto;flex-shrink:0}
-.sb-title{font-weight:700;font-size:11px;color:#8b5cf6;margin-bottom:10px;letter-spacing:1px}
-.pj-card{padding:8px 10px;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.15);border-radius:8px;margin-bottom:6px;cursor:pointer}
-.main{flex:1;overflow-y:auto;padding:16px}
+/* ═══════════════════════════════════════════
+   HUD (sobre o mapa)
+═══════════════════════════════════════════ */
+#hud{position:fixed;inset:0;z-index:10;pointer-events:none}
+#hud>*{pointer-events:all}
 
-/* CHAT */
-.chat-wrap{flex:1;display:flex;overflow:hidden}
-.msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px}
-.msg-sys{text-align:center;padding:4px 12px;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.15);border-radius:4px;font-size:11px;color:#b8b0a4}
-.msg-priv{background:rgba(212,175,55,.06);border:1px dashed rgba(212,175,55,.3);border-radius:9px;padding:10px 14px}
-.msg-mestre-bubble{padding:13px 17px;background:rgba(18,12,28,.97);border:1px solid rgba(212,175,55,.2);border-left:3px solid #d4af37;border-radius:0 12px 12px 12px;font-size:15px;line-height:1.85;font-style:italic;color:#e8e0d4}
-.msg-jogador-bubble{padding:11px 15px;background:rgba(139,92,246,.13);border:1px solid rgba(139,92,246,.28);border-radius:12px 0 12px 12px;font-size:14px;line-height:1.65}
-.msg-dado-bubble{padding:9px 15px;border-radius:10px;font-family:monospace;font-size:15px}
-.voz-btn{padding:3px 10px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:rgba(255,255,255,.4)}
-.voz-btn.on{background:rgba(212,175,55,.15);border-color:#d4af37;color:#d4af37}
-.inp-area{padding:10px 12px;background:#1a1225;border-top:1px solid rgba(139,92,246,.2);flex-shrink:0}
-.inp-row{display:flex;gap:6px;align-items:flex-end}
-.inp-chat{flex:1;background:rgba(0,0,0,.45);border:1px solid rgba(139,92,246,.4);border-radius:10px;padding:10px 13px;color:#e8e0d4;font-size:14px;outline:none;resize:none;min-height:44px;max-height:100px;line-height:1.5}
-.ibtn{width:44px;height:44px;border-radius:10px;font-size:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.ibtn-mic{border:1px solid rgba(139,92,246,.3);background:rgba(139,92,246,.15);color:#e8e0d4}
-.ibtn-send{border:none;background:linear-gradient(135deg,#8b5cf6,#5b3fa6);color:#fff}
+/* ── BARRA SUPERIOR ── */
+#topbar{
+  position:absolute;top:0;left:0;right:0;
+  height:44px;
+  background:rgba(5,3,15,.7);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(212,175,55,.15);
+  display:flex;align-items:center;padding:0 8px;gap:4px;
+}
+.nav-btn{
+  height:32px;padding:0 10px;border-radius:6px;font-size:11px;font-weight:700;
+  border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);
+  color:#c0b090;letter-spacing:.5px;display:flex;align-items:center;gap:5px;
+  transition:all .15s;flex-shrink:0;
+}
+.nav-btn:hover,.nav-btn.on{background:rgba(212,175,55,.15);border-color:rgba(212,175,55,.4);color:#f0d060}
+.nav-sep{width:1px;height:24px;background:rgba(255,255,255,.1);flex-shrink:0;margin:0 2px}
+#topbar-right{margin-left:auto;display:flex;align-items:center;gap:6px}
 
-/* PAINEL LATERAL */
-.rp{width:155px;background:#1a1225;border-left:1px solid rgba(139,92,246,.15);overflow-y:auto;padding:10px 8px;flex-shrink:0}
-.sec-t{font-size:9px;color:#8b5cf6;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid rgba(139,92,246,.15)}
-.dado-g{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:10px}
-.dbtn{padding:9px 3px;background:rgba(0,0,0,.4);border:1px solid rgba(139,92,246,.3);border-radius:7px;color:#e8e0d4;font-size:11px;font-weight:700;text-align:center}
-.abtn{width:100%;padding:7px 8px;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.2);border-radius:7px;color:#b8b0a4;font-size:11px;text-align:left;margin-bottom:4px}
+/* ── VIDA (canto esquerdo baixo) ── */
+#vitals{
+  position:absolute;bottom:64px;left:8px;
+  width:200px;padding:10px 12px;border-radius:10px;
+}
+.vital-name{font-size:11px;font-weight:700;color:#d4af37;letter-spacing:1px;margin-bottom:6px;text-shadow:0 0 8px rgba(212,175,55,.4)}
+.hp-bar-wrap{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.hp-bar{flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden;border:1px solid rgba(255,255,255,.1)}
+.hp-fill{height:100%;border-radius:5px;transition:width .4s,background .4s}
+.hp-text{font-size:12px;font-weight:700;min-width:50px;text-align:right}
+.vital-stats{display:flex;gap:8px;margin-top:5px}
+.vstat{font-size:10px;color:#b8b0a4;display:flex;flex-direction:column;align-items:center;gap:2px}
+.vstat strong{font-size:13px;color:#e8e0d4;font-weight:700}
 
-/* GM */
-.gm-panel{width:225px;background:#130e20;border-right:1px solid rgba(212,175,55,.2);padding:12px;overflow-y:auto;flex-shrink:0}
-.gm-ta{width:100%;min-height:90px;background:rgba(0,0,0,.4);border:1px solid rgba(212,175,55,.25);border-radius:8px;padding:8px 10px;color:#e8e0d4;font-size:13px;outline:none;resize:vertical;line-height:1.5;margin-bottom:7px}
-.gm-send{width:100%;padding:10px;background:linear-gradient(135deg,#d4af37,#a8882a);border:none;border-radius:8px;color:#0d0a0e;font-size:13px;font-weight:700;margin-bottom:4px}
+/* ── DADOS (canto direito baixo) ── */
+#dice-panel{
+  position:absolute;bottom:64px;right:8px;
+  width:160px;padding:10px;border-radius:10px;
+}
+.dice-last{text-align:center;margin-bottom:6px}
+.dice-result{font-size:28px;font-weight:900;color:#d4af37;text-shadow:0 0 15px rgba(212,175,55,.5);line-height:1}
+.dice-label{font-size:10px;color:#888;margin-top:2px}
+.dice-hist{display:flex;gap:3px;justify-content:center;margin-bottom:8px;flex-wrap:wrap}
+.dice-h-item{font-size:10px;color:#888;padding:1px 4px;background:rgba(255,255,255,.05);border-radius:3px}
+.dice-h-item.crit{color:#d4af37}
+.dice-h-item.fumble{color:#f87171}
+.dice-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:6px}
+.dbtn{height:26px;border-radius:4px;font-size:10px;font-weight:700;border:1px solid rgba(212,175,55,.25);background:rgba(212,175,55,.08);color:#d4af37;transition:all .15s}
+.dbtn:hover{background:rgba(212,175,55,.2);border-color:#d4af37}
+.dbtn:active{transform:scale(.9)}
+.dice-custom{display:flex;gap:4px}
+.dice-custom input{flex:1;padding:4px 6px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:#e8e0d4;font-size:10px;outline:none}
+.dice-custom button{padding:4px 8px;background:rgba(139,92,246,.3);border:1px solid rgba(139,92,246,.5);border-radius:4px;color:#c084fc;font-size:10px;font-weight:700}
 
-/* TESOURO */
-.tes-sb{width:190px;background:#130e20;border-right:1px solid rgba(212,175,55,.2);padding:10px;overflow-y:auto;flex-shrink:0}
-.tes-content{flex:1;overflow-y:auto;padding:18px}
-.tes-mbtn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 10px;background:rgba(0,0,0,.3);border:1px solid rgba(212,175,55,.15);border-radius:9px;color:#b8b0a4;font-size:12px;margin-bottom:6px;text-align:left}
-.tes-mbtn.on{background:rgba(212,175,55,.1);border-color:rgba(212,175,55,.4);color:#d4af37;font-weight:700}
-.rar-card{margin-bottom:6px;padding:6px 8px;border-radius:7px}
-.item-card{padding:11px 13px;border-radius:9px;cursor:pointer;border:2px solid rgba(139,92,246,.2);background:rgba(0,0,0,.35);margin-bottom:8px}
-.item-card.sel{border-width:2px}
+/* ── LEGENDA (centro-baixo) ── */
+#legenda{
+  position:absolute;bottom:64px;left:50%;transform:translateX(-50%);
+  width:min(90vw,560px);max-height:120px;
+  padding:10px 14px;border-radius:10px;
+  font-size:14px;line-height:1.55;color:#f0e8d0;
+  display:none;text-align:center;
+  border:1px solid rgba(212,175,55,.2);
+}
+#legenda .leg-who{font-size:10px;color:#d4af37;letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:5px}
+#legenda .leg-txt{overflow-y:auto;max-height:80px}
+#legenda .leg-close{position:absolute;top:6px;right:8px;background:transparent;border:none;color:#555;font-size:14px;cursor:pointer}
+
+/* ── INPUT INFERIOR ── */
+#input-bar{
+  position:absolute;bottom:0;left:0;right:0;
+  height:56px;
+  background:rgba(5,3,15,.85);
+  backdrop-filter:blur(12px);
+  border-top:1px solid rgba(212,175,55,.1);
+  display:flex;align-items:center;gap:8px;padding:0 10px;
+}
+#msg-input{
+  flex:1;height:36px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);border-radius:18px;
+  padding:0 16px;color:#e8e0d4;font-size:13px;outline:none;
+  transition:border-color .2s;
+}
+#msg-input:focus{border-color:rgba(212,175,55,.4)}
+#msg-input::placeholder{color:#555}
+#btn-mic{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.4);
+  color:#c084fc;font-size:16px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .2s;
+}
+#btn-mic.recording{background:rgba(220,38,38,.3);border-color:#dc2626;color:#f87171;animation:pulse-mic .8s infinite}
+#btn-send{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#d4af37,#a8882a);
+  border:none;color:#0d0a0e;font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+@keyframes pulse-mic{0%,100%{box-shadow:0 0 0 0 rgba(220,38,38,.4)}50%{box-shadow:0 0 0 8px rgba(220,38,38,0)}}
+
+/* ── INDICADOR IA DIGITANDO ── */
+#typing-ind{
+  position:absolute;bottom:62px;left:50%;transform:translateX(-50%);
+  padding:6px 14px;border-radius:20px;font-size:12px;color:#888;
+  background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.08);
+  display:none;
+}
+.dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#888;margin:0 2px;animation:bounce .8s infinite}
+.dot:nth-child(2){animation-delay:.15s}
+.dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+
+/* ══════════════════════════════════════════
+   JANELAS FLUTUANTES
+══════════════════════════════════════════ */
+.win{
+  position:fixed;z-index:50;border-radius:12px;
+  display:none;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,.7);
+}
+.win.open{display:flex}
+.win-header{
+  height:40px;display:flex;align-items:center;padding:0 12px;gap:8px;
+  border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;border-radius:12px 12px 0 0;
+  background:rgba(0,0,0,.3);cursor:move;
+}
+.win-title{font-size:12px;font-weight:700;color:#d4af37;letter-spacing:1px;flex:1}
+.win-close{background:transparent;border:none;color:#666;font-size:16px;cursor:pointer;padding:4px}
+.win-close:hover{color:#f87171}
+.win-body{flex:1;overflow-y:auto;padding:12px}
+.win-body::-webkit-scrollbar{width:3px}
+.win-body::-webkit-scrollbar-thumb{background:rgba(212,175,55,.3);border-radius:2px}
+
+/* JORNAL */
+#win-jornal{
+  top:52px;left:8px;width:340px;height:calc(100vh - 130px);
+  background:rgba(8,6,18,.9);border:1px solid rgba(212,175,55,.15);
+}
+.journal-entry{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.je-time{font-size:9px;color:#555;margin-bottom:3px}
+.je-who{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:3px}
+.je-txt{font-size:12px;line-height:1.5;color:#c0b090}
+.je-roll{font-size:11px;padding:4px 8px;border-radius:4px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.2);color:#d4af37;margin-top:4px;display:inline-block}
 
 /* FICHA */
-.ftabs{display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap}
-.ftab{padding:6px 10px;border:1px solid rgba(139,92,246,.2);background:transparent;color:#b8b0a4;font-size:11px;cursor:pointer;border-radius:6px}
-.ftab.on{background:rgba(139,92,246,.2);color:#e8e0d4;border-color:rgba(139,92,246,.5);font-weight:700}
-.attr-c{padding:12px 6px;background:rgba(0,0,0,.4);border:1px solid rgba(139,92,246,.25);border-radius:10px;text-align:center}
-.ta{width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:8px 11px;color:#e8e0d4;font-size:13px;outline:none;resize:vertical;line-height:1.5}
+#win-ficha{
+  top:52px;right:8px;width:380px;height:calc(100vh - 130px);
+  background:rgba(8,6,18,.9);border:1px solid rgba(139,92,246,.2);
+}
+.ficha-tabs{display:flex;gap:3px;margin-bottom:10px;flex-wrap:wrap}
+.ft{padding:4px 8px;border-radius:5px;font-size:10px;font-weight:700;border:1px solid rgba(139,92,246,.2);background:transparent;color:#888;cursor:pointer}
+.ft.on{background:rgba(139,92,246,.2);border-color:#8b5cf6;color:#c084fc}
 
-/* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:300;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:16px}
-.modal-box{background:#1a1225;border:1px solid rgba(139,92,246,.5);border-radius:16px;padding:24px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto}
+/* MAGIAS */
+#win-magias{
+  top:52px;left:50%;transform:translateX(-50%);width:min(95vw,500px);height:calc(100vh - 130px);
+  background:rgba(8,6,18,.9);border:1px solid rgba(192,132,252,.2);
+}
+.spell-card{
+  padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.07);
+  background:rgba(255,255,255,.03);margin-bottom:6px;cursor:pointer;
+  transition:all .2s;
+}
+.spell-card:hover{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3)}
+.spell-name{font-size:13px;font-weight:700;color:#e8e0d4;margin-bottom:3px}
+.spell-meta{font-size:10px;color:#888;margin-bottom:4px}
+.spell-desc{font-size:11px;color:#b0a090;line-height:1.4}
+.spell-slots{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.slot{width:20px;height:20px;border-radius:50%;border:2px solid;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.slot.used{opacity:.3}
+.slot.available{border-color:#c084fc;background:rgba(192,132,252,.15);color:#c084fc}
 
-/* TYPING */
-@keyframes pulse{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-8px);opacity:1}}
-.dot{width:8px;height:8px;border-radius:50%;background:#d4af37;display:inline-block;animation:pulse 1.2s ease-in-out infinite}
+/* INVENTÁRIO */
+#win-inv{
+  top:52px;left:50%;transform:translateX(-50%);width:min(95vw,440px);height:calc(100vh - 130px);
+  background:rgba(8,6,18,.9);border:1px solid rgba(74,222,128,.15);
+}
+.inv-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,.05);margin-bottom:4px;background:rgba(255,255,255,.02)}
+.inv-icon{font-size:20px;flex-shrink:0}
+.inv-info{flex:1}
+.inv-name{font-size:12px;font-weight:700;color:#e8e0d4}
+.inv-desc{font-size:10px;color:#888}
+.inv-qty{font-size:11px;color:#d4af37;font-weight:700;flex-shrink:0}
+.moedas{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:12px}
+.moeda{padding:8px 4px;border-radius:6px;text-align:center;border:1px solid}
+.moeda-icon{font-size:16px}
+.moeda-val{font-size:14px;font-weight:700}
+.moeda-nome{font-size:9px;opacity:.7}
+
+/* MISSÕES */
+#win-missoes{
+  top:52px;left:50%;transform:translateX(-50%);width:min(95vw,420px);height:calc(100vh - 130px);
+  background:rgba(8,6,18,.9);border:1px solid rgba(251,191,36,.15);
+}
+.quest-card{padding:10px;border-radius:8px;border:1px solid rgba(251,191,36,.15);background:rgba(251,191,36,.03);margin-bottom:6px}
+.quest-title{font-size:13px;font-weight:700;color:#fbbf24;margin-bottom:4px}
+.quest-desc{font-size:11px;color:#b0a090;margin-bottom:6px;line-height:1.4}
+.quest-obj{font-size:10px;color:#888;padding-left:12px}
+.quest-obj li{margin-bottom:2px}
+.quest-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;margin-bottom:6px}
+
+/* COMBATE */
+#win-combate{
+  position:fixed;inset:0;z-index:80;
+  background:rgba(5,2,10,.92);backdrop-filter:blur(4px);
+  display:none;flex-direction:column;
+}
+#win-combate.open{display:flex}
+.combat-header{
+  height:50px;background:rgba(180,0,0,.2);border-bottom:1px solid rgba(220,38,38,.3);
+  display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0;
+}
+.combat-title{font-size:14px;font-weight:900;color:#f87171;letter-spacing:2px}
+.combat-round{font-size:12px;color:#888}
+.combat-area{flex:1;display:flex;overflow:hidden}
+.combat-map{flex:1;position:relative}
+.combat-sidebar{width:220px;background:rgba(0,0,0,.4);border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;overflow:hidden}
+.init-list{flex:1;overflow-y:auto;padding:8px}
+.init-item{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,.06);margin-bottom:4px;display:flex;align-items:center;gap:8px;cursor:pointer}
+.init-item.ativo{background:rgba(212,175,55,.1);border-color:#d4af37}
+.init-roll{font-size:16px;font-weight:900;color:#d4af37;min-width:28px;text-align:center}
+.init-info{flex:1}
+.init-nome{font-size:12px;font-weight:700}
+.init-pv{font-size:10px;color:#888}
+.combat-actions{padding:8px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.ca-btn{width:100%;padding:8px;border-radius:6px;margin-bottom:4px;font-size:11px;font-weight:700;border:1px solid;cursor:pointer;transition:all .15s}
+
+/* AÇÃO EXECUTADA */
+#win-acao{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:100;width:min(90vw,380px);
+  background:rgba(8,6,18,.97);border:2px solid rgba(212,175,55,.4);
+  border-radius:14px;padding:20px;display:none;text-align:center;
+  box-shadow:0 0 40px rgba(212,175,55,.2);
+}
+.acao-titulo{font-size:15px;font-weight:700;color:#d4af37;margin-bottom:12px}
+.dado-result{font-size:52px;font-weight:900;line-height:1;margin:10px 0}
+.acao-detalhe{font-size:13px;color:#b0a090;line-height:1.5}
+.acao-close{margin-top:14px;padding:8px 24px;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);border-radius:6px;color:#d4af37;font-size:12px;font-weight:700;cursor:pointer}
+
+/* CONFIGURAÇÕES */
+#win-config{
+  top:52px;right:8px;width:320px;
+  background:rgba(8,6,18,.95);border:1px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:14px;display:none;
+}
+.cfg-section{margin-bottom:14px}
+.cfg-title{font-size:10px;color:#8b5cf6;letter-spacing:2px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
+.cfg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cfg-label{font-size:12px;color:#b8b0a4}
+.cfg-input{padding:5px 10px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#e8e0d4;font-size:12px;outline:none;width:160px}
+.cfg-select{padding:5px 10px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.15);border-radius:5px;color:#e8e0d4;font-size:12px;outline:none}
+
+/* SCROLLBAR */
+*::-webkit-scrollbar{width:3px;height:3px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:rgba(212,175,55,.2);border-radius:2px}
+
+/* ANIMAÇÕES */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.anim-in{animation:fadeIn .2s ease}
+@keyframes critFlash{0%,100%{text-shadow:0 0 20px #d4af37}50%{text-shadow:0 0 60px #d4af37,0 0 100px #d4af37}}
+.crit-anim{animation:critFlash .5s ease 3}
+
+/* TELA DE ENTRADA */
+#tela-entrada{
+  position:fixed;inset:0;z-index:200;
+  background:radial-gradient(ellipse at 50% 40%,#1a0a35,#050310);
+  display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;
+}
+.entrada-card{
+  width:100%;max-width:420px;
+  background:linear-gradient(160deg,rgba(20,12,40,.95),rgba(8,5,20,.98));
+  border:1px solid rgba(212,175,55,.2);border-radius:16px;padding:24px;
+  box-shadow:0 0 60px rgba(139,92,246,.15);
+}
+.entrada-logo{text-align:center;margin-bottom:24px}
+.entrada-espada{font-size:52px;margin-bottom:8px;animation:floatSword 3s ease-in-out infinite;display:block}
+@keyframes floatSword{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
+.entrada-titulo{font-size:clamp(22px,6vw,32px);font-weight:900;color:#d4af37;letter-spacing:3px;text-transform:uppercase;text-shadow:0 0 20px rgba(212,175,55,.4);margin-bottom:4px}
+.entrada-sub{font-size:10px;color:#8b5cf6;letter-spacing:4px;text-transform:uppercase}
+.elbl{font-size:9px;color:#8b5cf6;letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:4px;margin-top:12px;display:block}
+.einp{width:100%;padding:10px 14px;background:rgba(0,0,0,.5);border:1px solid rgba(139,92,246,.25);border-radius:8px;color:#e8e0d4;font-size:14px;outline:none;transition:border-color .2s}
+.einp:focus{border-color:rgba(212,175,55,.5)}
+.prov-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
+.prov-btn{padding:10px 4px;border-radius:8px;border:2px solid rgba(139,92,246,.2);background:rgba(0,0,0,.3);cursor:pointer;text-align:center;transition:all .2s}
+.prov-btn.on{border-color:#d4af37;background:rgba(212,175,55,.1)}
+.prov-btn span{font-size:18px;display:block;margin-bottom:3px}
+.prov-btn small{font-size:9px;color:#d4af37;font-weight:700;display:block}
+.prov-btn tiny{font-size:8px;color:#888;display:block}
+.modo-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.modo-btn{padding:12px;border-radius:10px;border:2px solid rgba(139,92,246,.2);background:rgba(0,0,0,.3);cursor:pointer;text-align:center;transition:all .2s}
+.modo-btn.on{border-color:#d4af37;background:rgba(212,175,55,.1)}
+.modo-btn span{font-size:24px;display:block;margin-bottom:4px}
+.modo-btn b{font-size:12px;color:#d4af37;display:block}
+.modo-btn small{font-size:10px;color:#888}
+.ebtn{width:100%;padding:13px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;margin-top:10px;letter-spacing:1px;transition:all .2s}
+.ebtn-p{background:linear-gradient(135deg,#d4af37,#a8882a);color:#0d0a0e;box-shadow:0 4px 20px rgba(212,175,55,.3)}
+.ebtn-s{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3)!important;color:#c084fc}
 </style>
 </head>
 <body>
 
-<!-- ENTRADA -->
-<div id="pg-entrada" class="page">
-<div class="card">
-  <div style="text-align:center;margin-bottom:16px;position:relative">
-    <div style="font-size:48px;margin-bottom:6px;animation:floatSword 3s ease-in-out infinite">⚔️</div>
-    <h1 style="font-size:clamp(24px,6vw,36px);font-weight:900;color:#d4af37;letter-spacing:3px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 0 20px rgba(212,175,55,.5)">Mesa das Sombras</h1>
-    <p style="font-size:10px;color:#8b5cf6;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px">RPG com Inteligência Artificial</p>
-    <div style="width:50px;height:1px;background:linear-gradient(90deg,transparent,#d4af37,transparent);margin:8px auto"></div>
+<!-- MAPA (fundo) -->
+<div id="map-container">
+  <canvas id="map-canvas"></canvas>
+</div>
+
+<!-- TELA DE ENTRADA -->
+<div id="tela-entrada">
+<div class="entrada-card">
+  <div class="entrada-logo">
+    <span class="entrada-espada">⚔️</span>
+    <div class="entrada-titulo">Mesa das Sombras</div>
+    <div class="entrada-sub">RPG com Inteligência Artificial</div>
   </div>
 
-  <label class="lbl">Seu nome de aventureiro</label>
-  <input class="inp" id="e-nome" placeholder="Ex: Pedro, Lyria, Thorin...">
+  <span class="elbl">Seu Nome de Aventureiro</span>
+  <input class="einp" id="e-nome" placeholder="Ex: Thorin, Lyria, Valdros...">
 
-  <label class="lbl">Nome da campanha</label>
-  <input class="inp" id="e-camp" placeholder="Ex: Procurando meu pai desaparecido">
+  <span class="elbl">Nome da Campanha</span>
+  <input class="einp" id="e-camp" placeholder="Ex: A Maldição do Castelo Sombrio">
 
-  <label class="lbl" style="margin-top:14px">Modo de jogo</label>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 16px">
-    <div id="mc-ia" onclick="selModo('ia')" style="padding:14px;border-radius:12px;cursor:pointer;text-align:center;border:2px solid #d4af37;background:rgba(212,175,55,.1)">
-      <div style="font-size:28px;margin-bottom:6px">🤖</div>
-      <div style="font-size:12px;font-weight:700;color:#d4af37;margin-bottom:3px">Mestre IA</div>
-      <div style="font-size:10px;color:#b8b0a4;line-height:1.3">IA cria o mundo e narra tudo</div>
+  <span class="elbl">Modo de Jogo</span>
+  <div class="modo-grid">
+    <div class="modo-btn on" id="m-ia" onclick="selModo('ia')">
+      <span>🤖</span><b>Mestre IA</b><small>IA narra tudo</small>
     </div>
-    <div id="mc-gm" onclick="selModo('gm')" style="padding:14px;border-radius:12px;cursor:pointer;text-align:center;border:2px solid rgba(139,92,246,.25);background:rgba(0,0,0,.2)">
-      <div style="font-size:28px;margin-bottom:6px">👑</div>
-      <div style="font-size:12px;font-weight:700;color:#d4af37;margin-bottom:3px">Mestre Humano</div>
-      <div style="font-size:10px;color:#b8b0a4;line-height:1.3">Você narra, IA pode ajudar</div>
+    <div class="modo-btn" id="m-hum" onclick="selModo('humano')">
+      <span>👑</span><b>Mestre Humano</b><small>Você narra</small>
     </div>
   </div>
 
-  <div id="apikey-wrap">
-    <label class="lbl">Provedor de IA <span id="apikey-lbl" style="text-transform:none;letter-spacing:0;font-size:10px">(para Mestre IA)</span></label>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:8px 0 12px">
-      <div id="prov-claude" onclick="selProvedor('claude')" style="padding:10px;border-radius:10px;cursor:pointer;text-align:center;border:2px solid #d4af37;background:rgba(212,175,55,.1)">
-        <div style="font-size:20px;margin-bottom:4px">🤖</div>
-        <div style="font-size:12px;font-weight:700;color:#d4af37">Claude</div>
-        <div style="font-size:10px;color:#b8b0a4">Anthropic</div>
+  <span class="elbl">Provedor de IA</span>
+  <div class="prov-grid">
+    <div class="prov-btn on" id="pv-claude" onclick="selProv('claude')">
+      <span>🤖</span><small>Claude</small><tiny>Anthropic</tiny>
+    </div>
+    <div class="prov-btn" id="pv-openai" onclick="selProv('openai')">
+      <span>💬</span><small>ChatGPT</small><tiny>OpenAI</tiny>
+    </div>
+    <div class="prov-btn" id="pv-gemini" onclick="selProv('gemini')">
+      <span>✨</span><small>Gemini</small><tiny>Google</tiny>
+    </div>
+  </div>
+
+  <span class="elbl" id="key-lbl">API Key do Claude</span>
+  <input class="einp" id="e-key" type="password" placeholder="sk-ant-...">
+  <p style="font-size:10px;color:#666;margin-top:4px" id="key-hint">Grátis em console.anthropic.com</p>
+
+  <span class="elbl">Código de Sala (multiplayer opcional)</span>
+  <input class="einp" id="e-sala" placeholder="Deixe vazio para criar nova sala">
+
+  <button class="ebtn ebtn-p" onclick="iniciarJogo()">⚔️ Entrar na Aventura</button>
+  <button class="ebtn ebtn-s" style="border:1px solid" onclick="document.getElementById('tela-entrada').style.display='none'">👁️ Entrar como Espectador</button>
+</div>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+
+  <!-- BARRA SUPERIOR -->
+  <div id="topbar">
+    <div id="player-badge" style="display:flex;align-items:center;gap:6px;margin-right:8px">
+      <span id="pb-avatar" style="font-size:20px">⚔️</span>
+      <div>
+        <div id="pb-nome" style="font-size:11px;font-weight:700;color:#d4af37;line-height:1">—</div>
+        <div id="pb-sub" style="font-size:9px;color:#888">Lv1 Guerreiro</div>
       </div>
-      <div id="prov-openai" onclick="selProvedor('openai')" style="padding:10px;border-radius:10px;cursor:pointer;text-align:center;border:2px solid rgba(139,92,246,.25);background:rgba(0,0,0,.2)">
-        <div style="font-size:20px;margin-bottom:4px">💬</div>
-        <div style="font-size:12px;font-weight:700;color:#d4af37">ChatGPT</div>
-        <div style="font-size:10px;color:#b8b0a4">OpenAI</div>
+    </div>
+    <div class="nav-sep"></div>
+    <button class="nav-btn" onclick="toggleWin('win-jornal')">📖 Jornal</button>
+    <button class="nav-btn" onclick="toggleWin('win-ficha')">👤 Ficha</button>
+    <button class="nav-btn" onclick="toggleWin('win-magias')">✨ Magias</button>
+    <button class="nav-btn" onclick="toggleWin('win-inv')">🎒 Inventário</button>
+    <button class="nav-btn" onclick="toggleWin('win-missoes')">📜 Missões</button>
+    <div id="topbar-right">
+      <div id="sala-badge" style="font-size:10px;color:#888;padding:4px 8px;background:rgba(255,255,255,.05);border-radius:5px;border:1px solid rgba(255,255,255,.08)">
+        🔗 <span id="sala-cod">—</span>
       </div>
-      <div id="prov-gemini" onclick="selProvedor('gemini')" style="padding:10px;border-radius:10px;cursor:pointer;text-align:center;border:2px solid rgba(139,92,246,.25);background:rgba(0,0,0,.2)">
-        <div style="font-size:20px;margin-bottom:4px">✨</div>
-        <div style="font-size:12px;font-weight:700;color:#d4af37">Gemini</div>
-        <div style="font-size:10px;color:#b8b0a4">Google</div>
+      <button class="nav-btn" onclick="toggleWin('win-config')">⚙️</button>
+    </div>
+  </div>
+
+  <!-- VITAIS (esq baixo) -->
+  <div id="vitals" class="glass">
+    <div class="vital-name" id="v-nome">Herói</div>
+    <div class="hp-bar-wrap">
+      <div class="hp-bar"><div class="hp-fill" id="hp-fill" style="width:100%;background:linear-gradient(90deg,#22c55e,#4ade80)"></div></div>
+      <div class="hp-text" id="hp-text" style="color:#4ade80">30/30</div>
+    </div>
+    <div class="vital-stats">
+      <div class="vstat"><strong id="v-ca">10</strong><span>CA</span></div>
+      <div class="vstat"><strong id="v-init">+0</strong><span>Init</span></div>
+      <div class="vstat"><strong id="v-pp">10</strong><span>Perc.P</span></div>
+      <div class="vstat"><span id="v-insp" style="font-size:16px">⬜</span><span>Insp.</span></div>
+    </div>
+  </div>
+
+  <!-- DADOS (dir baixo) -->
+  <div id="dice-panel" class="glass">
+    <div class="dice-last">
+      <div class="dice-result" id="dice-result">—</div>
+      <div class="dice-label" id="dice-label">Role um dado</div>
+    </div>
+    <div class="dice-hist" id="dice-hist"></div>
+    <div class="dice-btns">
+      <button class="dbtn" onclick="rolar(4)">D4</button>
+      <button class="dbtn" onclick="rolar(6)">D6</button>
+      <button class="dbtn" onclick="rolar(8)">D8</button>
+      <button class="dbtn" onclick="rolar(10)">D10</button>
+      <button class="dbtn" onclick="rolar(12)">D12</button>
+      <button class="dbtn" onclick="rolar(20)" style="border-color:rgba(212,175,55,.5);color:#d4af37">D20</button>
+      <button class="dbtn" onclick="rolar(100)">D%</button>
+      <button class="dbtn" onclick="rolar2d6()">2D6</button>
+    </div>
+    <div class="dice-custom">
+      <input id="dado-custom" placeholder="2d6+3" value="">
+      <button onclick="rolarCustom()">🎲</button>
+    </div>
+  </div>
+
+  <!-- LEGENDA -->
+  <div id="legenda" class="glass">
+    <button class="leg-close" onclick="fecharLegenda()">✕</button>
+    <div class="leg-who" id="leg-who">🐉 MESTRE</div>
+    <div class="leg-txt" id="leg-txt"></div>
+  </div>
+
+  <!-- DIGITANDO -->
+  <div id="typing-ind" class="glass-light">
+    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span style="margin-left:6px;font-size:11px">Mestre narrando...</span>
+  </div>
+
+  <!-- INPUT INFERIOR -->
+  <div id="input-bar">
+    <button id="btn-mic" onclick="toggleMic()" title="Falar">🎤</button>
+    <input id="msg-input" type="text" placeholder="O que você faz? Fale com o Mestre..." onkeydown="if(event.key==='Enter')enviarMsg()">
+    <button id="btn-send" onclick="enviarMsg()" title="Enviar">➤</button>
+  </div>
+</div>
+
+<!-- JANELA: JORNAL -->
+<div class="win glass" id="win-jornal">
+  <div class="win-header" onmousedown="dragStart(event,'win-jornal')">
+    <span style="font-size:16px">📖</span>
+    <div class="win-title">JORNAL DA CAMPANHA</div>
+    <button class="win-close" onclick="closeWin('win-jornal')">✕</button>
+  </div>
+  <div class="win-body" id="jornal-body">
+    <div style="text-align:center;padding:30px;color:#444;font-size:13px">A aventura ainda não começou...</div>
+  </div>
+</div>
+
+<!-- JANELA: FICHA -->
+<div class="win glass" id="win-ficha">
+  <div class="win-header" onmousedown="dragStart(event,'win-ficha')">
+    <span style="font-size:16px">👤</span>
+    <div class="win-title">FICHA DO PERSONAGEM</div>
+    <button class="win-close" onclick="closeWin('win-ficha')">✕</button>
+  </div>
+  <div class="win-body" id="ficha-body"></div>
+</div>
+
+<!-- JANELA: MAGIAS -->
+<div class="win glass" id="win-magias">
+  <div class="win-header" onmousedown="dragStart(event,'win-magias')">
+    <span style="font-size:16px">✨</span>
+    <div class="win-title">MAGIAS & HABILIDADES</div>
+    <button class="win-close" onclick="closeWin('win-magias')">✕</button>
+  </div>
+  <div class="win-body" id="magias-body"></div>
+</div>
+
+<!-- JANELA: INVENTÁRIO -->
+<div class="win glass" id="win-inv">
+  <div class="win-header" onmousedown="dragStart(event,'win-inv')">
+    <span style="font-size:16px">🎒</span>
+    <div class="win-title">INVENTÁRIO</div>
+    <button class="win-close" onclick="closeWin('win-inv')">✕</button>
+  </div>
+  <div class="win-body" id="inv-body"></div>
+</div>
+
+<!-- JANELA: MISSÕES -->
+<div class="win glass" id="win-missoes">
+  <div class="win-header" onmousedown="dragStart(event,'win-missoes')">
+    <span style="font-size:16px">📜</span>
+    <div class="win-title">MISSÕES</div>
+    <button class="win-close" onclick="closeWin('win-missoes')">✕</button>
+  </div>
+  <div class="win-body" id="missoes-body">
+    <div style="text-align:center;padding:30px;color:#444">Nenhuma missão ativa.</div>
+  </div>
+</div>
+
+<!-- JANELA: COMBATE -->
+<div class="win" id="win-combate">
+  <div class="combat-header">
+    <span style="font-size:20px">⚔️</span>
+    <div class="combat-title">COMBATE ATIVO</div>
+    <div class="combat-round">Rodada <span id="c-rodada">1</span></div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button onclick="proxTurno()" style="padding:6px 14px;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:6px;color:#4ade80;font-size:11px;font-weight:700;cursor:pointer">▶ Próximo Turno</button>
+      <button onclick="encerrarCombate()" style="padding:6px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#888;font-size:11px;cursor:pointer">✕ Encerrar</button>
+    </div>
+  </div>
+  <div class="combat-area">
+    <div class="combat-map" id="combat-map-area">
+      <canvas id="combat-canvas"></canvas>
+    </div>
+    <div class="combat-sidebar">
+      <div style="padding:8px;border-bottom:1px solid rgba(255,255,255,.06)">
+        <div style="font-size:9px;color:#8b5cf6;letter-spacing:2px;margin-bottom:6px">⚔️ INICIATIVA</div>
+        <div id="turno-atual" style="font-size:11px;color:#d4af37;font-style:italic"></div>
+      </div>
+      <div class="init-list" id="init-list"></div>
+      <div class="combat-actions">
+        <button class="ca-btn" style="background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.3);color:#f87171" onclick="acaoCombate('atacar')">⚔️ Atacar</button>
+        <button class="ca-btn" style="background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3);color:#c084fc" onclick="acaoCombate('magia')">✨ Magia/Habilidade</button>
+        <button class="ca-btn" style="background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.2);color:#4ade80" onclick="acaoCombate('mover')">🏃 Mover</button>
+        <button class="ca-btn" style="background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.2);color:#fbbf24" onclick="acaoCombate('dash')">💨 Dash</button>
+        <button class="ca-btn" style="background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2);color:#60a5fa" onclick="acaoCombate('defender')">🛡️ Esquivar</button>
       </div>
     </div>
-    <input class="inp" id="e-key" type="password" placeholder="sk-ant-... ou sk-...">
-    <p id="apikey-hint" style="font-size:11px;color:#b8b0a4;margin-top:6px;line-height:1.5">Grátis em <a href="https://console.anthropic.com" target="_blank" style="color:#8b5cf6">console.anthropic.com</a>. Salva no navegador.</p>
   </div>
+</div>
 
-  <div id="e-err" style="display:none" class="err"></div>
-  <button class="btn-v" style="margin-top:16px" onclick="iniciar()">🌍 Criar Mundo e Começar</button>
+<!-- JANELA: AÇÃO/DADO -->
+<div id="win-acao" class="glass">
+  <div class="acao-titulo" id="acao-tit">🎲 Rolagem</div>
+  <div class="dado-result" id="acao-result">—</div>
+  <div class="acao-detalhe" id="acao-det"></div>
+  <button class="acao-close" onclick="fecharAcao()">Fechar</button>
+</div>
 
-  <div style="margin-top:14px;border-top:1px solid rgba(139,92,246,.15);padding-top:14px">
-    <div style="font-size:12px;color:#b8b0a4;text-align:center;margin-bottom:8px">Já tem um código de sala?</div>
-    <div style="display:flex;gap:8px">
-      <input id="e-cod" placeholder="Ex: DRAGAO-42" oninput="this.value=this.value.toUpperCase()" style="flex:1;padding:11px 13px;background:rgba(0,0,0,.5);border:1px solid rgba(139,92,246,.35);border-radius:9px;color:#e8e0d4;font-size:14px;outline:none;font-family:monospace;letter-spacing:2px">
-      <button class="btn-v" style="width:auto;padding:11px 14px;font-size:13px" onclick="entrar()">Entrar</button>
+<!-- JANELA: CONFIG -->
+<div id="win-config" class="glass">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <span style="font-size:12px;font-weight:700;color:#d4af37">⚙️ CONFIGURAÇÕES</span>
+    <button onclick="document.getElementById('win-config').style.display='none'" style="background:transparent;border:none;color:#666;cursor:pointer;font-size:16px">✕</button>
+  </div>
+  <div class="cfg-section">
+    <div class="cfg-title">API Key</div>
+    <div class="cfg-row">
+      <span class="cfg-label">Provedor</span>
+      <select class="cfg-select" id="cfg-prov" onchange="mudarProv(this.value)">
+        <option value="claude">Claude (Anthropic)</option>
+        <option value="openai">ChatGPT (OpenAI)</option>
+        <option value="gemini">Gemini (Google)</option>
+      </select>
+    </div>
+    <div class="cfg-row">
+      <span class="cfg-label">API Key</span>
+      <input class="cfg-input" type="password" id="cfg-key" placeholder="sk-ant-..." onchange="salvarKey()">
     </div>
   </div>
-  <p id="e-db" style="font-size:11px;color:#b8b0a4;text-align:center;margin-top:10px;opacity:.6"></p>
-</div>
-</div>
-
-<!-- MUNDO -->
-<div id="pg-mundo" class="page hidden">
-<div style="width:100%;max-width:500px">
-<div class="card">
-  <div style="text-align:center;margin-bottom:22px">
-    <div style="font-size:46px;margin-bottom:10px">🌍</div>
-    <h2 id="m-nome" style="color:#d4af37;font-size:22px;margin-bottom:4px"></h2>
-    <p id="m-era" style="color:#8b5cf6;font-size:12px;letter-spacing:3px;text-transform:uppercase"></p>
-  </div>
-  <div id="m-blocos"></div>
-
-  <div style="padding:12px 14px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-    <div>
-      <div style="font-size:13px;color:#e8e0d4;font-weight:700;margin-bottom:2px">🔊 Voz automática do Mestre</div>
-      <div style="font-size:11px;color:#b8b0a4">O Mestre fala cada narração automaticamente</div>
+  <div class="cfg-section">
+    <div class="cfg-title">Áudio</div>
+    <div class="cfg-row">
+      <span class="cfg-label">Narração por voz</span>
+      <input type="checkbox" id="cfg-tts" onchange="G.tts=this.checked">
     </div>
-    <button id="btn-vauto" onclick="togVozAuto()" style="padding:7px 14px;border-radius:20px;border:1px solid rgba(139,92,246,.3);background:rgba(0,0,0,.3);color:#b8b0a4;font-size:12px;font-weight:700">○ Off</button>
-  </div>
-
-  <button class="btn-g" style="font-size:16px;padding:16px;margin-bottom:8px" onclick="comecar()">🚀 Iniciar Sessão — Que a aventura comece!</button>
-  <button class="btn-s" onclick="pg('entrada')">← Voltar</button>
-</div>
-</div>
-</div>
-
-<!-- SALA -->
-<div id="pg-sala" class="hidden" style="height:100vh;display:flex;flex-direction:column;overflow:hidden">
-  <div class="hdr">
-    <div>
-      <div id="h-camp" style="color:#d4af37;font-weight:700;font-size:13px"></div>
-      <div id="h-mundo" style="color:#8b5cf6;font-size:10px"></div>
-    </div>
-    <div class="hdr-abas">
-      <button class="hab on" id="hab-pj" onclick="aba('pj')">👤 PJs</button>
-      <button class="hab" id="hab-chat" onclick="aba('chat')">💬 Mesa</button>
-      <button class="hab" id="hab-tes" onclick="aba('tes')">💎 Tesouro</button>
-    </div>
-    <div style="display:flex;gap:5px;align-items:center">
-      <button id="btn-cod" onclick="copiarCod()" style="padding:3px 8px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);border-radius:6px;color:#8b5cf6;font-size:10px;font-family:monospace"></button>
-      <button id="btn-vhdr" onclick="togVozAuto()" style="padding:3px 8px;border-radius:20px;border:1px solid rgba(139,92,246,.2);background:transparent;color:#b8b0a4;font-size:11px;font-weight:700">🔇</button>
-      <span id="modo-badge" style="font-size:9px;padding:2px 7px;border-radius:20px;background:rgba(139,92,246,.2);color:#8b5cf6;border:1px solid rgba(139,92,246,.4);font-weight:700">🤖 IA</span>
-      <button onclick="if(confirm('Sair?')){pararVoz();pg('entrada');S.msgs=[];}" style="padding:4px 8px;background:rgba(204,51,51,.1);border:1px solid rgba(204,51,51,.3);border-radius:6px;color:#ff6b6b;font-size:12px">✖</button>
+    <div class="cfg-row">
+      <span class="cfg-label">Reconh. de voz</span>
+      <input type="checkbox" id="cfg-stt" onchange="G.stt=this.checked" checked>
     </div>
   </div>
-  <div id="sala-body" class="sala-body"></div>
-</div>
-
-<!-- MODAL IMPORTAR -->
-<div id="mod-imp" class="modal-bg hidden" onclick="if(event.target===this)fechaMod('mod-imp')">
-<div class="modal-box">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-    <span style="color:#d4af37;font-size:18px">📥 Importar Personagem</span>
-    <button onclick="fechaMod('mod-imp')" style="background:transparent;border:none;color:#ff6b6b;font-size:22px">✖</button>
-  </div>
-  <div style="display:flex;gap:4px;margin-bottom:20px;background:rgba(0,0,0,.3);border-radius:8px;padding:4px">
-    <button id="iab-form" onclick="setImpAba('form')" style="flex:1;padding:9px;border:none;background:#8b5cf6;color:#fff;border-radius:6px;font-size:13px;font-weight:700">📋 Formulário</button>
-    <button id="iab-txt" onclick="setImpAba('txt')" style="flex:1;padding:9px;border:none;background:transparent;color:#b8b0a4;border-radius:6px;font-size:13px;font-weight:700">📄 Colar / Descrever</button>
-  </div>
-
-  <div id="imp-form">
-    <label class="lbl">Avatar</label>
-    <div id="imp-avts" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-      <div><label class="lbl">Nome *</label><input class="inp" id="i-nome" placeholder="Nome do personagem"></div>
-      <div><label class="lbl">Jogador</label><input class="inp" id="i-jog" placeholder="Seu nome"></div>
-      <div><label class="lbl">Raça</label><select class="inp" id="i-raca"></select></div>
-      <div><label class="lbl">Classe</label><select class="inp" id="i-classe"></select></div>
-      <div><label class="lbl">Nível</label><input class="inp" type="number" id="i-niv" value="1" min="1" max="20"></div>
-      <div><label class="lbl">CA</label><input class="inp" type="number" id="i-ca" value="10"></div>
-      <div><label class="lbl">PV Atual</label><input class="inp" type="number" id="i-pv" value="10"></div>
-      <div><label class="lbl">PV Máximo</label><input class="inp" type="number" id="i-pvm" value="10"></div>
+  <div class="cfg-section">
+    <div class="cfg-title">Mapa</div>
+    <div class="cfg-row">
+      <span class="cfg-label">Cenário</span>
+      <select class="cfg-select" id="cfg-cen" onchange="mudarCenario(this.value)">
+        <option value="floresta">Floresta</option>
+        <option value="dungeon">Dungeon</option>
+        <option value="deserto">Deserto</option>
+        <option value="cidade">Cidade</option>
+        <option value="taverna">Taverna</option>
+        <option value="caverna">Caverna</option>
+      </select>
     </div>
-    <label class="lbl">Atributos</label>
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px">
-      <div id="imp-a-FOR" class="attr-c"><div style="font-size:9px;color:#8b5cf6;margin-bottom:4px">FOR</div><input type="number" value="10" min="1" max="30" style="width:100%;font-size:18px;font-weight:900;text-align:center;background:transparent;border:none;color:#e8e0d4;outline:none"><div id="mod-FOR" style="font-size:12px;color:#d4af37;font-weight:700">+0</div></div>
-      <div id="imp-a-DES" class="attr-c"><div style="font-size:9px;color:#8b5cf6;margin-bottom:4px">DES</div><input type="number" value="10" min="1" max="30" style="width:100%;font-size:18px;font-weight:900;text-align:center;background:transparent;border:none;color:#e8e0d4;outline:none"><div id="mod-DES" style="font-size:12px;color:#d4af37;font-weight:700">+0</div></div>
-      <div id="imp-a-CON" class="attr-c"><div style="font-size:9px;color:#8b5cf6;margin-bottom:4px">CON</div><input type="number" value="10" min="1" max="30" style="width:100%;font-size:18px;font-weight:900;text-align:center;background:transparent;border:none;color:#e8e0d4;outline:none"><div id="mod-CON" style="font-size:12px;color:#d4af37;font-weight:700">+0</div></div>
-      <div id="imp-a-INT" class="attr-c"><div style="font-size:9px;color:#8b5cf6;margin-bottom:4px">INT</div><input type="number" value="10" min="1" max="30" style="width:100%;font-size:18px;font-weight:900;text-align:center;background:transparent;border:none;color:#e8e0d4;outline:none"><div id="mod-INT" style="font-size:12px;color:#d4af37;font-weight:700">+0</div></div>
-      <div id="imp-a-SAB" class="attr-c"><div style="font-size:9px;color:#8b5cf6;margin-bottom:4px">SAB</div><input type="number" value="10" min="1" max="30" style="width:100%;font-size:18px;font-weight:900;text-align:center;background:transparent;border:none;color:#e8e0d4;outline:none"><div id="mod-SAB" style="font-size:12px;color:#d4af37;font-weight:700">+0</div></div>
-      <div id="imp-a-CAR" class="attr-c"><div style="font-size:9px;color:#8b5cf6;margin-bottom:4px">CAR</div><input type="number" value="10" min="1" max="30" style="width:100%;font-size:18px;font-weight:900;text-align:center;background:transparent;border:none;color:#e8e0d4;outline:none"><div id="mod-CAR" style="font-size:12px;color:#d4af37;font-weight:700">+0</div></div>
-    </div>
-    <label class="lbl">Background</label>
-    <textarea class="ta" id="i-bg" rows="2" placeholder="História do personagem..."></textarea>
-    <button class="btn-v" style="margin-top:14px" onclick="impForm()">✅ Criar Personagem</button>
   </div>
-
-  <div id="imp-txt" class="hidden">
-    <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#8b5cf6;line-height:1.7">
-      <strong>Exemplos:</strong><br>
-      nome: Thorin | classe: Guerreiro | raca: Anão | nivel: 5 | pv: 45 | ca: 18 | FOR: 18<br>
-      <span style="color:#b8b0a4">Ou descreva: "Guerreiro anão nível 5, muito forte..."</span>
-    </div>
-    <textarea class="ta" id="i-txt" rows="8" placeholder="Cole os dados ou descreva o personagem..."></textarea>
-    <button class="btn-g" style="margin-top:14px;width:100%;padding:14px;font-size:15px" onclick="impTxt()">✨ Importar do Texto</button>
-  </div>
-</div>
-</div>
-
-<!-- MODAL API KEY -->
-<div id="mod-api" class="modal-bg hidden" onclick="if(event.target===this)fechaMod('mod-api')">
-<div class="modal-box" style="max-width:420px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-    <span style="color:#d4af37;font-size:18px">🔑 API Key do Claude</span>
-    <button onclick="fechaMod('mod-api')" style="background:transparent;border:none;color:#ff6b6b;font-size:22px">✖</button>
-  </div>
-  <p style="color:#b8b0a4;font-size:13px;margin-bottom:14px;line-height:1.6">Para o Mestre IA funcionar, você precisa de uma chave gratuita.<br>Obtenha em <a href="https://console.anthropic.com" target="_blank" style="color:#8b5cf6">console.anthropic.com</a></p>
-  <input class="inp" type="password" id="api-inp" placeholder="sk-ant-..." style="margin-bottom:8px">
-  <p style="font-size:11px;color:#b8b0a4;margin-bottom:16px">Salva apenas no seu navegador.</p>
-  <div style="display:flex;gap:10px">
-    <button class="btn-s" onclick="fechaMod('mod-api')">Cancelar</button>
-    <button class="btn-v" onclick="salvarKey()">✅ Salvar</button>
-  </div>
-</div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════════════
-// ESTADO
-// ════════════════════════════════════════════════════════
-const S={
-  modo:'ia', nome:'', campanha:'', apiKey:'', provedor:'claude',
-  mundo:null, cod:'', isHost:false,
-  fichas:[], msgs:[], digitando:false,
-  vozAuto:false, falando:false, falandoId:null,
-  prateleira:{comum:[],raro:[],raríssimo:[],ultraRaro:[],épico:[],lendário:[]},
-  inventTes:[], tesLog:[],
-  tesRoll:null, tesRar:null, tesItem:null, tesDesc:'',
-  gerRar:'comum', tesAba:'sortear',
-  editFicha:null, fichaTab:'basico',
-  gmInput:'', gmModo:'narrar', iaAssiste:true,
-  micOn:false, micGM:false, crit:false, fumble:false,
-  online:[], canal:null, impAvatar:'⚔️', impAba:'form',
+// ═══════════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════════════════
+const G={
+  // Sessão
+  nome:'',campanha:'',modo:'ia',prov:'claude',apiKey:'',sala:'',
+  // Personagem
+  pj:{nome:'',classe:'Guerreiro',raca:'Humano',nivel:1,xp:0,
+    pv:10,pvMax:10,pvTemp:0,ca:10,iniciativa:0,
+    FOR:10,DES:10,CON:10,INT:10,SAB:10,CAR:10,
+    pericias:{},trSalvos:{},inspiracao:false,
+    equip:[],moedas:{cp:0,pp:0,po:0,pe:0,pg:0},
+    magias:{truques:[],slots:{1:0,2:0,3:0,4:0,5:0},preparadas:[]},
+    condicoes:[],
+  },
+  // Jogo
+  jornal:[],missoes:[],hist:[],
+  combateAtivo:false,tokens:[],ordemInit:[],turnoIdx:0,rodada:1,
+  // Config
+  tts:false,stt:true,
+  // Mapa
+  cenario:'floresta',
+  // Dados
+  diceHist:[],
+  // Mic
+  micAtivo:false,recognition:null,
 };
 
-// ════════════════════════════════════════════════════════
-// DADOS
-// ════════════════════════════════════════════════════════
-const MUNDOS=[
-  {nome:'Valdros',era:'Era das Ruínas',desc:'Continente de impérios caídos onde magia antiga pulsa sob as pedras.',conflito:'O Culto do Véu busca despertar uma entidade adormecida sob a capital.',locais:['Aldmere','Floresta de Evannor','Ruínas de Keth','Porto Cinza'],faccoes:['Guarda de Aldmere — mantém a ordem','Culto do Véu — quer despertar o antigo']},
-  {nome:'Drakheim',era:'Era do Gelo Eterno',desc:'Terras do norte onde o inverno nunca termina e os mortos não ficam quietos.',conflito:'Um necromante lidera exércitos de mortos-vivos contra as cidades vivas.',locais:['Fortaleza de Gelo','Vila de Thormund','Templo Abandonado','Passagem Negra'],faccoes:['Clã dos Vivos — resistência humana','Legiões Cinzas — mortos obedientes']},
-  {nome:'Marveth',era:'Era do Comércio',desc:'Uma cidade-estado enorme onde cada problema tem um preço — e cada segredo também.',conflito:'A Guilda das Sombras controla metade da cidade e o Prefeito perdeu o controle.',locais:['Porto de Marveth','Bairro Alto','Becos do Mercado','Torre da Guarda'],faccoes:['Guilda das Sombras — poder nas trevas','Guarda da Cidade — cada vez mais corrupta']},
-  {nome:'Solaris',era:'Era do Renascimento',desc:'Mundo em recuperação após grande guerra — heróis são necessários.',conflito:'Reinos brigam pelo controle de relíquias de guerra ainda poderosas.',locais:['Cidade de Solara','Campos de Batalha','Santuário dos Monges','Fronteira do Leste'],faccoes:['Aliança dos Reinos — busca paz','Coletores — vendem relíquias ao melhor pagador']},
+// ═══════════════════════════════════════════════════════════
+// D&D 5e DADOS
+// ═══════════════════════════════════════════════════════════
+const XP_NV=[0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
+const PV_DADO={Bárbaro:12,Bardo:8,Clérigo:8,Druida:8,Guerreiro:10,Ladino:8,Mago:6,Monge:8,Paladino:10,Patrulheiro:10,Bruxo:8,Feiticeiro:6};
+const PROF_NV=(n)=>n<=4?2:n<=8?3:n<=12?4:n<=16?5:6;
+const MOD=(v)=>Math.floor(((v||10)-10)/2);
+const MOD_STR=(v)=>{const m=MOD(v);return(m>=0?'+':'')+m};
+const CONJ_ATRIB={Clérigo:'SAB',Druida:'SAB',Paladino:'CAR',Patrulheiro:'SAB',Bruxo:'CAR',Feiticeiro:'CAR',Bardo:'CAR',Mago:'INT'};
+const TR_PROF={Guerreiro:['FOR','CON'],Mago:['INT','SAB'],Clérigo:['SAB','CAR'],Druida:['INT','SAB'],Ladino:['DES','INT'],Monge:['FOR','DES'],Paladino:['SAB','CAR'],Patrulheiro:['FOR','DES'],Bárbaro:['FOR','CON'],Bardo:['DES','CAR'],Bruxo:['SAB','CAR'],Feiticeiro:['CON','CAR']};
+const PERICIAS_LIST=[
+  {n:'Acrobacia',a:'DES'},{n:'Animais',a:'SAB'},{n:'Arcana',a:'INT'},
+  {n:'Atletismo',a:'FOR'},{n:'Atuação',a:'CAR'},{n:'Enganação',a:'CAR'},
+  {n:'Furtividade',a:'DES'},{n:'História',a:'INT'},{n:'Intimidação',a:'CAR'},
+  {n:'Intuição',a:'SAB'},{n:'Investigação',a:'INT'},{n:'Medicina',a:'SAB'},
+  {n:'Natureza',a:'INT'},{n:'Percepção',a:'SAB'},{n:'Persuasão',a:'CAR'},
+  {n:'Prestidigitação',a:'DES'},{n:'Religião',a:'INT'},{n:'Sobrevivência',a:'SAB'},
 ];
-const RARS=[
-  {id:'comum',l:'Comum',e:'⚪',r:[1,59],c:'#b8b0a4',bg:'rgba(184,176,164,.12)',bd:'rgba(184,176,164,.3)',b:'Sem encantamento'},
-  {id:'raro',l:'Raro',e:'🔵',r:[60,79],c:'#60a5fa',bg:'rgba(96,165,250,.12)',bd:'rgba(96,165,250,.3)',b:'+1 em ataques/dano'},
-  {id:'raríssimo',l:'Raríssimo',e:'🟣',r:[80,89],c:'#c084fc',bg:'rgba(192,132,252,.12)',bd:'rgba(192,132,252,.3)',b:'+2 ou +1 + habilidade'},
-  {id:'ultraRaro',l:'Ultra Raro',e:'🟠',r:[90,95],c:'#fb923c',bg:'rgba(251,146,60,.12)',bd:'rgba(251,146,60,.3)',b:'+3 ou 3 magias'},
-  {id:'épico',l:'Épico',e:'🔴',r:[96,99],c:'#f87171',bg:'rgba(248,113,113,.12)',bd:'rgba(248,113,113,.3)',b:'+4 ou elixir'},
-  {id:'lendário',l:'Lendário',e:'⭐',r:[100,100],c:'#d4af37',bg:'rgba(212,175,55,.12)',bd:'rgba(212,175,55,.5)',b:'+8 ou arma única'},
-];
-const RACAS=['Humano','Elfo','Anão','Halfling','Gnomo','Meio-Elfo','Meio-Orc','Tiefling','Draconato','Outro'];
-const CLASSES=['Bárbaro','Bardo','Clérigo','Druida','Guerreiro','Monge','Paladino','Ranger','Ladino','Feiticeiro','Bruxo','Mago','Outro'];
-const AVTS=['⚔️','🏹','🔮','🛡️','⚡','🔥','❄️','🌿','☀️','🌙','💀','🐉','🦅','🐺','🎭','👑'];
-const PERICIAS=[{n:'Acrobacia',a:'DES'},{n:'Arcanismo',a:'INT'},{n:'Atletismo',a:'FOR'},{n:'Atuação',a:'CAR'},{n:'Enganação',a:'CAR'},{n:'Furtividade',a:'DES'},{n:'História',a:'INT'},{n:'Intimidação',a:'CAR'},{n:'Intuição',a:'SAB'},{n:'Investigação',a:'INT'},{n:'Medicina',a:'SAB'},{n:'Natureza',a:'INT'},{n:'Percepção',a:'SAB'},{n:'Persuasão',a:'CAR'},{n:'Prestidigitação',a:'DES'},{n:'Religião',a:'INT'},{n:'Sobrevivência',a:'SAB'},{n:'Trato c/Animais',a:'SAB'}];
-const VOZES={mestre:{p:.82,r:.88,l:'🐉 Mestre',c:'#d4af37'},guerreiro:{p:.72,r:.90,l:'⚔️ Guerreiro',c:'#f87171'},elfo:{p:1.30,r:1.05,l:'🧝 Elfo',c:'#86efac'},anao:{p:.62,r:.80,l:'🪨 Anão',c:'#fb923c'},mago:{p:1.15,r:.95,l:'🔮 Mago',c:'#c084fc'},vilao:{p:.58,r:.78,l:'💀 Vilão',c:'#f43f5e'},taverneiro:{p:.95,r:1.00,l:'🍺 Taverneiro',c:'#d97706'},guarda:{p:.78,r:.88,l:'🛡️ Guarda',c:'#60a5fa'}};
-const RESPS={
-  examinar:['Você examina o ambiente. *Uma sombra se move onde não deveria.* Há marcas que sugerem algo aconteceu aqui recentemente. **O que você faz?**','Seus sentidos captam detalhes. Uma porta que deveria estar trancada... não está. **O que você faz?**'],
-  atacar:['Você avança! *O metal canta no ar.* Role um **D20** (CD 13). O adversário parece ferido mas perigoso. **O que você faz?**','O confronto é inevitável. Role **D20** — acima de 12 é acerto. **O que você faz?**'],
-  falar:['*O personagem para e te olha.* **"Quem quer saber?"** Ele sabe mais do que aparenta. **Como você responde?**','**"Não é seguro aqui,"** ela murmura. **"Me siga."** O que você faz?'],
-  esconder:['Você se move para as sombras. Role **D20** — acima de 11 você some. **O que você faz?**','*A parede fria nas suas costas.* Role **D20** (CD 12). **O que você faz?**'],
-  descansar:['Você para para respirar. *O corpo agradece.* **O que é mais urgente agora?**'],
-  inventario:['Você verifica seus pertences: **uma arma**, mantimentos, itens pessoais. **O que você procura?**'],
-  magia:['*As palavras arcanas saem dos lábios.* Role **D20** — acima de 10 o feitiço funciona. **O que você faz?**'],
-  fugir:['*Instinto de sobrevivência.* Role **D20** — acima de 11 você escapa. **O que você faz?**'],
-  critico:['**💥 CRÍTICO!** *O universo conspirou a seu favor.* Seu gesto foi perfeito, devastador, épico. O inimigo recua em choque. *Este momento será lembrado.* **O que você faz?**','**💥 20 NO DADO!** Tudo que poderia dar certo, deu. Esta façanha não passará despercebida. **O que você faz?**'],
-  fumble:['**💀 FUMBLE!** *Oh não.* O que parecia simples virou espetáculo de erros. Você ainda está de pé, mas a situação complicou. **O que você faz?**'],
-  generico:['*O mundo respira ao seu redor.* Sua ação tem consequências. **Algo muda.** **O que você faz?**','Você age com propósito. *O ambiente reage.* **O que é o próximo passo?**','*Sua escolha tem peso.* O mundo aguarda sua próxima decisão. **O que você faz?**'],
+
+const HABILIDADES_CLASSE={
+  Guerreiro:[
+    {n:'Retomar o Fôlego',desc:'Recupera 1d10+nível PV como ação bônus (1x/descanso curto).',tipo:'cura',dado:'1d10'},
+    {n:'Surto de Ação',desc:'Realiza uma ação adicional neste turno (2x/descanso longo).',tipo:'acao'},
+    {n:'Ataque Extra',desc:'Ataca 2x quando usa a ação Ataque.',tipo:'ataque'},
+    {n:'Indomável',desc:'Refaz um teste de resistência falho (1x/descanso longo).',tipo:'passivo'},
+  ],
+  Bárbaro:[
+    {n:'Fúria',desc:'+2 dano corpo-a-corpo, resistência a dano físico. 2x/dia no nível 1.',tipo:'ativo',dado:'—'},
+    {n:'Defesa sem Armadura',desc:'CA = 10 + mod.DES + mod.CON sem armadura.',tipo:'passivo'},
+    {n:'Ataque Descuidado',desc:'Vantagem em ataques, mas inimigos têm vantagem contra você.',tipo:'ativo'},
+    {n:'Sentido de Perigo',desc:'Vantagem em DES contra efeitos que pode ver.',tipo:'passivo'},
+    {n:'Ataque Extra',desc:'Ataca 2x quando usa a ação Ataque.',tipo:'ataque'},
+  ],
+  Ladino:[
+    {n:'Ataque Furtivo',desc:`+${Math.ceil(G.pj.nivel/2)}d6 dano com vantagem ou aliado adj.`,tipo:'ataque',dado:'1d6'},
+    {n:'Ação Ardilosa',desc:'Dash, Desengajar ou Esconder como ação bônus.',tipo:'bônus'},
+    {n:'Esquiva Sobrenatural',desc:'Usa reação para reduzir dano à metade.',tipo:'reacao'},
+    {n:'Evasão',desc:'Sem dano em DES bem-sucedido, metade em falha.',tipo:'passivo'},
+  ],
+  Mago:[
+    {n:'Recuperação Arcana',desc:'Recupera slots gastos = metade do nível (1x/descanso longo).',tipo:'ativo'},
+  ],
+  Clérigo:[
+    {n:'Canalizar Divindade',desc:'Usar poder divino da subclasse (1x/descanso curto).',tipo:'ativo'},
+    {n:'Destruir Mortos-Vivos',desc:'Mortos-vivos ND½ ou menos são destruídos.',tipo:'ativo'},
+    {n:'Intervenção Divina',desc:'Chamar seu deus para intervir (1x/7 dias).',tipo:'ativo'},
+  ],
+  Paladino:[
+    {n:'Sentido Divino',desc:'Detecta celestiais, demônios e mortos-vivos em 18m.',tipo:'ativo'},
+    {n:'Cura pelas Mãos',desc:`Cura até ${G.pj.nivel*5} PV por descanso longo.`,tipo:'cura'},
+    {n:'Destruição Divina',desc:'Dano extra radiante/necrótico no primeiro ataque.',tipo:'ataque',dado:'2d8'},
+    {n:'Aura de Proteção',desc:'+mod.CAR em testes de resistência para você e aliados em 3m.',tipo:'passivo'},
+  ],
+  Druida:[
+    {n:'Forma Selvagem',desc:'Transformar em besta ND até nível/4 (2x/descanso curto).',tipo:'ativo'},
+  ],
+  Monge:[
+    {n:'Artes Marciais',desc:`Ataques desarmados = 1d${G.pj.nivel>=17?10:G.pj.nivel>=11?8:G.pj.nivel>=5?6:4} + mod.DES.`,tipo:'ataque'},
+    {n:'Chi',desc:`${G.pj.nivel} pontos de Chi por descanso curto.`,tipo:'ativo'},
+    {n:'Ataque Atordoante',desc:'Gastar 1 Chi: CD 8+prof+SAB CON ou atordoado.',tipo:'ataque'},
+  ],
+  Bardo:[
+    {n:'Inspiração de Bardo',desc:`+1d${G.pj.nivel>=15?12:G.pj.nivel>=10?10:G.pj.nivel>=5?8:6} em teste ou ataque.`,tipo:'bônus'},
+    {n:'Canção de Descanso',desc:'Aliados que descansar com você recuperam +1d6 PV.',tipo:'passivo'},
+  ],
+  Bruxo:[
+    {n:'Magia de Pacto',desc:`Slots de magia de nível ${G.pj.nivel>=9?5:G.pj.nivel>=7?4:G.pj.nivel>=5?3:G.pj.nivel>=3?2:1}, recupera em descanso curto.`,tipo:'passivo'},
+    {n:'Invocações Místicas',desc:'Poderes especiais do seu patrono.',tipo:'passivo'},
+  ],
+  Feiticeiro:[
+    {n:'Fonte de Magia',desc:`${G.pj.nivel*2} pontos de feitiçaria.`,tipo:'ativo'},
+    {n:'Metamágica',desc:'Modificar magias com pontos de feitiçaria.',tipo:'ativo'},
+  ],
+  Patrulheiro:[
+    {n:'Inimigo Favorito',desc:'Vantagem em rastrear e INT sobre tipo de criatura escolhido.',tipo:'passivo'},
+    {n:'Explorador Natural',desc:'Terreno favorito: sem penalidades, movimento dobrado.',tipo:'passivo'},
+    {n:'Ataque Extra',desc:'Ataca 2x quando usa a ação Ataque.',tipo:'ataque'},
+  ],
 };
-const ABERTURAS=[
-  (n,m)=>`*Ventos de ${m.nome} cortam o ar.*\n\n${m.desc}\n\n**${n}**, você está diante de uma taverna barulhenta. Do lado de fora: *"RECOMPENSA — informações sobre os desaparecimentos."*\n\nPessoas passam apressadas, evitando se olhar. Algo está errado aqui.\n\n**O que você faz?**`,
-  (n,m)=>`*Você acorda num quarto de taverna em ${m.nome}.*\n\n${m.desc}\n\nNa sua mão, um pergaminho: *"Encontre-me antes que eles te encontrem."*\n\nLá fora: *"...desaparecido..."*, *"...a Guarda procura..."*\n\n**${n}, o que você faz?**`,
-  (n,m)=>`*A cidade de ${m.nome} nunca dorme.*\n\n${m.desc}\n\n**${n}**, você está no porto quando uma figura deixa cair um medalhão dourado. Ao longe, um sino de alerta toca.\n\nNão foi por acidente.\n\n**O que você faz?**`,
-];
 
-// ════════════════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════════════════
-const pick=a=>a[Math.floor(Math.random()*a.length)];
-const hora=()=>new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-const fmt=t=>(t||'').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
-const mdV=v=>Math.floor(((v||10)-10)/2);
-const mdS=v=>{const m=mdV(v);return(m>=0?'+':'')+m;};
-const pbV=n=>Math.ceil((n||1)/4)+1;
-const getRar=v=>RARS.find(x=>v>=x.r[0]&&v<=x.r[1])||RARS[0];
-const genCod=()=>['DRAGAO','GOBLIN','ELFO','ANAO','RUNA','CRIPTA'][Math.floor(Math.random()*6)]+'-'+Math.floor(10+Math.random()*90);
-const fichaBase=()=>({
-  id:Date.now(),avatar:'⚔️',
-  // Identidade
-  nome:'',jogador:'',raca:'Humano',classe:'Guerreiro',subclasse:'',antecedente:'',tendencia:'Neutro',nivel:1,xp:0,
-  // Atributos base
-  FOR:10,DES:10,CON:10,INT:10,SAB:10,CAR:10,
-  // Calculados automaticamente
-  get modFOR(){return Math.floor((this.FOR-10)/2)},
-  get modDES(){return Math.floor((this.DES-10)/2)},
-  get modCON(){return Math.floor((this.CON-10)/2)},
-  get modINT(){return Math.floor((this.INT-10)/2)},
-  get modSAB(){return Math.floor((this.SAB-10)/2)},
-  get modCAR(){return Math.floor((this.CAR-10)/2)},
-  // PV calculado pelo dado de vida da classe + CON
-  pv:10,pvMax:10,pvTemp:0,
-  // CA: 10 + modDES por padrão (armadura muda isso)
-  ca:10,iniciativa:0,deslocamento:9,
-  // Dados de vida
-  dadosVida:1,dadosVidaMax:1,
-  // Testes de resistência com proficiência
-  trSalvos:{FOR:false,DES:false,CON:false,INT:false,SAB:false,CAR:false},
-  // Perícias
-  pericias:{},
-  // Inspiração
-  inspiracao:false,
-  // Tendências
-  tracoPersonalidade:'',ideal:'',ligacao:'',defeito:'',
-  // Proficiências e idiomas
-  proficiencias:'',idiomas:'',
-  // Combate
-  ataques:[{nome:'',bonus:'',dano:''}],
-  // Itens e magias
-  equipamentos:'',cp:0,pp:0,po:0,pe:0,pp2:0,
-  // Magias
-  classeConjuracao:'',habilidadeConjuracao:'',cdTR:0,bonusAtaque:0,
-  magiasTruques:'',magias1:'',magias2:'',magias3:'',magias4:'',magias5:'',magias6:'',magias7:'',magias8:'',magias9:'',
-  espacosMagia:{1:{total:0,usado:0},2:{total:0,usado:0},3:{total:0,usado:0},4:{total:0,usado:0},5:{total:0,usado:0}},
-  // Aparência
-  idade:'',altura:'',peso:'',olhos:'',pele:'',cabelos:'',
-  aparencia:'',aliados:'',historiaPersonagem:'',tesouro:'',
-  // Misc
-  habilidades:'',background:'',notas:'',
-});
+const MAGIAS_CLASSE={
+  Mago:[
+    {n:'Míssil Mágico',nv:1,escola:'Evocação',tempo:'1 ação',alcance:'36m',comp:'V,S',conc:false,dur:'Instantânea',desc:'3 dardos 1d4+1 força, acerto automático. +1 dardo/espaço.',dado:'3×(1d4+1)',tipo:'ataque'},
+    {n:'Bola de Fogo',nv:3,escola:'Evocação',tempo:'1 ação',alcance:'45m',comp:'V,S,M',conc:false,dur:'Instantânea',desc:'CD DES ou 8d6 fogo em raio 6m. +1d6/espaço.',dado:'8d6',cd:'DES',tipo:'dano'},
+    {n:'Relâmpago',nv:3,escola:'Evocação',tempo:'1 ação',alcance:'Linha 30m',comp:'V,S,M',conc:false,dur:'Instantânea',desc:'CD DES ou 8d6 raio. +1d6/espaço.',dado:'8d6',cd:'DES',tipo:'dano'},
+    {n:'Escudo',nv:1,escola:'Abjuração',tempo:'1 reação',alcance:'Pessoal',comp:'V,S',conc:false,dur:'1 turno',desc:'+5 CA até próximo turno. Anula Míssil Mágico.',tipo:'defesa'},
+    {n:'Invisibilidade',nv:2,escola:'Ilusão',tempo:'1 ação',alcance:'Toque',comp:'V,S,M',conc:true,dur:'1 hora',desc:'Alvo fica invisível até atacar ou conjurar.',tipo:'utilidade'},
+    {n:'Raio de Gelo',nv:0,escola:'Evocação',tempo:'1 ação',alcance:'18m',comp:'V,S',conc:false,dur:'Instantânea',desc:'Ataque à distância: 1d8 frio + velocidade 0.',dado:'1d8',tipo:'ataque'},
+    {n:'Choque do Trovão',nv:0,escola:'Evocação',tempo:'1 ação',alcance:'Toque',comp:'V,S',conc:false,dur:'Instantânea',desc:'1d8 raio, afasta 3m. +1d8/patamar.',dado:'1d8',tipo:'ataque'},
+    {n:'Prestidigitação',nv:0,escola:'Transmutação',tempo:'1 ação',alcance:'3m',comp:'V,S',conc:false,dur:'1 hora',desc:'Efeitos mágicos menores variados.',tipo:'utilidade'},
+    {n:'Voo',nv:3,escola:'Transmutação',tempo:'1 ação',alcance:'Toque',comp:'V,S,M',conc:true,dur:'10 min',desc:'Velocidade de voo 18m.',tipo:'utilidade'},
+    {n:'Contramágica',nv:3,escola:'Abjuração',tempo:'1 reação',alcance:'18m',comp:'S',conc:false,dur:'Instantânea',desc:'Anula magia ≤3°. Para ≥4°: CD 10+nível INT.',tipo:'defesa'},
+  ],
+  Clérigo:[
+    {n:'Cura Ferimentos',nv:1,escola:'Evocação',tempo:'1 ação',alcance:'Toque',comp:'V,S',conc:false,dur:'Instantânea',desc:'1d8+mod.SAB PV. +1d8/espaço.',dado:'1d8',tipo:'cura'},
+    {n:'Fogo Sagrado',nv:0,escola:'Evocação',tempo:'1 ação',alcance:'18m',comp:'V,S',conc:false,dur:'Instantânea',desc:'CD DES ou 1d8 radiante. +1d8/patamar.',dado:'1d8',cd:'DES',tipo:'dano'},
+    {n:'Bênção',nv:1,escola:'Encantamento',tempo:'1 ação',alcance:'9m',comp:'V,S,M',conc:true,dur:'1 min',desc:'3 criaturas: +1d4 em ataques e resistências.',tipo:'suporte'},
+    {n:'Palavra Curativa',nv:1,escola:'Evocação',tempo:'Bônus',alcance:'18m',comp:'V',conc:false,dur:'Instantânea',desc:'1d4+mod.SAB PV à distância.',dado:'1d4',tipo:'cura'},
+    {n:'Revivificar',nv:3,escola:'Necromancia',tempo:'1 ação',alcance:'Toque',comp:'V,S,M (diamante 300po)',conc:false,dur:'Instantânea',desc:'Ressuscita morto <1 min com 1 PV.',tipo:'cura'},
+  ],
+  Bardo:[
+    {n:'Cura Ferimentos',nv:1,escola:'Evocação',tempo:'1 ação',alcance:'Toque',comp:'V,S',conc:false,dur:'Instantânea',desc:'1d8+mod.CAR PV.',dado:'1d8',tipo:'cura'},
+    {n:'Dormir',nv:1,escola:'Encantamento',tempo:'1 ação',alcance:'27m',comp:'V,S,M',conc:false,dur:'1 min',desc:'5d8 PV adormecidos (mais fracos primeiro).',dado:'5d8',tipo:'controle'},
+    {n:'Sugestão',nv:2,escola:'Encantamento',tempo:'1 ação',alcance:'9m',comp:'V,M',conc:true,dur:'8 horas',desc:'CD SAB ou segue sugestão razoável.',cd:'SAB',tipo:'controle'},
+    {n:'Invisibilidade',nv:2,escola:'Ilusão',tempo:'1 ação',alcance:'Toque',comp:'V,S,M',conc:true,dur:'1 hora',desc:'Alvo invisível até atacar.',tipo:'utilidade'},
+    {n:'Zombaria Viciosa',nv:0,escola:'Encantamento',tempo:'1 ação',alcance:'18m',comp:'V',conc:false,dur:'Instantânea',desc:'CD INT ou 1d4 psíquico + desvantagem próx. ataque.',dado:'1d4',cd:'INT',tipo:'dano'},
+    {n:'Globos de Luz',nv:0,escola:'Evocação',tempo:'1 ação',alcance:'18m',comp:'V,S,M',conc:true,dur:'1 min',desc:'Esfera brilhante de 30cm, mover 18m/turno.',tipo:'utilidade'},
+  ],
+  Feiticeiro:[
+    {n:'Bola de Fogo',nv:3,escola:'Evocação',tempo:'1 ação',alcance:'45m',comp:'V,S,M',conc:false,dur:'Instantânea',desc:'CD DES ou 8d6 fogo em raio 6m.',dado:'8d6',cd:'DES',tipo:'dano'},
+    {n:'Choque do Trovão',nv:0,escola:'Evocação',tempo:'1 ação',alcance:'Toque',comp:'V,S',conc:false,dur:'Instantânea',desc:'1d8 raio, afasta 3m.',dado:'1d8',tipo:'ataque'},
+    {n:'Raio Ardente',nv:2,escola:'Evocação',tempo:'1 ação',alcance:'27m',comp:'V,S',conc:false,dur:'Instantânea',desc:'3 raios de 2d6 fogo. +1 raio/espaço.',dado:'3×2d6',tipo:'ataque'},
+    {n:'Mãos Flamejantes',nv:1,escola:'Evocação',tempo:'1 ação',alcance:'Cone 4,5m',comp:'V,S',conc:false,dur:'Instantânea',desc:'CD DES ou 3d6 fogo. +1d6/espaço.',dado:'3d6',cd:'DES',tipo:'dano'},
+  ],
+  Bruxo:[
+    {n:'Maldição do Ancião',nv:0,escola:'Evocação',tempo:'1 ação',alcance:'36m',comp:'V,S',conc:false,dur:'1 min',desc:'Ataque à distância: 1d10 necrótico.',dado:'1d10',tipo:'ataque'},
+    {n:'Sugestão',nv:2,escola:'Encantamento',tempo:'1 ação',alcance:'9m',comp:'V,M',conc:true,dur:'8 horas',desc:'CD SAB ou segue sugestão razoável.',cd:'SAB',tipo:'controle'},
+    {n:'Visão Escura',nv:2,escola:'Transmutação',tempo:'1 ação',alcance:'Toque',comp:'V,S,M',conc:false,dur:'8 horas',desc:'Alvo ganha visão no escuro 36m.',tipo:'utilidade'},
+  ],
+  Paladino:[
+    {n:'Cura pelas Mãos',nv:0,escola:'Evocação',tempo:'1 ação',alcance:'Toque',comp:'V,S',conc:false,dur:'Instantânea',desc:`Cura até ${G.pj.nivel*5} PV total por descanso longo.`,tipo:'cura'},
+    {n:'Destruição Divina',nv:0,escola:'Evocação',tempo:'Bônus',alcance:'Toque',comp:'V,S',conc:false,dur:'1 turno',desc:'2d8 extra (rad/nec) no primeiro ataque.',dado:'2d8',tipo:'ataque'},
+    {n:'Cura Ferimentos',nv:1,escola:'Evocação',tempo:'1 ação',alcance:'Toque',comp:'V,S',conc:false,dur:'Instantânea',desc:'1d8+mod.CAR PV.',dado:'1d8',tipo:'cura'},
+  ],
+  Druida:[
+    {n:'Controlar Chamas',nv:0,escola:'Transmutação',tempo:'1 ação',alcance:'18m',comp:'S',conc:false,dur:'1 hora',desc:'Controlar chama não mágica existente.',tipo:'utilidade'},
+    {n:'Cura Ferimentos',nv:1,escola:'Evocação',tempo:'1 ação',alcance:'Toque',comp:'V,S',conc:false,dur:'Instantânea',desc:'1d8+mod.SAB PV.',dado:'1d8',tipo:'cura'},
+    {n:'Chamado do Relâmpago',nv:3,escola:'Conjuração',tempo:'1 ação',alcance:'27m',comp:'V,S',conc:true,dur:'10 min',desc:'Chamar relâmpago: CD DES 3d10 raio.',dado:'3d10',cd:'DES',tipo:'dano'},
+  ],
+};
 
+// ═══════════════════════════════════════════════════════════
+// SISTEMA DE PROMPT D&D 5e
+// ═══════════════════════════════════════════════════════════
+function buildSystemPrompt(){
+  const pj=G.pj;
+  const pb=PROF_NV(pj.nivel);
+  const xpProx=XP_NV[Math.min(pj.nivel,19)];
+  return `Você é um Mestre de D&D 5ª Edição experiente e imersivo. Aplique TODAS as regras oficiais automaticamente.
 
-// ════════════════════════════════════════════════════════
-// CÁLCULOS AUTOMÁTICOS D&D 5e
-// ════════════════════════════════════════════════════════
-const XP_NIVEL=[0,300,900,2700,6500,14000,23000,34000,48000,64000,85000,100000,120000,140000,165000,195000,225000,265000,305000,355000];
-const PV_CLASSE={Bárbaro:12,Bardo:8,Clérigo:8,Druida:8,Guerreiro:10,Ladino:8,Mago:6,Monge:8,Paladino:10,Patrulheiro:10,Bruxo:8,Feiticeiro:6};
-const ATRIB_CONJURACAO={Clérigo:'SAB',Druida:'SAB',Paladino:'CAR',Patrulheiro:'SAB',Bruxo:'CAR',Feiticeiro:'CAR',Bardo:'CAR',Mago:'INT'};
-const TR_PROFICIENCIAS={Guerreiro:['FOR','CON'],Mago:['INT','SAB'],Clérigo:['SAB','CAR'],Druida:['INT','SAB'],Ladino:['DES','INT'],Monge:['FOR','DES'],Paladino:['SAB','CAR'],Patrulheiro:['FOR','DES'],Bárbaro:['FOR','CON'],Bardo:['DES','CAR'],Bruxo:['SAB','CAR'],Feiticeiro:['CON','CAR']};
+CAMPANHA: "${G.campanha}"
+MODO: ${G.modo==='ia'?'Mestre IA (você narra tudo)':'Mestre Humano (IA auxilia)'}
 
-function calcNivelPorXP(xp){
-  for(let i=XP_NIVEL.length-1;i>=0;i--)if(xp>=XP_NIVEL[i])return i+1;
-  return 1;
-}
-function calcXPProximoNivel(nivel){return XP_NIVEL[Math.min(nivel,19)]||355000;}
-function calcPVMax(f){
-  const dado=PV_CLASSE[f.classe]||8;
-  const modCON=Math.floor(((f.CON||10)-10)/2);
-  const nivel=f.nivel||1;
-  // Nível 1: máximo do dado + CON. Níveis seguintes: média+1 + CON
-  const pvBase=dado+modCON; // nível 1
-  const pvExtra=Math.floor((dado/2)+1+modCON)*(nivel-1); // nívs 2+
-  return Math.max(1, pvBase+pvExtra);
-}
-function calcCA(f){
-  // Sem armadura: 10 + modDES
-  // Com armadura leve: CA armadura + modDES
-  // Com armadura média: CA armadura + modDES (max 2)
-  // Com armadura pesada: CA armadura (sem DES)
-  const modDES=Math.floor(((f.DES||10)-10)/2);
-  const modCON=Math.floor(((f.CON||10)-10)/2);
-  const modSAB=Math.floor(((f.SAB||10)-10)/2);
-  const equip=(f.equipamentos||'').toLowerCase();
-  // Verificar tipo de armadura equipada
-  if(equip.includes('placas'))return 18;
-  if(equip.includes('cota de malha'))return 16;
-  if(equip.includes('brunea'))return 14+Math.min(modDES,2);
-  if(equip.includes('couro batido'))return 13+Math.min(modDES,2);
-  if(equip.includes('camisão de malha'))return 13+Math.min(modDES,2);
-  if(equip.includes('couro'))return 11+modDES;
-  if(equip.includes('acolchoado'))return 11+modDES;
-  // Sem armadura por classe
-  if(f.classe==='Bárbaro')return 10+modDES+modCON;
-  if(f.classe==='Monge')return 10+modDES+modSAB;
-  return 10+modDES; // padrão
-}
-function calcIniciativa(f){return Math.floor(((f.DES||10)-10)/2);}
-function calcBonusProf(nivel){const n=nivel||1;if(n<=4)return 2;if(n<=8)return 3;if(n<=12)return 4;if(n<=16)return 5;return 6;}
-function calcModAtrib(v){return Math.floor(((v||10)-10)/2);}
-function calcCDMagia(f){
-  const atrib=ATRIB_CONJURACAO[f.classe];
-  if(!atrib)return 0;
-  return 8+calcBonusProf(f.nivel)+calcModAtrib(f[atrib]);
-}
-function calcBonusAtaqueMagia(f){
-  const atrib=ATRIB_CONJURACAO[f.classe];
-  if(!atrib)return 0;
-  return calcBonusProf(f.nivel)+calcModAtrib(f[atrib]);
-}
-function autoCalcFicha(f){
-  // Calcular nível por XP
-  const nivelXP=calcNivelPorXP(f.xp||0);
-  if(nivelXP>f.nivel)f.nivel=nivelXP;
-  // PV Máx automático
-  const pvMaxCalc=calcPVMax(f);
-  if(!f._pvManual)f.pvMax=pvMaxCalc;
-  // CA automático
-  f.ca=calcCA(f);
-  // Iniciativa automática
-  f.iniciativa=calcIniciativa(f);
-  // Testes de resistência com proficiência da classe
-  const trProf=TR_PROFICIENCIAS[f.classe]||[];
-  if(!f.trSalvos)f.trSalvos={};
-  trProf.forEach(a=>{if(f.trSalvos[a]===undefined)f.trSalvos[a]=true;});
-  // CD e bônus de magia
-  f.cdTR=calcCDMagia(f);
-  f.bonusAtaqueMagia=calcBonusAtaqueMagia(f);
-  return f;
-}
+PERSONAGEM PRINCIPAL:
+Nome: ${pj.nome} | Classe: ${pj.classe} Nível ${pj.nivel} | Raça: ${pj.raca}
+PV: ${pj.pv}/${pj.pvMax} | CA: ${pj.ca} | Iniciativa: ${MOD_STR(pj.DES)}
+FOR ${pj.FOR}(${MOD_STR(pj.FOR)}) DES ${pj.DES}(${MOD_STR(pj.DES)}) CON ${pj.CON}(${MOD_STR(pj.CON)}) INT ${pj.INT}(${MOD_STR(pj.INT)}) SAB ${pj.SAB}(${MOD_STR(pj.SAB)}) CAR ${pj.CAR}(${MOD_STR(pj.CAR)})
+Bônus de Proficiência: +${pb}
+Condições: ${pj.condicoes.join(', ')||'Nenhuma'}
+XP: ${pj.xp}/${xpProx}
 
-function detAcao(t){
-  const x=t.toLowerCase();
-  if(/examin|olh|observ/.test(x))return'examinar';
-  if(/atac|golp|lut/.test(x))return'atacar';
-  if(/fal|digo|pergunt/.test(x))return'falar';
-  if(/escond|furtiv|sombra/.test(x))return'esconder';
-  if(/descans|pausa/.test(x))return'descansar';
-  if(/inventár|mochila/.test(x))return'inventario';
-  if(/magia|feitiç|conjur/.test(x))return'magia';
-  if(/fugi|corro|escapo/.test(x))return'fugir';
-  return'generico';
-}
-function detVoz(t){
-  const x=(t||'').toLowerCase();
-  if(x.includes('taverneiro')||x.includes('taverna'))return'taverneiro';
-  if(x.includes('guarda')||x.includes('soldado'))return'guarda';
-  if(x.includes('elfo')||x.includes('élfico'))return'elfo';
-  if(x.includes('anão')||x.includes('ferreiro'))return'anao';
-  if(x.includes('mago')||x.includes('feiticeiro'))return'mago';
-  if(x.includes('vilão')||x.includes('tirano'))return'vilao';
-  return'mestre';
-}
-function gerarResp(txt,crit,fumble){
-  if(crit)return pick(RESPS.critico);
-  if(fumble)return pick(RESPS.fumble);
-  return pick(RESPS[detAcao(txt)]||RESPS.generico);
-}
+MOTOR DE REGRAS D&D 5e — OBRIGATÓRIO:
 
-// ════════════════════════════════════════════════════════
-// STORAGE
-// ════════════════════════════════════════════════════════
-function salvar(){try{localStorage.setItem('mesa',JSON.stringify({fichas:S.fichas,prateleira:S.prateleira,inventTes:S.inventTes,tesLog:S.tesLog}));}catch(e){}}
-function carregar(){
-  try{
-    const k=localStorage.getItem('mesa_key');if(k)S.apiKey=k;
-    const p=localStorage.getItem('mesa_provedor');if(p){S.provedor=p;}
-    const raw=localStorage.getItem('mesa');if(!raw)return;
-    const d=JSON.parse(raw);
-    if(d.fichas)S.fichas=d.fichas;
-    if(d.prateleira)S.prateleira=d.prateleira;
-    if(d.inventTes)S.inventTes=d.inventTes;
-    if(d.tesLog)S.tesLog=d.tesLog;
-    const tot=S.fichas.length+Object.values(S.prateleira).flat().length;
-    if(tot>0)document.getElementById('e-db').textContent='💾 '+S.fichas.length+' personagens · '+Object.values(S.prateleira).flat().length+' itens salvos';
-  }catch(e){}
-}
+COMBATE: NUNCA execute ataque sem antes rolar Iniciativa para TODOS os participantes (D20+modDES). Organize a ordem e anuncie quem age.
 
-// ════════════════════════════════════════════════════════
-// VOZ
-// ════════════════════════════════════════════════════════
-window.speechSynthesis&&window.speechSynthesis.getVoices();
-window.speechSynthesis&&(window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices());
+ROLAGENS: Determine automaticamente qual teste fazer sem perguntar ao jogador:
+- Atacar → D20 + prof + mod.atributo vs CA
+- Esconder → Furtividade (DES) vs Percepção Passiva
+- Persuadir → Persuasão (CAR) vs dificuldade
+- Mentir → Enganação (CAR) vs Intuição (SAB) ou CD
+- Intimidar → Intimidação (CAR) vs CD ou TR SAB
+- Força bruta → Atletismo (FOR)
+- Perceber → Percepção (SAB) = CD do ambiente
 
-function limTxt(t){return(t||'').replace(/<[^>]+>/g,'').replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').replace(/\n/g,' ').trim();}
-function falarTxt(texto,perfil,onStart,onEnd){
-  if(!window.speechSynthesis)return;
-  window.speechSynthesis.cancel();
-  const cfg=VOZES[perfil]||VOZES.mestre;
-  const u=new SpeechSynthesisUtterance(limTxt(texto));
-  const vs=window.speechSynthesis.getVoices();
-  const v=vs.find(x=>x.lang==='pt-BR')||vs.find(x=>x.lang.startsWith('pt'))||vs[0];
-  if(v)u.voice=v;
-  u.lang='pt-BR';u.pitch=cfg.p;u.rate=cfg.r;u.volume=1;
-  u.onstart=onStart||null;u.onend=onEnd||null;u.onerror=onEnd||null;
-  window.speechSynthesis.speak(u);
-}
-function pararVoz(){window.speechSynthesis&&window.speechSynthesis.cancel();}
-function togVozAuto(){
-  S.vozAuto=!S.vozAuto;
-  const b1=document.getElementById('btn-vauto');
-  const b2=document.getElementById('btn-vhdr');
-  if(b1){b1.textContent=S.vozAuto?'✅ Ligada':'○ Off';b1.style.borderColor=S.vozAuto?'#d4af37':'rgba(139,92,246,.3)';b1.style.color=S.vozAuto?'#d4af37':'#b8b0a4';}
-  if(b2)b2.textContent=S.vozAuto?'🔊':'🔇';
-  if(!S.vozAuto){pararVoz();S.falando=false;S.falandoId=null;}
-}
+AÇÕES POR TURNO: Ação + Ação Bônus + Reação + Movimento. Controle rigorosamente.
 
-// ════════════════════════════════════════════════════════
-// IA API — suporta Claude (Anthropic) e ChatGPT (OpenAI)
-// ════════════════════════════════════════════════════════
-let hist=[];
+CONDIÇÕES: Aplique automaticamente: Envenenado, Caído, Agarrado, Cego, Paralisado, Atordoado, Concentração.
 
-function selProvedor(p){
-  S.provedor=p;
-  ['claude','openai','gemini'].forEach(id=>{
-    const el=document.getElementById('prov-'+id);
-    if(!el)return;
-    el.style.borderColor=p===id?'#d4af37':'rgba(139,92,246,.25)';
-    el.style.background=p===id?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
-  });
-  const hint=document.getElementById('apikey-hint');
-  const inp=document.getElementById('e-key');
-  if(p==='claude'){
-    if(hint)hint.innerHTML='Grátis em <a href="https://console.anthropic.com" target="_blank" style="color:#8b5cf6">console.anthropic.com</a>. Salva no navegador.';
-    if(inp)inp.placeholder='sk-ant-...';
-  }else if(p==='openai'){
-    if(hint)hint.innerHTML='Grátis em <a href="https://platform.openai.com/api-keys" target="_blank" style="color:#8b5cf6">platform.openai.com</a>. Salva no navegador.';
-    if(inp)inp.placeholder='sk-...';
-  }else{
-    if(hint)hint.innerHTML='Grátis em <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#8b5cf6">aistudio.google.com</a>. Salva no navegador.';
-    if(inp)inp.placeholder='AIza...';
-  }
-  localStorage.setItem('mesa_provedor',p);
-}
+INTERPRETAÇÃO VIVA — OBRIGATÓRIO:
+- NUNCA use respostas genéricas como "Você entra e vê..." ou "O NPC responde..."
+- SEMPRE reaja diretamente ao que o jogador disse ou fez
+- NPCs têm personalidade, emoções, memória, medo, raiva, desconfiança
+- Exemplo ERRADO: "O guarda deixa você entrar."
+- Exemplo CERTO: "O guarda aperta a lança, franzindo a testa: 'Identificação. Agora.' Seus olhos te esquadrinham desconfiados."
+- A fala do jogador SEMPRE muda a cena
 
-async function claude(system,user,withHist){
-  const k=S.apiKey||localStorage.getItem('mesa_key')||'';
-  if(!k)return null;
-  if(withHist)hist=[...hist.slice(-18),{role:'user',content:user}];
-  const messages=withHist?hist:[{role:'user',content:user}];
-
-  try{
-    let txt='';
-    if(S.provedor==='openai'){
-      // OpenAI / ChatGPT
-      const res=await fetch('https://api.openai.com/v1/chat/completions',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},
-        body:JSON.stringify({model:'gpt-4o-mini',max_tokens:700,messages:[{role:'system',content:system},...messages]}),
-      });
-      const d=await res.json();
-      if(d.error){addMsg({tipo:'sys',txt:'⚠️ OpenAI: '+d.error.message});return null;}
-      txt=d.choices?.[0]?.message?.content||'';
-    }else if(S.provedor==='gemini'){
-      // Gemini / Google
-      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          system_instruction:{parts:[{text:system}]},
-          contents:messages.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),
-          generationConfig:{maxOutputTokens:700},
-        }),
-      });
-      const d=await res.json();
-      if(d.error){addMsg({tipo:'sys',txt:'⚠️ Gemini: '+d.error.message});return null;}
-      txt=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    }else{
-      // Claude / Anthropic
-      const res=await fetch('https://api.anthropic.com/v1/messages',{
-        method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:700,system,messages}),
-      });
-      const d=await res.json();
-      if(d.error){if(d.error.type==='authentication_error')addMsg({tipo:'sys',txt:'⚠️ API Key inválida.'});return null;}
-      txt=d.content?.[0]?.text||'';
-    }
-    if(withHist)hist=[...hist,{role:'assistant',content:txt}];
-    return txt;
-  }catch(e){return null;}
-}
-
-function sysPrompt(){
-  const m=S.mundo;
-  const pjs=S.fichas.map(f=>`${f.nome} (${f.raca} ${f.classe} Nv${f.nivel}, PV:${f.pv}/${f.pvMax}, CA:${f.ca})`).join(', ')||'aventureiros';
-  return `Você é um Mestre de D&D 5ª Edição experiente. Aplique TODAS as regras oficiais automaticamente.
-
-MOTOR DE REGRAS OFICIAL D&D 5e:
-Antes de responder qualquer ação, identifique qual regra do PHB, DMG, MM ou Xanathar se aplica.
-
-COMBATE - NUNCA execute ataque sem antes:
-1. Verificar se já existe combate ativo
-2. Se não existir, INICIAR COMBATE automaticamente
-3. Solicitar rolagem de Iniciativa (D20 + mod.DES) para TODOS
-4. Organizar a ordem e só então iniciar o primeiro turno
-Jamais permita um ataque antes da iniciativa.
-
-ROLAGENS AUTOMÁTICAS - Determine automaticamente qual teste fazer:
-- Atacar → Teste de ataque (D20 + prof + mod.atributo)
-- Empurrar → Atletismo vs Atletismo/Acrobacia
-- Esconder → Furtividade
-- Mentir → Enganação | Convencer → Persuasão | Intimidar → Intimidação
-- Perceber → Percepção | Escalar/Arrombar → Atletismo
-- Conhecimento → História/Arcana/Natureza/Religião
-Nunca pergunte ao jogador qual teste fazer.
-
-FICHAS DOS PERSONAGENS - Consulte sempre automaticamente:
-${pjs}
-Leia atributos, proficiências, magias, equipamentos e condições sem pedir ao jogador.
-
-ATAQUES - Calcule automaticamente:
-Total = Proficiência + mod.Atributo + bônus mágicos + bônus temporários
-
-MAGIAS - Verifique automaticamente: alcance, componentes, concentração, duração, tipo de ação, área, CD, resistências, imunidades.
-
-CONDIÇÕES - Controle automaticamente: Envenenado, Caído, Agarrado, Cego, Paralisado, Atordoado, Invisível, etc.
-
-AÇÕES POR TURNO - Controle: Ação + Ação Bônus + Reação + Movimento. Nunca permita usar duas ações quando a regra não permite.
-
-CAMPANHA: ${S.campanha}
-MUNDO: ${m.nome} (${m.era}) — ${m.desc}
-CONFLITO: ${m.conflito}
-
-REGRA PRINCIPAL DE INTERPRETAÇÃO:
-Antes de responder, identifique a intenção real do jogador:
-- Está perguntando? Atacando? Investigando? Mentindo? Convencendo? Falando com NPC?
-
-NUNCA use respostas genéricas como "Você entra na sala e vê..." ou "O NPC responde...".
-SEMPRE reaja diretamente ao que o jogador disse ou fez.
-
-NPCs devem responder como personagens vivos: com personalidade, emoções, medo, raiva, dúvida, memória do que aconteceu antes.
-
-Exemplo ERRADO: "O guarda permite sua entrada."
-Exemplo CORRETO: "O guarda estreita os olhos, segura a lança com mais força: 'Enviado de Bane? Isso pode te abrir portas... ou te colocar numa cela. Prove.' Faça um teste de Enganação ou Intimidação."
-
-A fala do jogador SEMPRE muda a cena, a reação dos NPCs ou o rumo da narrativa.
-
-ESTILO DE NARRAÇÃO:
-- Máximo 3 parágrafos por resposta
+ESTILO:
+- Máximo 3 parágrafos imersivos
 - Use **negrito** para momentos épicos e *itálico* para atmosfera
-- Em CRÍTICO (d20=20): narre façanha épica com consequências épicas
-- Em FUMBLE (1): narre falha catastrófica e humilhante
-- Cada resposta deve ser viva, contextual e imprevisível
-- Responda SEMPRE em português brasileiro`;
+- CRÍTICO (20 natural): narre façanha épica extraordinária
+- FUMBLE (1 natural): narre falha catastrófica e humilhante
+- Sempre em português brasileiro
+
+FORMATO DE RESPOSTA:
+Quando houver teste/rolagem, inclua ao final:
+[ROLAGEM: tipo | CD X | resultado]
+Exemplo: [ROLAGEM: Persuasão | CD 15 | Sucesso — o mercador cede]`;
 }
 
-// ════════════════════════════════════════════════════════
-// NAVEGAÇÃO
-// ════════════════════════════════════════════════════════
-function pg(id){
-  document.getElementById('pg-entrada').classList.toggle('hidden',id!=='entrada');
-  document.getElementById('pg-entrada').style.display=id==='entrada'?'flex':'none';
-  document.getElementById('pg-mundo').classList.toggle('hidden',id!=='mundo');
-  document.getElementById('pg-mundo').style.display=id==='mundo'?'flex':'none';
-  document.getElementById('pg-sala').classList.toggle('hidden',id!=='sala');
-  document.getElementById('pg-sala').style.display=id==='sala'?'flex':'none';
-}
-function mostrarErro(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4000);}
-function fechaMod(id){document.getElementById(id).classList.add('hidden');}
-
-function selModo(m){
-  S.modo=m;
-  document.getElementById('mc-ia').style.borderColor=m==='ia'?'#d4af37':'rgba(139,92,246,.25)';
-  document.getElementById('mc-ia').style.background=m==='ia'?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
-  document.getElementById('mc-gm').style.borderColor=m==='gm'?'#d4af37':'rgba(139,92,246,.25)';
-  document.getElementById('mc-gm').style.background=m==='gm'?'rgba(212,175,55,.1)':'rgba(0,0,0,.2)';
-  document.getElementById('apikey-lbl').textContent=m==='ia'?'(obrigatória para Mestre IA)':'(opcional — ativa a IA assistente)';
-}
-
-function iniciar(){
+// ═══════════════════════════════════════════════════════════
+// INICIAR JOGO
+// ═══════════════════════════════════════════════════════════
+function iniciarJogo(){
   const nome=document.getElementById('e-nome').value.trim();
   const camp=document.getElementById('e-camp').value.trim();
   const key=document.getElementById('e-key').value.trim();
-  if(!nome)return mostrarErro('e-err','Digite seu nome!');
-  if(!camp)return mostrarErro('e-err','Digite o nome da campanha!');
-  if(S.modo==='ia'&&!key)return mostrarErro('e-err','Digite sua API Key do Claude para usar o Mestre IA!\n(Grátis em console.anthropic.com)');
-  S.nome=nome;S.campanha=camp;S.apiKey=key;
+  if(!nome||!camp)return alert('Preencha seu nome e o nome da campanha!');
+
+  G.nome=nome;G.campanha=camp;G.apiKey=key;
+  G.pj.nome=nome;
+
+  // Salvar key
   if(key)localStorage.setItem('mesa_key',key);
-  localStorage.setItem('mesa_provedor',S.provedor);
-  S.mundo=MUNDOS[Math.floor(Math.random()*MUNDOS.length)];
-  renderMundo();pg('mundo');
-}
+  if(key)localStorage.setItem('mesa_prov',G.prov);
 
-function entrar(){
-  const nome=document.getElementById('e-nome').value.trim();
-  const cod=document.getElementById('e-cod').value.trim().toUpperCase();
-  if(!nome)return mostrarErro('e-err','Digite seu nome!');
-  if(!cod)return mostrarErro('e-err','Digite o código da sala!');
-  S.nome=nome;S.cod=cod;S.isHost=false;S.mundo=MUNDOS[0];
-  abrirCanal();renderSala();pg('sala');
-  setTimeout(()=>addMsg({tipo:'sys',txt:`${nome} entrou na aventura!`}),100);
-}
+  // Sala
+  const salaInput=document.getElementById('e-sala').value.trim();
+  G.sala=salaInput||genSala();
+  document.getElementById('sala-cod').textContent=G.sala;
 
-// ════════════════════════════════════════════════════════
-// MUNDO
-// ════════════════════════════════════════════════════════
-function renderMundo(){
-  const m=S.mundo;
-  document.getElementById('m-nome').textContent=m.nome;
-  document.getElementById('m-era').textContent=m.era;
-  document.getElementById('m-blocos').innerHTML=[
-    {t:'📖 O Mundo',v:m.desc},{t:'⚔️ Conflito Central',v:m.conflito},
-    {t:'🗺️ Locais',v:m.locais.join(' · ')},{t:'🏰 Facções',v:m.faccoes.join('\n')},
-  ].map(b=>`<div style="margin-bottom:16px"><div style="font-size:10px;color:#8b5cf6;letter-spacing:2px;font-weight:700;margin-bottom:6px">${b.t}</div><div style="font-size:13px;color:#e8e0d4;line-height:1.7;white-space:pre-line">${b.v}</div></div>`).join('');
-}
+  // UI
+  document.getElementById('pb-nome').textContent=nome;
+  document.getElementById('pb-sub').textContent=`Lv${G.pj.nivel} ${G.pj.classe}`;
+  document.getElementById('v-nome').textContent=nome;
+  document.getElementById('tela-entrada').style.display='none';
 
-function comecar(){
-  const cod=genCod();S.cod=cod;S.isHost=true;
-  S.online=[{nome:S.nome,role:S.modo==='gm'?'GM':'Host'}];
-  abrirCanal();renderSala();pg('sala');
-  setTimeout(()=>{
-    addMsg({tipo:'sys',txt:`Campanha "${S.campanha}" iniciada! Código: ${cod}`});
-    addMsg({tipo:'priv',txt:`**Bem-vindo!**\n1. Crie fichas em 👤 PJs\n2. Vá em 💬 Mesa para jogar\n3. Compartilhe o código **${cod}** com os amigos`});
-    if(S.modo==='ia')setTimeout(async()=>{
-      const abertura=pick(ABERTURAS)(S.nome,S.mundo);
-      const k=S.apiKey||localStorage.getItem('mesa_key')||'';
-      if(k){
-        S.digitando=true;renderMsgs();
-        const r=await claude(sysPrompt(),`Inicie a campanha "${S.campanha}" no mundo ${S.mundo.nome}. Use esta abertura como base e expanda-a de forma épica: ${abertura}`,true);
-        S.digitando=false;
-        if(r){addMsg({tipo:'mestre',txt:r});return;}
-      }
-      addMsg({tipo:'mestre',txt:abertura});
-    },400);
-  },100);
-}
+  // Iniciar mapa
+  initMapa();
+  atualizarVitais();
 
-// ════════════════════════════════════════════════════════
-// SALA
-// ════════════════════════════════════════════════════════
-function renderSala(){
-  document.getElementById('h-camp').textContent='⚔️ '+S.campanha;
-  document.getElementById('h-mundo').textContent='🌍 '+(S.mundo?.nome||'');
-  document.getElementById('btn-cod').textContent=S.cod;
-  const b=document.getElementById('modo-badge');
-  b.textContent=S.modo==='ia'?'🤖 IA':'👑 GM';
-  b.style.background=S.modo==='ia'?'rgba(139,92,246,.2)':'rgba(212,175,55,.15)';
-  b.style.color=S.modo==='ia'?'#8b5cf6':'#d4af37';
-  aba('pj');
-}
-
-function aba(a){
-  S.abaAtual=a;
-  ['pj','chat','tes'].forEach(x=>{const el=document.getElementById('hab-'+x);if(el)el.classList.toggle('on',x===a);});
-  const body=document.getElementById('sala-body');
-  if(a==='pj')body.innerHTML=renderPJ();
-  else if(a==='chat')body.innerHTML=renderChat();
-  else if(a==='tes')body.innerHTML=renderTes();
-  if(a==='chat')renderMsgs();
-}
-
-function copiarCod(){navigator.clipboard?.writeText(S.cod);const b=document.getElementById('btn-cod');const o=b.textContent;b.textContent='✅';setTimeout(()=>b.textContent=o,1500);}
-
-// ════════════════════════════════════════════════════════
-// MULTIPLAYER
-// ════════════════════════════════════════════════════════
-function abrirCanal(){
-  if(S.canal)S.canal.close();
-  try{
-    S.canal=new BroadcastChannel('mesa_'+S.cod);
-    S.canal.onmessage=e=>{
-      const d=e.data;
-      if(d.tipo==='msg')S.msgs=[...S.msgs.filter(m=>m.id!==d.msg.id),d.msg];
-      if(d.tipo==='join')S.online=[...S.online.filter(j=>j.nome!==d.nome),{nome:d.nome,role:d.role}];
-      if(S.abaAtual==='chat')renderMsgs();
-    };
-    S.canal.postMessage({tipo:'join',nome:S.nome,role:S.isHost?'Host':'Jogador'});
-  }catch(e){}
-}
-
-// ════════════════════════════════════════════════════════
-// MSGS
-// ════════════════════════════════════════════════════════
-function addMsg(m){
-  const msg={...m,id:Date.now()+Math.random(),h:hora()};
-  S.msgs=[...S.msgs,msg];
-  if(S.vozAuto&&m.tipo==='mestre'&&m.txt){
-    const p=detVoz(m.txt);
-    setTimeout(()=>falarTxt(m.txt,p,()=>{S.falando=true;S.falandoId=msg.id;renderMsgs();},()=>{S.falando=false;S.falandoId=null;renderMsgs();}),300);
-  }
-  if(S.canal)try{S.canal.postMessage({tipo:'msg',msg});}catch(e){}
-  if(S.abaAtual==='chat')renderMsgs();
-}
-
-function renderMsgs(){
-  const c=document.getElementById('msgs-c');if(!c)return;
-  if(!S.msgs.length){c.innerHTML='<div style="text-align:center;color:#b8b0a4;opacity:.3;margin-top:50px">✦ A aventura está prestes a começar ✦</div>';return;}
-  c.innerHTML=S.msgs.map(m=>{
-    if(m.tipo==='sys')return`<div class="msg-sys">✦ ${m.txt} ✦</div>`;
-    if(m.tipo==='priv')return`<div class="msg-priv"><div style="font-size:9px;letter-spacing:2px;color:#d4af37;margin-bottom:5px;opacity:.7">🔒 APENAS VOCÊ VÊ</div><div style="font-size:13px;line-height:1.7;color:#d4af37">${fmt(m.txt)}</div></div>`;
-    if(m.tipo==='tesouro'){
-      const r=RARS.find(x=>x.id===m.item?.raridade)||RARS[0];
-      return`<div style="background:${r.bg};border:2px solid ${r.bd};border-radius:12px;padding:14px 16px"><div style="font-size:10px;letter-spacing:2px;color:${r.c};margin-bottom:7px">💎 TESOURO CONCEDIDO</div><div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-size:26px">${m.item.e}</span><div><div style="font-weight:700;font-size:15px;color:${r.c}">${m.item.nome}</div><div style="font-size:11px;color:#b8b0a4">${m.item.l} · D100:${m.item.roll}</div></div></div><div style="font-size:12px;color:#8b5cf6;margin-bottom:5px">✦ ${m.item.bonus}</div>${m.item.desc?`<div style="font-size:13px;line-height:1.7;font-style:italic">${fmt(m.item.desc)}</div>`:''}</div>`;
-    }
-    if(m.tipo==='mestre'||m.tipo==='npc'){
-      const p=detVoz(m.txt||'');const cfg=VOZES[p]||VOZES.mestre;
-      const cor=m.tipo==='npc'?'#4ade80':cfg.c;
-      const ef=S.falando&&S.falandoId===m.id;
-      const mid=String(m.id).replace('.','_');
-      return`<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap"><span style="font-size:11px;font-weight:700;color:${cor}">${m.tipo==='npc'?'💬 NPC':'🐉 Mestre'}</span>${m.orig?'<span style="font-size:10px;color:#8b5cf6;opacity:.7">✨ expandido</span>':''}<span style="font-size:10px;color:#b8b0a4;opacity:.5">${m.h||''}</span><button class="voz-btn ${ef?'on':''}" onclick="ouvirMsg('${mid}',${JSON.stringify(m.id)})">${ef?'🔊 parar':'🔈 '+cfg.l}</button></div>${m.orig?`<div style="font-size:12px;color:#b8b0a4;font-style:italic;margin-bottom:5px;padding-left:10px;border-left:2px solid rgba(139,92,246,.3)">Ideia: "${m.orig}"</div>`:''}<div class="msg-mestre-bubble" style="border-left-color:${cor}${ef?';border-color:rgba(212,175,55,.6)':''}">${fmt(m.txt)}</div></div>`;
-    }
-    if(m.tipo==='dado'){
-      const cor=m.crit?'#d4af37':m.fumble?'#ff6b6b':'#4ade80';
-      const bg=m.crit?'rgba(212,175,55,.12)':m.fumble?'rgba(204,51,51,.12)':'rgba(45,90,39,.15)';
-      return`<div style="align-self:flex-end"><div style="font-size:10px;color:#8b5cf6;text-align:right;margin-bottom:3px">${m.nome}</div><div class="msg-dado-bubble" style="background:${bg};border:1px solid ${cor}55;color:${cor}">🎲 ${m.expr} → <strong style="font-size:19px">${m.res}</strong>${m.crit?' 💥 CRÍTICO!':''}${m.fumble?' 💀 FUMBLE!':''}</div></div>`;
-    }
-    return`<div style="align-self:flex-end;max-width:80%"><div style="font-size:10px;color:#8b5cf6;text-align:right;margin-bottom:3px;font-weight:700">${m.nome||''} <span style="opacity:.4;font-weight:400">${m.h||''}</span></div><div class="msg-jogador-bubble">${m.txt}</div></div>`;
-  }).join('');
-  if(S.digitando)c.innerHTML+=`<div style="display:flex;align-items:center;gap:8px"><span class="dot" style="animation-delay:0s"></span><span class="dot" style="animation-delay:.2s"></span><span class="dot" style="animation-delay:.4s"></span><span style="color:#d4af37;font-size:13px;font-style:italic">O Mestre narra...</span></div>`;
-  c.scrollTop=c.scrollHeight;
-}
-
-function ouvirMsg(mid,id){
-  const m=S.msgs.find(x=>x.id===id);if(!m)return;
-  if(S.falando&&S.falandoId===id){pararVoz();S.falando=false;S.falandoId=null;renderMsgs();return;}
-  const p=detVoz(m.txt||'');
-  S.falando=true;S.falandoId=id;renderMsgs();
-  falarTxt(m.txt,p,()=>{},()=>{S.falando=false;S.falandoId=null;renderMsgs();});
-}
-
-// ════════════════════════════════════════════════════════
-// PJs
-// ════════════════════════════════════════════════════════
-function renderPJ(){
-  const lista=S.fichas.map(f=>`<div class="pj-card" onclick="editF('${f.id}')"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:18px">${f.avatar}</span><div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;color:#e8e0d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.nome||'Sem nome'}</div><div style="font-size:10px;color:#b8b0a4">${f.raca} ${f.classe} Nv${f.nivel}</div><div style="font-size:10px;color:#4ade80">❤️${f.pv}/${f.pvMax} 🛡️${f.ca}</div></div><button onclick="event.stopPropagation();delF('${f.id}')" style="background:transparent;border:none;color:#ff6b6b;font-size:12px">🗑</button></div></div>`).join('');
-
-  const online=S.online.length?`<div style="margin-top:12px;border-top:1px solid rgba(139,92,246,.15);padding-top:10px"><div style="font-size:9px;color:#8b5cf6;font-weight:700;letter-spacing:2px;margin-bottom:7px">ONLINE (${S.online.length})</div>${S.online.map(j=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;font-size:11px;color:#e8e0d4"><div style="width:6px;height:6px;border-radius:50%;background:#4ade80"></div>${j.nome} <span style="font-size:9px;opacity:.7">(${j.role})</span></div>`).join('')}</div>`:'';
-
-  const conteudo=S.editFicha?renderFichaEd():`<div style="text-align:center;padding:40px 20px"><div style="font-size:44px;margin-bottom:14px">📋</div><h3 style="color:#d4af37;margin-bottom:10px">Fichas dos Aventureiros</h3><p style="color:#b8b0a4;font-size:13px;line-height:1.7;margin-bottom:20px">Crie ou importe as fichas dos personagens.</p>${S.fichas.length?`<button class="btn-v" style="max-width:300px;margin:0 auto" onclick="aba('chat');setTimeout(iniciarNarr,200)">🚀 Ir para o Chat e Iniciar Aventura</button>`:''}</div>`;
-
-  return`<div class="sb"><div class="sb-title">👤 PERSONAGENS</div>
-    <button class="btn-v" style="width:100%;padding:8px;font-size:12px;margin-bottom:6px" onclick="novaF()">+ Criar Novo</button>
-    <button style="width:100%;padding:8px;background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);border-radius:8px;color:#d4af37;font-size:12px;font-weight:700;margin-bottom:10px" onclick="abrirImp()">📥 Importar</button>
-    ${lista}${online}</div>
-  <div class="main">${conteudo}</div>`;
-}
-
-function novaF(){S.editFicha=fichaBase();S.fichaTab='basico';aba('pj');}
-function editF(id){S.editFicha={...S.fichas.find(f=>f.id===id)};S.fichaTab='basico';aba('pj');}
-function delF(id){if(confirm('Remover?')){S.fichas=S.fichas.filter(f=>f.id!==id);salvar();aba('pj');}}
-function setFTab(t){S.fichaTab=t;aba('pj');}
-function setFF(k,v){if(S.editFicha)S.editFicha={...S.editFicha,[k]:v};}
-function togPericia(n){if(!S.editFicha)return;const p={...(S.editFicha.pericias||{})};p[n]=!p[n];S.editFicha={...S.editFicha,pericias:p};aba('pj');}
-function salvarF(){
-  if(!S.editFicha)return;
-  const f=S.editFicha;
-  const i=S.fichas.findIndex(x=>x.id===f.id);
-  if(i>=0)S.fichas=S.fichas.map((x,j)=>j===i?f:x);else S.fichas=[...S.fichas,f];
-  S.editFicha=null;salvar();aba('pj');
-}
-function cancelarF(){S.editFicha=null;aba('pj');}
-
-function renderFichaEd(){
-  const f=S.editFicha;
-  // Calcular automaticamente antes de renderizar
-  const nivel=calcNivelPorXP(f.xp||0);
-  if(nivel>f.nivel)f.nivel=nivel;
-  const pb=calcBonusProf(f.nivel);
-  const caAuto=calcCA(f);
-  if(!f._caManual)f.ca=caAuto;
-  f.iniciativa=calcIniciativa(f);
-  const pvMaxAuto=calcPVMax(f);
-  if(!f._pvManual)f.pvMax=pvMaxAuto;
-  f.cdTR=calcCDMagia(f);
-  f.bonusAtaqueMagia=calcBonusAtaqueMagia(f);
-  const xpProx=calcXPProximoNivel(f.nivel);
-
-  const tabs={basico:'📋 Básico',atribs:'💪 Atribs',pericias:'🎯 Perícias',equip:'⚔️ Equip',magia:'✨ Magias',bio:'🧬 Bio'};
-  const tabsH=Object.entries(tabs).map(([k,v])=>`<button class="ftab${S.fichaTab===k?' on':''}" onclick="setFTab('${k}')">${v}</button>`).join('');
-
-  let body='';
-  if(S.fichaTab==='basico'){
-    const avtsH=AVTS.map(av=>`<button onclick="setFF('avatar','${av}');this.closest('.main').querySelectorAll('.av-btn').forEach(b=>b.style.borderColor='rgba(139,92,246,.2)');this.style.borderColor='#d4af37'" class="av-btn" style="font-size:22px;padding:5px;background:transparent;border:2px solid rgba(139,92,246,.2);border-radius:8px;cursor:pointer">${av}</button>`).join('');
-    const racasH=RACAS.map(r=>`<option${r===f.raca?' selected':''}>${r}</option>`).join('');
-    const classesH=CLASSES.map(c=>`<option${c===f.classe?' selected':''}>${c}</option>`).join('');
-    const xpPct=Math.min(100,((f.xp||0)/xpProx)*100).toFixed(0);
-    body=`
-    <!-- HEADER DA FICHA -->
-    <div style="background:rgba(0,0,0,.3);border-radius:10px;padding:12px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div style="font-size:36px">${f.avatar||'⚔️'}</div>
-        <div style="flex:1">
-          <input class="inp" value="${f.nome}" onchange="setFF('nome',this.value)" placeholder="Nome do Personagem *" style="font-size:15px;font-weight:700;margin-bottom:4px">
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <select class="inp" style="flex:1;min-width:100px" onchange="setFF('classe',this.value);aba('pj')">${classesH}</select>
-            <select class="inp" style="flex:1;min-width:100px" onchange="setFF('raca',this.value)">${racasH}</select>
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <input class="inp" style="flex:1;min-width:80px" value="${f.jogador||''}" onchange="setFF('jogador',this.value)" placeholder="Jogador">
-        <input class="inp" style="flex:1;min-width:100px" value="${f.antecedente||''}" onchange="setFF('antecedente',this.value)" placeholder="Antecedente">
-        <select class="inp" style="flex:1;min-width:100px" onchange="setFF('tendencia',this.value)">
-          ${['Leal e Bom','Neutro e Bom','Caótico e Bom','Leal e Neutro','Neutro','Caótico e Neutro','Leal e Mau','Neutro e Mau','Caótico e Mau'].map(t=>`<option${t===f.tendencia?' selected':''}>${t}</option>`).join('')}
-        </select>
-      </div>
-    </div>
-
-    <!-- NÍVEL E XP (CALCULADO AUTOMÁTICO) -->
-    <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.3);border-radius:10px;padding:10px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <div>
-          <span style="font-size:10px;color:#8b5cf6;letter-spacing:2px">NÍVEL</span>
-          <div style="font-size:28px;font-weight:900;color:#d4af37;line-height:1">${f.nivel}</div>
-          <div style="font-size:10px;color:#b8b0a4">Bônus de Prof: <strong style="color:#f0d060">+${pb}</strong></div>
-        </div>
-        <div style="text-align:center">
-          <span style="font-size:10px;color:#8b5cf6;letter-spacing:2px">XP</span>
-          <input class="inp" type="number" value="${f.xp||0}" onchange="setFF('xp',+this.value);aba('pj')" style="width:90px;text-align:center;font-size:16px;font-weight:700">
-          <div style="font-size:10px;color:#b8b0a4">Próximo nível: ${xpProx.toLocaleString()}</div>
-        </div>
-        <div style="text-align:right">
-          <span style="font-size:10px;color:#8b5cf6;letter-spacing:2px">CLASSE</span>
-          <div style="font-size:14px;font-weight:700;color:#e8e0d4">${f.classe}</div>
-          <div style="font-size:10px;color:#b8b0a4">D${PV_CLASSE[f.classe]||8} Dado de vida</div>
-        </div>
-      </div>
-      <div style="height:6px;background:rgba(0,0,0,.3);border-radius:3px;overflow:hidden">
-        <div style="height:100%;width:${xpPct}%;background:linear-gradient(90deg,#8b5cf6,#d4af37);border-radius:3px;transition:width .5s"></div>
-      </div>
-      <div style="font-size:10px;color:#888;margin-top:3px;text-align:center">${f.xp||0} / ${xpProx.toLocaleString()} XP (${xpPct}%)</div>
-    </div>
-
-    <!-- PV, CA, INICIATIVA, DESLOCAMENTO -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:rgba(204,51,51,.12);border:1px solid rgba(204,51,51,.3);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:#f87171;letter-spacing:1px;margin-bottom:2px">PV MÁXIMO</div>
-        <div style="font-size:18px;font-weight:900;color:#f87171">${f.pvMax}</div>
-        <div style="font-size:9px;color:#888">Auto: ${pvMaxAuto}</div>
-      </div>
-      <div style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:#60a5fa;letter-spacing:1px;margin-bottom:2px">CA</div>
-        <div style="font-size:18px;font-weight:900;color:#60a5fa">${f.ca}</div>
-        <div style="font-size:9px;color:#888">Auto: ${caAuto}</div>
-      </div>
-      <div style="background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:#4ade80;letter-spacing:1px;margin-bottom:2px">INICIATIVA</div>
-        <div style="font-size:18px;font-weight:900;color:#4ade80">${f.iniciativa>=0?'+':''}${f.iniciativa}</div>
-        <div style="font-size:9px;color:#888">mod DES</div>
-      </div>
-      <div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:8px;text-align:center">
-        <div style="font-size:9px;color:#fbbf24;letter-spacing:1px;margin-bottom:2px">DESLOCAMENTO</div>
-        <div style="font-size:18px;font-weight:900;color:#fbbf24">${f.deslocamento||9}m</div>
-        <div style="font-size:9px;color:#888">por turno</div>
-      </div>
-    </div>
-
-    <!-- PV ATUAL E TEMPORÁRIO -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div>
-        <label class="lbl">❤️ PV Atuais</label>
-        <input class="inp" type="number" value="${f.pv}" onchange="setFF('pv',Math.min(+this.value,f.pvMax));setFF('_pvManual',true)" style="font-size:18px;font-weight:700;color:#f87171;text-align:center">
-      </div>
-      <div>
-        <label class="lbl">💙 PV Temporários</label>
-        <input class="inp" type="number" value="${f.pvTemp||0}" onchange="setFF('pvTemp',+this.value)" style="font-size:18px;font-weight:700;color:#60a5fa;text-align:center">
-      </div>
-    </div>
-
-    <!-- DADOS DE VIDA E TESTES CONTRA A MORTE -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px">
-        <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:6px">DADOS DE VIDA</div>
-        <div style="font-size:14px;color:#e8e0d4;text-align:center">${f.dadosVida||f.nivel}d${PV_CLASSE[f.classe]||8}</div>
-        <div style="font-size:10px;color:#888;text-align:center">Restantes: ${f.dadosVida||f.nivel}</div>
-      </div>
-      <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px">
-        <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:4px">TESTES CONTRA A MORTE</div>
-        <div style="font-size:10px;color:#4ade80;margin-bottom:3px">SUCESSO: ○ ○ ○</div>
-        <div style="font-size:10px;color:#f87171">FRACASSO: ○ ○ ○</div>
-      </div>
-    </div>
-
-    <!-- AVATAR -->
-    <label class="lbl">Avatar</label>
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px">${avtsH}</div>
-
-    <!-- BACKGROUND -->
-    <label class="lbl">História / Background</label>
-    <textarea class="ta" rows="2" onchange="setFF('background',this.value)">${f.background||''}</textarea>
-    `;
-  }else if(S.fichaTab==='atribs'){
-    const ATRIBS=['FOR','DES','CON','INT','SAB','CAR'];
-    const ATRIB_NAMES={FOR:'Força',DES:'Destreza',CON:'Constituição',INT:'Inteligência',SAB:'Sabedoria',CAR:'Carisma'};
-    const TR_PROF=TR_PROFICIENCIAS[f.classe]||[];
-    const attrsH=ATRIBS.map(a=>{
-      const val=f[a]||10;
-      const mod=calcModAtrib(val);
-      const modStr=(mod>=0?'+':'')+mod;
-      const trProf=f.trSalvos?.[a]||TR_PROF.includes(a);
-      const trMod=mod+(trProf?pb:0);
-      const trStr=(trMod>=0?'+':'')+trMod;
-      return `<div style="background:rgba(0,0,0,.3);border:2px solid rgba(139,92,246,.3);border-radius:10px;padding:10px;text-align:center">
-        <div style="font-size:9px;color:#8b5cf6;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px">${ATRIB_NAMES[a]}</div>
-        <input type="number" min="1" max="30" value="${val}" onchange="setFF('${a}',+this.value);aba('pj')"
-          style="width:60px;height:40px;background:transparent;border:none;color:#f0d060;font-size:24px;font-weight:900;text-align:center;outline:none">
-        <div style="font-size:18px;font-weight:700;color:#e8e0d4;background:rgba(0,0,0,.4);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;margin:4px auto">${modStr}</div>
-        <div style="font-size:9px;color:#888;margin-top:4px">Mod: <strong style="color:#b8b0a4">${modStr}</strong></div>
-        <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(139,92,246,.2)">
-          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">TR: ${trStr}</div>
-          <label style="font-size:10px;color:#b8b0a4;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:3px">
-            <input type="checkbox" ${trProf?'checked':''} onchange="const ts={...(S.editFicha.trSalvos||{})};ts['${a}']=this.checked;setFF('trSalvos',ts);aba('pj')">
-            Prof.
-          </label>
-        </div>
-      </div>`;
-    }).join('');
-    body=`
-    <div style="font-size:11px;color:#b8b0a4;margin-bottom:12px">Bônus de Proficiência: <strong style="color:#d4af37">+${pb}</strong> (Nível ${f.nivel})</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">${attrsH}</div>
-    
-    <!-- TESTES DE RESISTÊNCIA RESUMO -->
-    <div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px;margin-bottom:12px">
-      <div style="font-size:10px;color:#8b5cf6;letter-spacing:2px;margin-bottom:8px">TESTES DE RESISTÊNCIA</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-        ${ATRIBS.map(a=>{
-          const trProf=f.trSalvos?.[a]||TR_PROF.includes(a);
-          const mod=calcModAtrib(f[a]||10);
-          const total=mod+(trProf?pb:0);
-          const totalStr=(total>=0?'+':'')+total;
-          return `<div style="display:flex;align-items:center;gap:6px;padding:4px">
-            <span style="color:${trProf?'#4ade80':'#666'};font-size:12px">${trProf?'●':'○'}</span>
-            <span style="font-size:12px;color:#e8e0d4">${totalStr} ${ATRIB_NAMES[a]}</span>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- PERCEPÇÃO PASSIVA -->
-    <div style="background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:10px;text-align:center">
-      <div style="font-size:9px;color:#d4af37;letter-spacing:2px">PERCEPÇÃO PASSIVA (SABEDORIA)</div>
-      <div style="font-size:24px;font-weight:900;color:#d4af37">${10+calcModAtrib(f.SAB||10)+(f.pericias?.Percepção?pb:0)}</div>
-    </div>
-    `;
-  }else if(S.fichaTab==='pericias'){
-    const pH=PERICIAS.map(p=>{const pr=f.pericias?.[p.n];const tot=mdV(f[p.a]||10)+(pr?pb:0);return`<div onclick="togPericia('${p.n}')" style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:${pr?'rgba(139,92,246,.12)':'rgba(0,0,0,.25)'};border:1px solid ${pr?'rgba(139,92,246,.4)':'rgba(139,92,246,.1)'};border-radius:7px;cursor:pointer"><span style="width:13px;height:13px;border-radius:3px;background:${pr?'#8b5cf6':'transparent'};border:2px solid ${pr?'#8b5cf6':'rgba(139,92,246,.4)'};flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">${pr?'✓':''}</span><span style="flex:1;font-size:12px;color:${pr?'#e8e0d4':'#b8b0a4'}">${p.n}</span><span style="font-family:monospace;font-size:12px;color:${tot>=0?'#4ade80':'#ff6b6b'};font-weight:700">${tot>=0?'+':''}${tot}</span></div>`;}).join('');
-    body=`<div style="color:#b8b0a4;font-size:12px;margin-bottom:14px">Marque as perícias com proficiência (+${pb}):</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">${pH}</div>`;
-  }else if(S.fichaTab==='equip'){
-    body=`<label class="lbl">Equipamentos</label><textarea class="ta" rows="3" onchange="setFF('equipamentos',this.value)">${f.equipamentos||''}</textarea>
-    <label class="lbl" style="margin-top:10px">Magias</label><textarea class="ta" rows="3" onchange="setFF('magias',this.value)">${f.magias||''}</textarea>
-    <label class="lbl" style="margin-top:10px">Habilidades</label><textarea class="ta" rows="2" onchange="setFF('habilidades',this.value)">${f.habilidades||''}</textarea>`;
-  }else if(S.fichaTab==='magia'){
-    const classeConj=ATRIB_CONJURACAO[f.classe]||'';
-    body=`
-    <div style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:12px;margin-bottom:12px">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">
-        <div>
-          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">CLASSE CONJURADORA</div>
-          <div style="font-size:14px;font-weight:700;color:#e8e0d4">${f.classe||'—'}</div>
-          <div style="font-size:10px;color:#888">${classeConj?'Hab: '+classeConj:'Não conjurador'}</div>
-        </div>
-        <div>
-          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">CD DO TR</div>
-          <div style="font-size:24px;font-weight:900;color:#c084fc">${f.cdTR||'—'}</div>
-        </div>
-        <div>
-          <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px">BÔNUS DE ATAQUE</div>
-          <div style="font-size:24px;font-weight:900;color:#c084fc">${f.bonusAtaqueMagia>=0?'+':''}${f.bonusAtaqueMagia||'—'}</div>
-        </div>
-      </div>
-    </div>
-    <label class="lbl">✨ Truques (Nível 0)</label>
-    <textarea class="ta" rows="2" onchange="setFF('magiasTruques',this.value)">${f.magiasTruques||''}</textarea>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-      ${[1,2,3,4,5,6,7,8,9].map(n=>`
-      <div>
-        <label class="lbl">Nível ${n}</label>
-        <textarea class="ta" rows="2" onchange="setFF('magias${n}',this.value)" placeholder="Magias de nível ${n}...">${f['magias'+n]||''}</textarea>
-      </div>`).join('')}
-    </div>
-    `;
-  }else if(S.fichaTab==='bio'){
-    body=`
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <div><label class="lbl">Idade</label><input class="inp" value="${f.idade||''}" onchange="setFF('idade',this.value)"></div>
-      <div><label class="lbl">Altura</label><input class="inp" value="${f.altura||''}" onchange="setFF('altura',this.value)"></div>
-      <div><label class="lbl">Peso</label><input class="inp" value="${f.peso||''}" onchange="setFF('peso',this.value)"></div>
-      <div><label class="lbl">Olhos</label><input class="inp" value="${f.olhos||''}" onchange="setFF('olhos',this.value)"></div>
-      <div><label class="lbl">Pele</label><input class="inp" value="${f.pele||''}" onchange="setFF('pele',this.value)"></div>
-      <div><label class="lbl">Cabelos</label><input class="inp" value="${f.cabelos||''}" onchange="setFF('cabelos',this.value)"></div>
-    </div>
-    <label class="lbl">Traços de Personalidade</label>
-    <textarea class="ta" rows="2" onchange="setFF('tracoPersonalidade',this.value)">${f.tracoPersonalidade||''}</textarea>
-    <label class="lbl" style="margin-top:8px">Ideal</label>
-    <textarea class="ta" rows="2" onchange="setFF('ideal',this.value)">${f.ideal||''}</textarea>
-    <label class="lbl" style="margin-top:8px">Ligação</label>
-    <textarea class="ta" rows="2" onchange="setFF('ligacao',this.value)">${f.ligacao||''}</textarea>
-    <label class="lbl" style="margin-top:8px">Defeito</label>
-    <textarea class="ta" rows="2" onchange="setFF('defeito',this.value)">${f.defeito||''}</textarea>
-    <label class="lbl" style="margin-top:8px">Aparência do Personagem</label>
-    <textarea class="ta" rows="2" onchange="setFF('aparencia',this.value)">${f.aparencia||''}</textarea>
-    <label class="lbl" style="margin-top:8px">Aliados e Organizações</label>
-    <textarea class="ta" rows="2" onchange="setFF('aliados',this.value)">${f.aliados||''}</textarea>
-    <label class="lbl" style="margin-top:8px">História do Personagem</label>
-    <textarea class="ta" rows="3" onchange="setFF('historiaPersonagem',this.value)">${f.historiaPersonagem||''}</textarea>
-    <label class="lbl" style="margin-top:8px">Tesouro</label>
-    <textarea class="ta" rows="2" onchange="setFF('tesouro',this.value)">${f.tesouro||''}</textarea>
-    <label class="lbl" style="margin-top:8px">Notas</label>
-    <textarea class="ta" rows="3" onchange="setFF('notas',this.value)">${f.notas||''}</textarea>
-    `;
+  // Narração inicial
+  if(G.modo==='ia'&&key){
+    narrativa(`A aventura "${camp}" começa. Narre a cena inicial de forma épica e imersiva, apresentando o ambiente onde ${nome} está.`);
   }else{
-    body=`<label class="lbl">Traços</label><textarea class="ta" rows="2" onchange="setFF('tracos',this.value)">${f.tracos||''}</textarea>
-  return`<div style="max-width:680px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="color:#d4af37;font-size:17px">${f.nome?'✏️ '+f.nome:'+ Novo Personagem'}</span><div style="display:flex;gap:7px"><button class="btn-v" style="flex:none;padding:9px 20px;font-size:13px" onclick="salvarF()">💾 Salvar</button><button style="width:38px;height:38px;border-radius:8px;border:1px solid rgba(204,51,51,.3);background:rgba(204,51,51,.1);color:#ff6b6b;font-size:14px" onclick="cancelarF()">✖</button></div></div><div class="ftabs">${tabsH}</div>${body}</div>`;
+    mostrarLegenda('🐉 MESTRE',`A aventura **"${camp}"** começa! ${G.modo==='humano'?'Use a barra inferior para narrar ou colocar falas de NPCs.':'Configure sua API Key nas configurações para ativar o Mestre IA.'}`,'#d4af37');
+  }
 }
 
-// ════════════════════════════════════════════════════════
-// IMPORTAR
-// ════════════════════════════════════════════════════════
-function abrirImp(){
-  S.impAvatar='⚔️';
-  document.getElementById('imp-avts').innerHTML=AVTS.map(av=>`<button onclick="selAv('${av}')" id="av-${av.codePointAt(0)}" style="font-size:22px;padding:5px;background:${av===S.impAvatar?'rgba(212,175,55,.2)':'rgba(0,0,0,.3)'};border:2px solid ${av===S.impAvatar?'#d4af37':'rgba(139,92,246,.2)'};border-radius:7px">${av}</button>`).join('');
-  document.getElementById('i-raca').innerHTML=RACAS.map(r=>`<option>${r}</option>`).join('');
-  document.getElementById('i-classe').innerHTML=CLASSES.map(c=>`<option>${c}</option>`).join('');
-  ['FOR','DES','CON','INT','SAB','CAR'].forEach(a=>{
-    const inp=document.querySelector(`#imp-a-${a} input`);
-    if(inp)inp.oninput=()=>{const m=mdV(+inp.value);document.getElementById('mod-'+a).textContent=(m>=0?'+':'')+m;};
-  });
-  document.getElementById('mod-imp').classList.remove('hidden');
-}
-function selAv(av){
-  S.impAvatar=av;
-  document.querySelectorAll('#imp-avts button').forEach(b=>{
-    const isThis=b.textContent===av;
-    b.style.borderColor=isThis?'#d4af37':'rgba(139,92,246,.2)';
-    b.style.background=isThis?'rgba(212,175,55,.2)':'rgba(0,0,0,.3)';
-  });
-}
-function setImpAba(a){
-  S.impAba=a;
-  document.getElementById('iab-form').style.background=a==='form'?'#8b5cf6':'transparent';
-  document.getElementById('iab-form').style.color=a==='form'?'#fff':'#b8b0a4';
-  document.getElementById('iab-txt').style.background=a==='txt'?'#8b5cf6':'transparent';
-  document.getElementById('iab-txt').style.color=a==='txt'?'#fff':'#b8b0a4';
-  document.getElementById('imp-form').classList.toggle('hidden',a!=='form');
-  document.getElementById('imp-txt').classList.toggle('hidden',a!=='txt');
-}
-function impForm(){
-  const nome=document.getElementById('i-nome').value.trim();
-  if(!nome)return alert('Digite o nome do personagem!');
-  const pv=+document.getElementById('i-pv').value||10;
-  const f={...fichaBase(),id:Date.now(),avatar:S.impAvatar,nome,
-    jogador:document.getElementById('i-jog').value.trim(),
-    raca:document.getElementById('i-raca').value,
-    classe:document.getElementById('i-classe').value,
-    nivel:+document.getElementById('i-niv').value||1,
-    pv,pvMax:+document.getElementById('i-pvm').value||pv,
-    ca:+document.getElementById('i-ca').value||10,
-    background:document.getElementById('i-bg').value,
-  };
-  ['FOR','DES','CON','INT','SAB','CAR'].forEach(a=>{
-    const inp=document.querySelector(`#imp-a-${a} input`);
-    if(inp)f[a]=+inp.value||10;
-  });
-  S.fichas=[...S.fichas,f];S.editFicha={...f};S.fichaTab='basico';
-  salvar();fechaMod('mod-imp');aba('pj');
-}
-function impTxt(){
-  const txt=document.getElementById('i-txt').value.trim();if(!txt)return;
-  function ex(chaves){for(const c of chaves){const idx=txt.toLowerCase().indexOf(c.toLowerCase());if(idx<0)continue;const r=txt.slice(idx+c.length).replace(/^\s*[:|]\s*/,'');const v=r.split(/[|\n,]/)[0].trim();if(v)return v;}return null;}
-  function exN(chaves){const v=ex(chaves);const n=parseInt(v||'');return isNaN(n)?null:n;}
-  const pv=exN(['pv'])||10;
-  const f={...fichaBase(),id:Date.now(),avatar:S.impAvatar||'⚔️',
-    nome:ex(['nome'])||'Personagem',classe:ex(['classe'])||'Guerreiro',
-    raca:ex(['raca','raça'])||'Humano',nivel:exN(['nivel','nível'])||1,
-    pv,pvMax:pv,ca:exN(['ca'])||10,
-    FOR:exN(['for','força'])||10,DES:exN(['des','destreza'])||10,
-    CON:exN(['con','constituição'])||10,INT:exN(['int','inteligência'])||10,
-    SAB:exN(['sab','sabedoria'])||10,CAR:exN(['car','carisma'])||10,
-    background:txt.slice(0,300),
-  };
-  S.fichas=[...S.fichas,f];S.editFicha={...f};S.fichaTab='basico';
-  salvar();fechaMod('mod-imp');aba('pj');
+// ═══════════════════════════════════════════════════════════
+// IA API
+// ═══════════════════════════════════════════════════════════
+async function ia(userMsg,comHist=true){
+  const k=G.apiKey||localStorage.getItem('mesa_key')||'';
+  if(!k){mostrarLegenda('⚠️ Aviso','Configure sua API Key em ⚙️ Configurações para ativar o Mestre IA.','#f87171');return null;}
+
+  document.getElementById('typing-ind').style.display='block';
+  if(comHist)G.hist=[...G.hist.slice(-16),{role:'user',content:userMsg}];
+  const msgs=comHist?G.hist:[{role:'user',content:userMsg}];
+  const sys=buildSystemPrompt();
+
+  try{
+    let txt='';
+    if(G.prov==='openai'){
+      const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:800,messages:[{role:'system',content:sys},...msgs]})});
+      const d=await r.json();
+      if(d.error){mostrarLegenda('⚠️ OpenAI',d.error.message,'#f87171');return null;}
+      txt=d.choices?.[0]?.message?.content||'';
+    }else if(G.prov==='gemini'){
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:msgs.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),generationConfig:{maxOutputTokens:800}})});
+      const d=await r.json();
+      if(d.error){mostrarLegenda('⚠️ Gemini',d.error.message,'#f87171');return null;}
+      txt=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    }else{
+      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:sys,messages:msgs})});
+      const d=await r.json();
+      if(d.error){if(d.error.type==='authentication_error')mostrarLegenda('⚠️ Claude','API Key inválida.','#f87171');return null;}
+      txt=d.content?.[0]?.text||'';
+    }
+    if(comHist)G.hist=[...G.hist,{role:'assistant',content:txt}];
+    return txt;
+  }catch(e){mostrarLegenda('⚠️ Erro','Sem conexão com a IA.','#f87171');return null;}
+  finally{document.getElementById('typing-ind').style.display='none';}
 }
 
-// ════════════════════════════════════════════════════════
-// CHAT
-// ════════════════════════════════════════════════════════
-function renderChat(){
-  const gmP=S.modo==='gm'&&S.isHost?`<div class="gm-panel">
-    <div style="font-weight:700;font-size:13px;color:#d4af37;margin-bottom:10px">👑 Mestre</div>
-    <div style="background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:9px;margin-bottom:10px">
-      <div style="font-size:11px;color:${S.iaAssiste?'#8b5cf6':'#d4af37'};font-weight:700;margin-bottom:5px">${S.iaAssiste?'🤖 IA expande':'✍️ Envio direto'}</div>
-      <div style="font-size:10px;color:#b8b0a4;margin-bottom:7px;line-height:1.3">${S.iaAssiste?'Você escreve → IA transforma em narração épica':'Seu texto vai direto ao chat'}</div>
-      <button onclick="S.iaAssiste=!S.iaAssiste;aba('chat')" style="width:100%;padding:7px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:7px;color:#8b5cf6;font-size:11px">→ ${S.iaAssiste?'Mudar: Direto':'Mudar: IA Expande'}</button>
+async function narrativa(msg){
+  const resp=await ia(msg,true);
+  if(!resp)return;
+  // Detectar combate
+  if(/inicia(r)?( o)? combate|rolagem de iniciativa|ordem de iniciativa/i.test(resp)){
+    iniciarCombate();
+  }
+  // Detectar rolagem no texto
+  const rolM=resp.match(/\[ROLAGEM:\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(.+?)\]/);
+  if(rolM){
+    addJornal('dado',`🎲 ${rolM[1]} — ${rolM[3]}`,'#d4af37');
+  }
+  // Mostrar legenda e jornal
+  const txt=resp.replace(/\[ROLAGEM:[^\]]*\]/g,'').trim();
+  mostrarLegenda('🐉 MESTRE',txt,'#d4af37');
+  addJornal('mestre',txt,'#d4af37');
+  // TTS
+  if(G.tts)falarTTS(txt);
+}
+
+// ═══════════════════════════════════════════════════════════
+// ENVIAR MENSAGEM
+// ═══════════════════════════════════════════════════════════
+async function enviarMsg(){
+  const inp=document.getElementById('msg-input');
+  const txt=inp.value.trim();
+  if(!txt)return;
+  inp.value='';
+
+  addJornal('jogador',txt,'#60a5fa');
+  mostrarLegenda('👤 '+G.nome,txt,'#60a5fa');
+
+  if(G.modo==='ia'){
+    await narrativa(txt);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// JORNAL
+// ═══════════════════════════════════════════════════════════
+function addJornal(tipo,txt,cor){
+  const ts=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  G.jornal.push({tipo,txt,cor,ts});
+  renderJornal();
+}
+
+function renderJornal(){
+  const el=document.getElementById('jornal-body');
+  el.innerHTML=G.jornal.map(e=>`
+    <div class="journal-entry anim-in">
+      <div class="je-time">${e.ts}</div>
+      <div class="je-who" style="color:${e.cor}">${e.tipo==='mestre'?'🐉 MESTRE':e.tipo==='jogador'?'👤 '+G.nome:e.tipo==='dado'?'🎲 DADO':'📋 SISTEMA'}</div>
+      <div class="je-txt">${e.txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>')}</div>
     </div>
-    <div style="display:flex;gap:3px;margin-bottom:8px">
-      ${[{id:'narrar',l:'📖 Narrar'},{id:'npc',l:'💬 NPC'},{id:'combate',l:'⚔️'}].map(t=>`<button onclick="S.gmModo='${t.id}';aba('chat')" style="flex:1;padding:6px 3px;border:1px solid ${S.gmModo===t.id?'rgba(139,92,246,.5)':'rgba(139,92,246,.2)'};background:${S.gmModo===t.id?'rgba(139,92,246,.2)':'transparent'};color:${S.gmModo===t.id?'#e8e0d4':'#b8b0a4'};font-size:10px;cursor:pointer;border-radius:6px">${t.l}</button>`).join('')}
-    </div>
-    <textarea id="gm-ta" class="gm-ta" placeholder="${S.gmModo==='narrar'?'Descreva a cena...':S.gmModo==='npc'?'Nome do NPC e fala...':'Descreva o combate...'}" onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();envGM();}">${S.gmInput||''}</textarea>
-    <button id="btn-mic-gm" onclick="togMicGM()" style="width:100%;padding:8px;background:${S.micGM?'rgba(204,51,51,.2)':'rgba(139,92,246,.1)'};border:1px solid ${S.micGM?'#cc3333':'rgba(139,92,246,.3)'};border-radius:8px;color:${S.micGM?'#ff8080':'#8b5cf6'};font-size:12px;margin-bottom:7px">${S.micGM?'⏹ Parar':'🎤 Ditar'}</button>
-    <div id="voz-gm" style="font-size:10px;color:#b8b0a4;text-align:center;margin-bottom:7px;min-height:14px"></div>
-    <button class="gm-send" onclick="envGM()">${S.iaAssiste?'✨ Expandir e Publicar':'📢 Publicar'}</button>
-    <div style="font-size:10px;color:#b8b0a4;opacity:.5;text-align:center;margin-bottom:10px">Ctrl+Enter</div>
-    ${S.fichas.length?`<div style="border-top:1px solid rgba(139,92,246,.15);padding-top:10px"><div style="font-size:9px;color:#8b5cf6;font-weight:700;letter-spacing:1px;margin-bottom:7px">❤️ PV</div>${S.fichas.map(f=>`<div style="margin-bottom:7px;padding:6px 8px;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.15);border-radius:7px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:11px;font-weight:700">${f.avatar} ${f.nome}</span><span style="font-size:10px;color:#4ade80">❤️${f.pv}/${f.pvMax}</span></div><div style="display:flex;gap:4px"><button onclick="ajPV('${f.id}',-1)" style="flex:1;padding:3px;background:rgba(204,51,51,.15);border:1px solid rgba(204,51,51,.3);border-radius:5px;color:#ff8080;font-size:11px">−1</button><button onclick="ajPV('${f.id}',+1)" style="flex:1;padding:3px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);border-radius:5px;color:#4ade80;font-size:11px">+1</button></div></div>`).join('')}</div>`:''}
-    ${['⚔️ Iniciar combate!','💀 PJ derrubado!','🏆 Vitória!','🎁 Recompensa!'].map(t=>`<button onclick="document.getElementById('gm-ta').value='${t}';S.gmInput='${t}'" style="width:100%;padding:6px 8px;background:rgba(0,0,0,.3);border:1px solid rgba(139,92,246,.15);border-radius:6px;color:#b8b0a4;font-size:11px;text-align:left;margin-bottom:4px">${t}</button>`).join('')}
-  </div>`:'';
+  `).join('');
+  el.scrollTop=el.scrollHeight;
+}
 
-  return`<div class="chat-wrap">${gmP}<div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
-    <div id="msgs-c" class="msgs"></div>
-    <div class="inp-area">
-      <div style="font-size:10px;color:#8b5cf6;margin-bottom:6px;letter-spacing:1px">✦ ${S.fichas[0]?.nome||S.nome} — o que você faz?</div>
-      <div class="inp-row">
-        <textarea id="chat-inp" class="inp-chat" placeholder="Descreva sua ação... (Enter envia)" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();envJ();}"></textarea>
-        <button id="btn-mic-j" class="ibtn ibtn-mic" onclick="togMicJ()">🎤</button>
-        <button class="ibtn ibtn-send" onclick="envJ()">➤</button>
-      </div>
-      <div id="voz-j" style="font-size:11px;color:#b8b0a4;text-align:center;margin-top:4px;min-height:16px"></div>
+// ═══════════════════════════════════════════════════════════
+// LEGENDA
+// ═══════════════════════════════════════════════════════════
+let legTimer=null;
+function mostrarLegenda(who,txt,cor='#d4af37'){
+  const box=document.getElementById('legenda');
+  document.getElementById('leg-who').textContent=who;
+  document.getElementById('leg-who').style.color=cor;
+  document.getElementById('leg-txt').innerHTML=txt.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
+  box.style.display='block';
+  if(legTimer)clearTimeout(legTimer);
+  legTimer=setTimeout(fecharLegenda,10000);
+}
+function fecharLegenda(){document.getElementById('legenda').style.display='none';}
+
+// ═══════════════════════════════════════════════════════════
+// DADOS
+// ═══════════════════════════════════════════════════════════
+let diceAnim=null;
+function rolar(l){
+  const r=Math.floor(Math.random()*l)+1;
+  const crit=r===l&&l>=10,fumb=r===1&&l>=10;
+  mostrarDado(r,`D${l}`,crit,fumb);
+  return r;
+}
+function rolar2d6(){
+  const a=Math.floor(Math.random()*6)+1,b=Math.floor(Math.random()*6)+1;
+  const r=a+b;
+  mostrarDado(r,'2D6',false,false,`[${a}+${b}]`);
+  return r;
+}
+function rolarCustom(){
+  const expr=document.getElementById('dado-custom').value.trim()||'1d20';
+  const r=rolarExpr(expr);
+  mostrarDado(r,expr,false,false);
+}
+function rolarExpr(expr){
+  const m=expr.match(/(\d*)d(\d+)([+-]\d+)?/i);
+  if(!m)return parseInt(expr)||1;
+  const n=parseInt(m[1])||1,l=parseInt(m[2]),b=parseInt(m[3]||0);
+  let t=b;for(let i=0;i<n;i++)t+=Math.floor(Math.random()*l)+1;
+  return Math.max(1,t);
+}
+function mostrarDado(r,label,crit,fumb,extra=''){
+  const el=document.getElementById('dice-result');
+  const lbl=document.getElementById('dice-label');
+  el.textContent=r;
+  const cor=crit?'#d4af37':fumb?'#f87171':r>=Math.ceil(parseInt(label.replace(/\D/g,''))*0.8)?'#4ade80':'#e8e0d4';
+  el.style.color=cor;
+  lbl.textContent=`${label}${extra} ${crit?'💥 CRÍTICO!':fumb?'💀 FUMBLE!':''}`;
+  // Histórico
+  G.diceHist.unshift({r,label,crit,fumb});
+  if(G.diceHist.length>8)G.diceHist.pop();
+  const hist=document.getElementById('dice-hist');
+  hist.innerHTML=G.diceHist.slice(1).map(d=>`<span class="dice-h-item${d.crit?' crit':d.fumb?' fumble':''}">${d.r}</span>`).join('');
+  // Jornal
+  if(crit||fumb||r>=18||r<=3)addJornal('dado',`🎲 ${label}: **${r}**${crit?' 💥 CRÍTICO NATURAL!':fumb?' 💀 FUMBLE!':''}`,crit?'#d4af37':fumb?'#f87171':'#888');
+}
+
+// ═══════════════════════════════════════════════════════════
+// AÇÃO MODAL
+// ═══════════════════════════════════════════════════════════
+function mostrarAcao(tit,result,detalhe,cor='#d4af37'){
+  document.getElementById('acao-tit').textContent=tit;
+  document.getElementById('acao-result').textContent=result;
+  document.getElementById('acao-result').style.color=cor;
+  document.getElementById('acao-det').innerHTML=detalhe.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  document.getElementById('win-acao').style.display='block';
+}
+function fecharAcao(){document.getElementById('win-acao').style.display='none';}
+
+// ═══════════════════════════════════════════════════════════
+// VITAIS
+// ═══════════════════════════════════════════════════════════
+function atualizarVitais(){
+  const pj=G.pj;
+  const pct=Math.max(0,pj.pv/pj.pvMax);
+  const fill=document.getElementById('hp-fill');
+  const txt=document.getElementById('hp-text');
+  fill.style.width=(pct*100)+'%';
+  const cor=pct>0.5?'linear-gradient(90deg,#16a34a,#4ade80)':pct>0.25?'linear-gradient(90deg,#ca8a04,#fbbf24)':'linear-gradient(90deg,#dc2626,#f87171)';
+  fill.style.background=cor;
+  const txtCor=pct>0.5?'#4ade80':pct>0.25?'#fbbf24':'#f87171';
+  txt.style.color=txtCor;
+  txt.textContent=`${pj.pv}/${pj.pvMax}`;
+  document.getElementById('v-ca').textContent=pj.ca;
+  document.getElementById('v-init').textContent=MOD_STR(pj.DES);
+  document.getElementById('v-pp').textContent=10+MOD(pj.SAB)+(pj.pericias?.Percepção?PROF_NV(pj.nivel):0);
+  document.getElementById('v-insp').textContent=pj.inspiracao?'⬛':'⬜';
+}
+
+// ═══════════════════════════════════════════════════════════
+// FICHA
+// ═══════════════════════════════════════════════════════════
+function renderFicha(){
+  const pj=G.pj;
+  const pb=PROF_NV(pj.nivel);
+  const xpProx=XP_NV[Math.min(pj.nivel,19)];
+  const xpPct=Math.min(100,((pj.xp||0)/xpProx)*100).toFixed(0);
+  const el=document.getElementById('ficha-body');
+
+  // Abas
+  const tabIdx=window._fichaTab||0;
+  const tabs=['📋 Básico','💪 Atribs','🎯 Perícias','⚔️ Combate','💰 Moedas'];
+  el.innerHTML=`
+    <div class="ficha-tabs">${tabs.map((t,i)=>`<button class="ft${i===tabIdx?' on':''}" onclick="window._fichaTab=${i};renderFicha()">${t}</button>`).join('')}</div>
+    ${[renderFichaBasico,renderFichaAtribs,renderFichaP,renderFichaCombate,renderFichaMoedas][tabIdx]()}
+  `;
+}
+
+function renderFichaBasico(){
+  const pj=G.pj;const pb=PROF_NV(pj.nivel);
+  const xpProx=XP_NV[Math.min(pj.nivel,19)];
+  const xpPct=Math.min(100,((pj.xp||0)/xpProx)*100).toFixed(0);
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div><span style="font-size:9px;color:#8b5cf6;letter-spacing:1px">PERSONAGEM</span><div style="font-size:16px;font-weight:700;color:#d4af37">${pj.nome||'—'}</div></div>
+    <div><span style="font-size:9px;color:#8b5cf6;letter-spacing:1px">CLASSE</span><div style="font-size:14px;font-weight:700">${pj.classe} ${pj.nivel}</div></div>
+    <div><span style="font-size:9px;color:#8b5cf6;letter-spacing:1px">RAÇA</span><div style="font-size:13px">${pj.raca}</div></div>
+    <div><span style="font-size:9px;color:#8b5cf6;letter-spacing:1px">BÔNUS PROF.</span><div style="font-size:20px;font-weight:900;color:#c084fc">+${pb}</div></div>
+  </div>
+  <div style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:10px;color:#888">XP: ${pj.xp||0} / ${xpProx.toLocaleString()}</span>
+      <span style="font-size:10px;color:#d4af37">Nível ${pj.nivel} → ${pj.nivel+1}</span>
+    </div>
+    <div style="height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden">
+      <div style="height:100%;width:${xpPct}%;background:linear-gradient(90deg,#8b5cf6,#d4af37);border-radius:4px"></div>
     </div>
   </div>
-  <div class="rp">
-    <div class="sec-t">🔊 Vozes</div>
-    ${Object.entries(VOZES).slice(0,5).map(([k,v])=>`<button onclick="falarTxt('Esta é minha voz!','${k}')" style="width:100%;padding:4px 8px;border-radius:20px;border:1px solid ${v.c}44;background:${v.c}11;color:${v.c};font-size:10px;text-align:left;margin-bottom:4px">${v.l}</button>`).join('')}
-    <div class="sec-t" style="margin-top:8px">🎲 Dados</div>
-    <div class="dado-g">
-      ${[4,6,8,10,12,20].map(d=>`<button class="dbtn" onclick="rolarD(${d})">D${d}</button>`).join('')}
-      <button class="dbtn" style="grid-column:1/-1" onclick="rolar2d6()">2D6</button>
-      <button class="dbtn" style="grid-column:1/-1" onclick="rolarD(100)">D100</button>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">
+    <div style="text-align:center;padding:8px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.2);border-radius:8px">
+      <div style="font-size:9px;color:#f87171">PV MÁX</div>
+      <div style="font-size:18px;font-weight:900;color:#f87171">${pj.pvMax}</div>
     </div>
-    <div class="sec-t">⚡ Ações</div>
-    ${[{i:'🔍',t:'Examino o ambiente.'},{i:'💬',t:'Falo com o personagem mais próximo.'},{i:'⚔️',t:'Ataco o inimigo!'},{i:'🌑',t:'Tento me esconder.'},{i:'🛌',t:'Proponho um descanso curto.'},{i:'🎒',t:'Verifico meu inventário.'},{i:'🔮',t:'Conjuro um feitiço!'},{i:'🏃',t:'Fujo!'}].map(a=>`<button class="abtn" onclick="envJ('${a.t}')">${a.i}</button>`).join('')}
-  </div></div>`;
-}
-
-function ajPV(id,d){S.fichas=S.fichas.map(f=>f.id===id?{...f,pv:Math.max(0,Math.min(f.pvMax,f.pv+d))}:f);salvar();aba('chat');}
-
-async function envJ(txt){
-  const t=(txt||document.getElementById('chat-inp')?.value||'').trim();if(!t)return;
-  if(document.getElementById('chat-inp'))document.getElementById('chat-inp').value='';
-  const nome=S.fichas[0]?.nome||S.nome;
-  addMsg({tipo:'jogador',nome,txt:t});
-  if(S.modo==='ia'){
-    const k=S.apiKey||localStorage.getItem('mesa_key')||'';
-    if(k){
-      S.digitando=true;renderMsgs();
-      const r=await claude(sysPrompt(),nome+' diz/faz: '+t,true);
-      S.digitando=false;
-      if(r){S.crit=false;S.fumble=false;addMsg({tipo:'mestre',txt:r});return;}
-    }
-    setTimeout(()=>{const r=gerarResp(t,S.crit,S.fumble);S.crit=false;S.fumble=false;addMsg({tipo:'mestre',txt:r});},600+Math.random()*400);
-  }
-}
-
-async function envGM(){
-  const t=(document.getElementById('gm-ta')?.value||'').trim();if(!t)return;
-  if(document.getElementById('gm-ta'))document.getElementById('gm-ta').value='';
-  S.gmInput='';
-  if(!S.iaAssiste||S.gmModo==='npc'){addMsg({tipo:S.gmModo==='npc'?'npc':'mestre',txt:t});return;}
-  const k=S.apiKey||localStorage.getItem('mesa_key')||'';
-  if(k){
-    S.digitando=true;renderMsgs();
-    const r=await claude(`Assistente de Mestre de RPG. Expanda em narração épica. Campanha: ${S.campanha}. Mundo: ${S.mundo?.nome}. Máximo 3 parágrafos, português brasileiro.`,t,false);
-    S.digitando=false;
-    if(r){addMsg({tipo:'mestre',txt:r,orig:t});return;}
-  }
-  addMsg({tipo:'mestre',txt:t});
-}
-
-function iniciarNarr(){
-  addMsg({tipo:'sys',txt:`Aventura em ${S.mundo.nome} começa!`});
-  const ab=pick(ABERTURAS)(S.nome,S.mundo);
-  setTimeout(async()=>{
-    const k=S.apiKey||localStorage.getItem('mesa_key')||'';
-    if(k){S.digitando=true;renderMsgs();const r=await claude(sysPrompt(),'Inicie a campanha com esta abertura expandida de forma épica: '+ab,true);S.digitando=false;if(r){addMsg({tipo:'mestre',txt:r});return;}}
-    addMsg({tipo:'mestre',txt:ab});
-  },300);
-}
-
-// DADOS
-function rolarD(l){
-  const r=Math.floor(Math.random()*l)+1;
-  const ic=l===20&&r===20,if_=l===20&&r===1;
-  if(ic)S.crit=true;if(if_)S.fumble=true;
-  const nome=S.fichas[0]?.nome||S.nome;
-  addMsg({tipo:'dado',nome,expr:`1d${l}`,res:r,crit:ic,fumble:if_});
-  if(S.modo==='ia'&&(ic||if_)){
-    setTimeout(async()=>{
-      const txt=ic?`${nome} tirou 20 — CRÍTICO! Narre a façanha épica.`:`${nome} tirou 1 — FUMBLE! Narre a falha catastrófica.`;
-      const k=S.apiKey||localStorage.getItem('mesa_key')||'';
-      if(k){S.digitando=true;renderMsgs();const rr=await claude(sysPrompt(),txt,true);S.digitando=false;if(rr){addMsg({tipo:'mestre',txt:rr});return;}}
-      addMsg({tipo:'mestre',txt:gerarResp('',ic,if_)});
-    },400);
-  }
-}
-function rolar2d6(){const a=Math.floor(Math.random()*6)+1,b=Math.floor(Math.random()*6)+1;addMsg({tipo:'dado',nome:S.fichas[0]?.nome||S.nome,expr:`2d6[${a}+${b}]`,res:a+b,crit:false,fumble:false});}
-
-// MIC
-let micJ=null,micGM_ref=null;
-function togMicJ(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const vEl=document.getElementById('voz-j');
-  if(!SR){if(vEl)vEl.textContent='💡 iPhone: use o 🎤 do teclado para ditar';setTimeout(()=>{if(vEl)vEl.textContent='';},4000);return;}
-  if(S.micOn){micJ?.stop();return;}
-  const rec=new SR();rec.lang='pt-BR';rec.interimResults=true;
-  rec.onstart=()=>{S.micOn=true;const b=document.getElementById('btn-mic-j');if(b){b.style.background='rgba(204,51,51,.25)';b.style.borderColor='#cc3333';b.style.color='#ff8080';}if(vEl)vEl.textContent='🔴 Ouvindo...';};
-  rec.onresult=e=>{const t=Array.from(e.results).map(r=>r[0].transcript).join('');const inp=document.getElementById('chat-inp');if(inp)inp.value=t;if(e.results[0].isFinal&&vEl)vEl.textContent='✅ Pronto!';};
-  rec.onerror=err=>{if(vEl)vEl.textContent=err.error==='not-allowed'?'❌ Permita o microfone':'💡 iPhone: use o 🎤 do teclado';setTimeout(()=>{if(vEl)vEl.textContent='';},4000);};
-  rec.onend=()=>{S.micOn=false;const b=document.getElementById('btn-mic-j');if(b){b.style.background='rgba(139,92,246,.15)';b.style.borderColor='rgba(139,92,246,.3)';b.style.color='#e8e0d4';}setTimeout(()=>{if(vEl)vEl.textContent='';},2500);};
-  micJ=rec;rec.start();
-}
-function togMicGM(){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  const vEl=document.getElementById('voz-gm');
-  if(!SR){if(vEl)vEl.textContent='💡 iPhone: use o 🎤 do teclado';return;}
-  if(S.micGM){micGM_ref?.stop();return;}
-  const rec=new SR();rec.lang='pt-BR';rec.interimResults=true;
-  rec.onstart=()=>{S.micGM=true;const b=document.getElementById('btn-mic-gm');if(b){b.style.background='rgba(204,51,51,.2)';b.style.borderColor='#cc3333';b.style.color='#ff8080';b.textContent='⏹ Parar';}if(vEl)vEl.textContent='🔴 Ditando...';};
-  rec.onresult=e=>{const t=Array.from(e.results).map(r=>r[0].transcript).join('');const ta=document.getElementById('gm-ta');if(ta)ta.value=t;if(e.results[0].isFinal&&vEl)vEl.textContent='✅ Pronto!';};
-  rec.onerror=()=>{if(vEl)vEl.textContent='💡 iPhone: use o 🎤 do teclado';};
-  rec.onend=()=>{S.micGM=false;const b=document.getElementById('btn-mic-gm');if(b){b.style.background='rgba(139,92,246,.1)';b.style.borderColor='rgba(139,92,246,.3)';b.style.color='#8b5cf6';b.textContent='🎤 Ditar';}setTimeout(()=>{if(vEl)vEl.textContent='';},2500);};
-  micGM_ref=rec;rec.start();
-}
-
-// ════════════════════════════════════════════════════════
-// TESOURO
-// ════════════════════════════════════════════════════════
-function renderTes(){
-  const sb=`<div class="tes-sb">
-    <div style="font-weight:700;font-size:13px;color:#d4af37;margin-bottom:10px">💎 Tesouro</div>
-    ${[{id:'sortear',i:'🎲',l:'Sortear Item'},{id:'prateleira',i:'📦',l:'Gerenciar Prateleira'},{id:'inventario',i:'🎒',l:'Inventário da Sessão'}].map(t=>`<button class="tes-mbtn${S.tesAba===t.id?' on':''}" onclick="S.tesAba='${t.id}';aba('tes')"><span style="font-size:14px">${t.i}</span><span>${t.l}</span></button>`).join('')}
-    <div style="margin-top:14px;border-top:1px solid rgba(212,175,55,.15);padding-top:12px">
-      <div style="font-size:9px;color:#d4af37;font-weight:700;letter-spacing:2px;margin-bottom:8px">TABELA D100</div>
-      ${RARS.map(r=>`<div class="rar-card" style="background:${r.bg};border:1px solid ${r.bd}"><div style="font-size:11px;font-weight:700;color:${r.c}">${r.e} ${r.l}</div><div style="font-size:9px;color:#b8b0a4">${r.r[0]}${r.r[1]>r.r[0]?'–'+r.r[1]:''}</div><div style="font-size:9px;color:${r.c};opacity:.85;margin-top:2px;line-height:1.3">${r.b}</div></div>`).join('')}
+    <div style="text-align:center;padding:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:8px">
+      <div style="font-size:9px;color:#60a5fa">CA</div>
+      <div style="font-size:18px;font-weight:900;color:#60a5fa">${pj.ca}</div>
+    </div>
+    <div style="text-align:center;padding:8px;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.15);border-radius:8px">
+      <div style="font-size:9px;color:#4ade80">INIT</div>
+      <div style="font-size:18px;font-weight:900;color:#4ade80">${MOD_STR(pj.DES)}</div>
+    </div>
+    <div style="text-align:center;padding:8px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.15);border-radius:8px">
+      <div style="font-size:9px;color:#fbbf24">DESL.</div>
+      <div style="font-size:18px;font-weight:900;color:#fbbf24">${pj.deslocamento||9}m</div>
+    </div>
+  </div>
+  <div style="margin-bottom:8px">
+    <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:4px">PV ATUAL / TEMPORÁRIO</div>
+    <div style="display:flex;gap:8px">
+      <input type="number" value="${pj.pv}" onchange="G.pj.pv=Math.max(0,Math.min(+this.value,G.pj.pvMax));atualizarVitais()" style="flex:1;padding:8px;background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);border-radius:6px;color:#f87171;font-size:16px;font-weight:700;text-align:center;outline:none">
+      <input type="number" value="${pj.pvTemp||0}" onchange="G.pj.pvTemp=+this.value" style="flex:1;padding:8px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.2);border-radius:6px;color:#60a5fa;font-size:16px;font-weight:700;text-align:center;outline:none">
+    </div>
+  </div>
+  <div style="margin-bottom:8px">
+    <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:4px">CONDIÇÕES ATIVAS</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px">
+      ${['Envenenado','Caído','Atordoado','Cego','Agarrado','Invisível','Concentração','Assustado'].map(c=>`
+        <button onclick="togCondicao('${c}')" style="padding:3px 8px;border-radius:10px;font-size:10px;border:1px solid;cursor:pointer;${pj.condicoes.includes(c)?'background:rgba(220,38,38,.2);border-color:#dc2626;color:#f87171':'background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:#666'}">${c}</button>
+      `).join('')}
     </div>
   </div>`;
-
-  let content='';
-  if(S.tesAba==='sortear')content=renderTesSortear();
-  else if(S.tesAba==='prateleira')content=renderTesPrat();
-  else content=renderTesInv();
-
-  return`<div style="flex:1;display:flex;overflow:hidden">${sb}<div class="tes-content">${content}</div></div>`;
 }
 
-function renderTesSortear(){
-  let res='';
-  if(S.tesRoll&&S.tesRar){
-    const r=S.tesRar;
-    const itens=(S.prateleira[r.id]||[]);
-    const itensH=itens.length?itens.map(item=>`<div class="item-card${S.tesItem?.id===item.id?' sel':''}" style="border-color:${S.tesItem?.id===item.id?r.bd:'rgba(139,92,246,.2)'};background:${S.tesItem?.id===item.id?r.bg:'rgba(0,0,0,.35)'}" onclick="S.tesItem={...${JSON.stringify(item).replace(/"/g,"'")}};S.tesDesc='';aba('tes')"><div style="font-weight:700;font-size:13px;color:${r.c};margin-bottom:3px">${r.e} ${item.nome}</div>${item.desc?`<div style="font-size:11px;color:#b8b0a4;line-height:1.3">${item.desc.slice(0,60)}...</div>`:''}</div>`).join(''):
-    `<div style="padding:12px 16px;background:rgba(0,0,0,.3);border:1px dashed rgba(212,175,55,.3);border-radius:9px;color:#b8b0a4;font-size:13px">⚠️ Sem itens cadastrados. Vá em <strong style="color:#d4af37">Gerenciar Prateleira</strong> para adicionar.</div>`;
-
-    const acoes=S.tesItem?`<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-      <button onclick="gerarDescTes()" style="padding:9px 14px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.4);border-radius:8px;color:#8b5cf6;font-size:12px">✨ Gerar descrição épica</button>
-      <button class="btn-v" style="flex:none;padding:9px 18px;font-size:13px" onclick="concederTes()">🏆 Conceder</button>
-    </div>${S.tesDesc?`<div style="padding:13px 16px;background:rgba(26,18,37,.95);border:1px solid ${r.bd};border-left:3px solid ${r.c};border-radius:0 11px 11px 11px;font-size:14px;line-height:1.8;font-style:italic">${fmt(S.tesDesc)}</div>`:''}`:'' ;
-
-    res=`<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;background:${r.bg};border:2px solid ${r.bd};border-radius:12px;margin-bottom:18px">
-      <div style="font-size:40px">${r.e}</div>
-      <div><div style="font-size:11px;color:#b8b0a4">Resultado:</div><div style="font-size:34px;font-weight:900;color:${r.c};line-height:1">${S.tesRoll}</div><div style="font-size:16px;font-weight:700;color:${r.c}">${r.l}</div><div style="font-size:11px;color:#b8b0a4;margin-top:2px">${r.b}</div></div>
-    </div>
-    <h3 style="color:#d4af37;margin-bottom:10px;font-size:14px">Escolha um item ${r.e}:</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:16px">${itensH}</div>
-    ${acoes}
-    ${S.tesLog.length?`<div style="margin-top:16px"><div style="font-size:9px;color:#8b5cf6;font-weight:700;letter-spacing:2px;margin-bottom:7px">HISTÓRICO</div><div style="display:flex;gap:5px;flex-wrap:wrap">${S.tesLog.slice(0,20).map(l=>{const rr=RARS.find(x=>x.id===l.rar)||RARS[0];return`<span style="padding:2px 8px;background:${rr.bg};border:1px solid ${rr.bd};border-radius:20px;font-size:11px;color:${rr.c}">${rr.e} ${l.roll}</span>`;}).join('')}</div></div>`:''}`;
-  }
-
-  return`<div><h2 style="color:#d4af37;margin-bottom:6px;font-size:17px">🎲 Sortear Item Mágico</h2>
-    <p style="color:#b8b0a4;font-size:13px;margin-bottom:18px">Role D100 → raridade → escolha item → descrição → conceda.</p>
-    <button class="btn-v" style="max-width:240px;margin-bottom:20px;font-size:15px;padding:14px" onclick="sortearTes()">🎲 Rolar D100</button>
-    ${res}</div>`;
-}
-
-function sortearTes(){
-  const v=Math.floor(Math.random()*100)+1;
-  S.tesRoll=v;S.tesRar=getRar(v);S.tesItem=null;S.tesDesc='';
-  S.tesLog=[{roll:v,rar:S.tesRar.id,ts:new Date().toISOString()},...S.tesLog.slice(0,49)];
-  aba('tes');
-}
-function gerarDescTes(){
-  if(!S.tesItem||!S.tesRar)return;
-  S.tesDesc=`**${S.tesItem.nome}** — ${S.tesRar.l}\n\n${S.tesItem.desc||'Uma relíquia de poder indescritível.'}\n\n*Bônus: ${S.tesRar.b}*\n\nForjado em tempos que a maioria prefere esquecer. Quem o carrega sente seu peso — não apenas físico, mas histórico.`;
-  aba('tes');
-}
-function concederTes(){
-  if(!S.tesItem||!S.tesRar)return;
-  const item={id:Date.now(),nome:S.tesItem.nome,raridade:S.tesRar.id,l:S.tesRar.l,e:S.tesRar.e,bonus:S.tesRar.b,desc:S.tesDesc||S.tesItem.desc,roll:S.tesRoll,data:new Date().toLocaleString('pt-BR')};
-  S.inventTes=[item,...S.inventTes];
-  addMsg({tipo:'tesouro',item:{...item,raridade:S.tesRar.id,rarLabel:S.tesRar.l,emoji:S.tesRar.e,bonus:S.tesRar.b}});
-  S.tesRoll=null;S.tesRar=null;S.tesItem=null;S.tesDesc='';
-  salvar();aba('tes');
-}
-
-function renderTesPrat(){
-  const r=RARS.find(x=>x.id===S.gerRar)||RARS[0];
-  const filtros=RARS.map(rr=>`<button onclick="S.gerRar='${rr.id}';aba('tes')" style="padding:5px 12px;border:2px solid ${S.gerRar===rr.id?rr.c:'rgba(139,92,246,.2)'};background:${S.gerRar===rr.id?rr.bg:'rgba(0,0,0,.3)'};color:${S.gerRar===rr.id?rr.c:'#b8b0a4'};border-radius:20px;font-size:11px;font-weight:${S.gerRar===rr.id?700:400}">${rr.e} ${rr.l} (${S.prateleira[rr.id]?.length||0})</button>`).join('');
-  const itens=(S.prateleira[S.gerRar]||[]).map(item=>`<div style="margin-bottom:8px;padding:11px 13px;background:rgba(0,0,0,.3);border:1px solid ${r.bd};border-radius:9px;display:flex;gap:8px"><div style="flex:1"><div style="font-weight:700;color:${r.c};font-size:13px">${r.e} ${item.nome}</div>${item.desc?`<div style="font-size:11px;color:#b8b0a4;margin-top:3px;line-height:1.3">${item.desc}</div>`:''}<div style="font-size:11px;color:#8b5cf6;margin-top:3px">✦ ${item.bonus||r.b}</div></div><button onclick="delItem('${item.id}')" style="background:transparent;border:none;color:#ff6b6b;font-size:13px;flex-shrink:0">🗑</button></div>`).join('');
-  return`<div><h2 style="color:#d4af37;margin-bottom:6px;font-size:17px">📦 Prateleira de Itens</h2>
-    <p style="color:#b8b0a4;font-size:13px;margin-bottom:16px">Cadastre itens por raridade. Salvos permanentemente.</p>
-    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px">${filtros}</div>
-    <div style="background:rgba(0,0,0,.35);border:1px solid rgba(139,92,246,.25);border-radius:11px;padding:14px;margin-bottom:16px">
-      <div style="font-weight:700;color:#8b5cf6;margin-bottom:9px;font-size:12px">+ Novo Item</div>
-      <label class="lbl">Nome *</label><input class="inp" id="ni-nome" placeholder="Ex: Espada das Chamas">
-      <label class="lbl">Descrição</label><textarea class="ta" id="ni-desc" rows="2" placeholder="Ex: Uma lâmina forjada num vulcão..."></textarea>
-      <label class="lbl">Bônus</label><input class="inp" id="ni-bonus" placeholder="${r.b}">
-      <button class="btn-v" style="margin-top:10px" onclick="addItem()">✅ Salvar Item</button>
-    </div>
-    <div style="font-size:9px;color:#8b5cf6;font-weight:700;letter-spacing:2px;margin-bottom:9px">ITENS (${S.prateleira[S.gerRar]?.length||0})</div>
-    ${itens||`<div style="color:#b8b0a4;font-size:13px;padding:10px">Nenhum item ainda.</div>`}
+function renderFichaAtribs(){
+  const pj=G.pj;const pb=PROF_NV(pj.nivel);
+  const ATRS=['FOR','DES','CON','INT','SAB','CAR'];
+  const NAMES={FOR:'Força',DES:'Destreza',CON:'Constituição',INT:'Inteligência',SAB:'Sabedoria',CAR:'Carisma'};
+  const TR=TR_PROF[pj.classe]||[];
+  return `
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+    ${ATRS.map(a=>{
+      const v=pj[a]||10,m=MOD(v),ms=MOD_STR(v);
+      const trP=pj.trSalvos?.[a]||TR.includes(a);
+      const trT=m+(trP?pb:0);
+      return `<div style="text-align:center;padding:10px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:10px">
+        <div style="font-size:9px;color:#8b5cf6;margin-bottom:4px">${NAMES[a].toUpperCase()}</div>
+        <input type="number" min="1" max="30" value="${v}" onchange="G.pj['${a}']=+this.value;renderFicha()" style="width:50px;background:transparent;border:none;color:#f0d060;font-size:22px;font-weight:900;text-align:center;outline:none">
+        <div style="font-size:16px;font-weight:700;color:#e8e0d4;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;margin:4px auto">${ms}</div>
+        <div style="font-size:9px;color:#555;margin-top:4px">TR: ${(trT>=0?'+':'')+trT} ${trP?'●':'○'}</div>
+      </div>`;
+    }).join('')}
+  </div>
+  <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:6px">TESTES DE RESISTÊNCIA</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+    ${ATRS.map(a=>{
+      const trP=pj.trSalvos?.[a]||TR.includes(a);
+      const t=MOD(pj[a]||10)+(trP?pb:0);
+      return `<div style="display:flex;align-items:center;gap:6px;padding:5px">
+        <span style="color:${trP?'#4ade80':'#444'}">${trP?'●':'○'}</span>
+        <span style="font-size:11px">${(t>=0?'+':'')+t} ${{FOR:'Força',DES:'Destreza',CON:'Constituição',INT:'Inteligência',SAB:'Sabedoria',CAR:'Carisma'}[a]}</span>
+      </div>`;
+    }).join('')}
+  </div>
+  <div style="margin-top:10px;padding:8px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:6px;text-align:center">
+    <div style="font-size:9px;color:#d4af37;letter-spacing:1px">PERCEPÇÃO PASSIVA</div>
+    <div style="font-size:24px;font-weight:900;color:#d4af37">${10+MOD(pj.SAB||10)+(pj.pericias?.Percepção?pb:0)}</div>
   </div>`;
 }
 
-function addItem(){
-  const nome=document.getElementById('ni-nome')?.value.trim();if(!nome)return;
-  const item={id:Date.now(),nome,desc:document.getElementById('ni-desc')?.value||'',bonus:document.getElementById('ni-bonus')?.value||''};
-  S.prateleira={...S.prateleira,[S.gerRar]:[...(S.prateleira[S.gerRar]||[]),item]};
-  salvar();aba('tes');
+function renderFichaP(){
+  const pj=G.pj;const pb=PROF_NV(pj.nivel);
+  return `
+  <div style="font-size:10px;color:#888;margin-bottom:8px">Bônus de Proficiência: <strong style="color:#d4af37">+${pb}</strong></div>
+  ${PERICIAS_LIST.map(p=>{
+    const prof=pj.pericias?.[p.n];
+    const t=MOD(pj[p.a]||10)+(prof?pb:0);
+    const ts=(t>=0?'+':'')+t;
+    return `<div onclick="togPericia('${p.n}')" style="display:flex;align-items:center;gap:8px;padding:5px;border-radius:4px;cursor:pointer;${prof?'background:rgba(74,222,128,.05)':''}">
+      <span style="color:${prof?'#4ade80':'#444'};font-size:12px">${prof?'●':'○'}</span>
+      <span style="font-size:11px;flex:1;color:${prof?'#e8e0d4':'#b8b0a4'}">${ts} ${p.n}</span>
+      <span style="font-size:9px;color:#555">${p.a}</span>
+    </div>`;
+  }).join('')}`;
 }
-function delItem(id){S.prateleira={...S.prateleira,[S.gerRar]:S.prateleira[S.gerRar].filter(i=>i.id!==id)};salvar();aba('tes');}
 
-function renderTesInv(){
-  if(!S.inventTes.length)return`<div><h2 style="color:#d4af37;margin-bottom:6px;font-size:17px">🎒 Inventário da Campanha</h2><div style="text-align:center;color:#b8b0a4;font-size:14px;padding:40px">Nenhum item concedido ainda.</div></div>`;
-  const itens=S.inventTes.map(item=>{
-    const r=RARS.find(x=>x.id===item.raridade)||RARS[0];
-    return`<div style="margin-bottom:10px;padding:13px 15px;background:${r.bg};border:1px solid ${r.bd};border-radius:11px"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px"><div style="flex:1"><div style="display:flex;align-items:center;gap:7px;margin-bottom:5px"><span style="font-size:20px">${item.e||r.e}</span><span style="font-weight:700;font-size:15px;color:${r.c}">${item.nome}</span><span style="font-size:10px;padding:2px 7px;background:${r.bg};border:1px solid ${r.bd};border-radius:20px;color:${r.c}">${item.l||r.l}</span></div><div style="font-size:12px;color:#8b5cf6;margin-bottom:5px">✦ ${item.bonus||r.b}</div>${item.desc?`<div style="font-size:13px;line-height:1.7;font-style:italic">${fmt(item.desc)}</div>`:''}<div style="font-size:10px;color:#b8b0a4;margin-top:6px;opacity:.6">D100:${item.roll} · ${item.data}</div></div><button onclick="S.inventTes=S.inventTes.filter(i=>i.id!==${item.id});salvar();aba('tes')" style="background:transparent;border:none;color:#ff6b6b;font-size:13px">🗑</button></div></div>`;
+function renderFichaCombate(){
+  const pj=G.pj;const pb=PROF_NV(pj.nivel);
+  const atqMelee=Math.max(MOD(pj.FOR),MOD(pj.DES))+pb;
+  const atqRange=MOD(pj.DES)+pb;
+  const conj=CONJ_ATRIB[pj.classe];
+  const cdMagia=conj?8+pb+MOD(pj[conj]):null;
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div style="padding:10px;border-radius:8px;border:1px solid rgba(220,38,38,.2);background:rgba(220,38,38,.05);text-align:center">
+      <div style="font-size:9px;color:#f87171">ATQ CORPO-A-CORPO</div>
+      <div style="font-size:20px;font-weight:900;color:#f87171">${atqMelee>=0?'+':''}${atqMelee}</div>
+    </div>
+    <div style="padding:10px;border-radius:8px;border:1px solid rgba(251,191,36,.2);background:rgba(251,191,36,.05);text-align:center">
+      <div style="font-size:9px;color:#fbbf24">ATQ À DISTÂNCIA</div>
+      <div style="font-size:20px;font-weight:900;color:#fbbf24">${atqRange>=0?'+':''}${atqRange}</div>
+    </div>
+    ${cdMagia?`<div style="padding:10px;border-radius:8px;border:1px solid rgba(192,132,252,.2);background:rgba(192,132,252,.05);text-align:center">
+      <div style="font-size:9px;color:#c084fc">CD DE MAGIA</div>
+      <div style="font-size:20px;font-weight:900;color:#c084fc">${cdMagia}</div>
+    </div>
+    <div style="padding:10px;border-radius:8px;border:1px solid rgba(192,132,252,.15);background:rgba(192,132,252,.03);text-align:center">
+      <div style="font-size:9px;color:#c084fc">ATQ MÁGICO</div>
+      <div style="font-size:20px;font-weight:900;color:#c084fc">${pb+MOD(pj[conj])>=0?'+':''}${pb+MOD(pj[conj])}</div>
+    </div>`:''}
+  </div>
+  <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:6px">ATAQUES E DANO</div>
+  <div style="margin-bottom:10px">
+    ${(pj.ataques||[{nome:'Ataque Corpo-a-Corpo',bonus:(atqMelee>=0?'+':'')+atqMelee,dano:'1d8+'+MOD(pj.FOR)}]).map((atq,i)=>`
+    <div style="display:flex;gap:6px;margin-bottom:4px">
+      <input value="${atq.nome||''}" onchange="G.pj.ataques[${i}].nome=this.value" style="flex:2;padding:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:4px;color:#e8e0d4;font-size:11px;outline:none" placeholder="Nome">
+      <input value="${atq.bonus||''}" onchange="G.pj.ataques[${i}].bonus=this.value" style="width:50px;padding:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:4px;color:#f87171;font-size:11px;text-align:center;outline:none" placeholder="+5">
+      <input value="${atq.dano||''}" onchange="G.pj.ataques[${i}].dano=this.value" style="width:70px;padding:6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:4px;color:#fbbf24;font-size:11px;text-align:center;outline:none" placeholder="1d8+3">
+    </div>`).join('')}
+    <button onclick="G.pj.ataques.push({nome:'',bonus:'',dano:''});renderFicha()" style="font-size:10px;padding:4px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:4px;color:#888;cursor:pointer">+ Adicionar Ataque</button>
+  </div>`;
+}
+
+function renderFichaMoedas(){
+  const pj=G.pj;
+  const MOEDAS=[{k:'cp',n:'PC',cor:'#a16207',bg:'rgba(161,98,7,.15)'},{k:'pp',n:'PP',cor:'#888',bg:'rgba(100,100,100,.1)'},{k:'po',n:'PO',cor:'#d4af37',bg:'rgba(212,175,55,.15)'},{k:'pe',n:'PE',cor:'#60a5fa',bg:'rgba(96,165,250,.1)'},{k:'pg',n:'PG',cor:'#c084fc',bg:'rgba(192,132,252,.1)'}];
+  return `
+  <div class="moedas">
+    ${MOEDAS.map(m=>`
+    <div class="moeda" style="border-color:${m.cor}33;background:${m.bg}">
+      <div class="moeda-icon" style="color:${m.cor}">💰</div>
+      <input type="number" value="${pj.moedas?.[m.k]||0}" onchange="if(!G.pj.moedas)G.pj.moedas={};G.pj.moedas['${m.k}']=+this.value" class="moeda-val" style="width:100%;background:transparent;border:none;color:${m.cor};font-size:16px;font-weight:700;text-align:center;outline:none">
+      <div class="moeda-nome" style="color:${m.cor}">${m.n}</div>
+    </div>`).join('')}
+  </div>
+  <div style="font-size:9px;color:#8b5cf6;letter-spacing:1px;margin-bottom:6px">EQUIPAMENTOS</div>
+  <textarea onchange="G.pj.equipamentos=this.value" style="width:100%;min-height:100px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);border-radius:6px;color:#e8e0d4;font-size:12px;padding:8px;outline:none;resize:vertical" placeholder="Liste seus equipamentos...">${pj.equipamentos||''}</textarea>`;
+}
+
+function togCondicao(c){
+  const arr=G.pj.condicoes||[];
+  G.pj.condicoes=arr.includes(c)?arr.filter(x=>x!==c):[...arr,c];
+  renderFicha();atualizarVitais();
+}
+function togPericia(n){
+  if(!G.pj.pericias)G.pj.pericias={};
+  G.pj.pericias[n]=!G.pj.pericias[n];
+  renderFicha();atualizarVitais();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAGIAS & HABILIDADES
+// ═══════════════════════════════════════════════════════════
+function renderMagias(){
+  const pj=G.pj;
+  const habs=HABILIDADES_CLASSE[pj.classe]||[];
+  const magias=(MAGIAS_CLASSE[pj.classe]||[]);
+  const pb=PROF_NV(pj.nivel);
+  const conj=CONJ_ATRIB[pj.classe];
+  const cd=conj?8+pb+MOD(pj[conj]):null;
+
+  const el=document.getElementById('magias-body');
+  el.innerHTML=`
+  <!-- HABILIDADES DE CLASSE -->
+  <div style="font-size:9px;color:#8b5cf6;letter-spacing:2px;margin-bottom:8px">⚔️ HABILIDADES DE CLASSE — ${pj.classe.toUpperCase()}</div>
+  ${habs.map(h=>`
+  <div class="spell-card" onclick="executarHabilidade('${h.n}','${h.tipo}','${h.dado||''}')">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="spell-name">${h.n}</div>
+      <span style="font-size:10px;padding:2px 8px;border-radius:10px;${h.tipo==='ataque'?'background:rgba(220,38,38,.15);color:#f87171':h.tipo==='cura'?'background:rgba(74,222,128,.1);color:#4ade80':h.tipo==='ativo'?'background:rgba(212,175,55,.1);color:#d4af37':'background:rgba(255,255,255,.05);color:#888'}">${h.tipo}</span>
+    </div>
+    <div class="spell-desc">${h.desc}</div>
+    ${h.dado?`<div style="margin-top:4px;font-size:11px;color:#d4af37">🎲 ${h.dado}</div>`:''}
+    <div style="margin-top:6px;font-size:10px;color:#555">▶ Clique para executar automaticamente</div>
+  </div>`).join('')}
+
+  ${magias.length?`
+  <div style="font-size:9px;color:#c084fc;letter-spacing:2px;margin:12px 0 8px">✨ MAGIAS — ${pj.classe.toUpperCase()}</div>
+  ${cd?`<div style="display:flex;gap:8px;margin-bottom:10px">
+    <div style="flex:1;text-align:center;padding:6px;background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.2);border-radius:6px">
+      <div style="font-size:9px;color:#c084fc">CD DO TR</div><div style="font-size:18px;font-weight:700;color:#c084fc">${cd}</div>
+    </div>
+    <div style="flex:1;text-align:center;padding:6px;background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.2);border-radius:6px">
+      <div style="font-size:9px;color:#c084fc">BÔNUS ATQ</div><div style="font-size:18px;font-weight:700;color:#c084fc">${(pb+MOD(pj[conj])>=0?'+':'')+(pb+MOD(pj[conj]))}</div>
+    </div>
+  </div>`:''}
+  ${magias.map(m=>`
+  <div class="spell-card" onclick="conjurarMagia('${m.n}')">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span style="font-size:10px;padding:2px 6px;border-radius:4px;background:rgba(192,132,252,.15);color:#c084fc">${m.nv===0?'Truque':'Nv '+m.nv}</span>
+      <div class="spell-name">${m.n}</div>
+      ${m.conc?'<span style="font-size:9px;color:#fbbf24;margin-left:auto">🔷 Conc.</span>':''}
+    </div>
+    <div class="spell-meta">${m.escola} | ${m.tempo} | Alcance: ${m.alcance} | ${m.comp} | ${m.dur}</div>
+    <div class="spell-desc">${m.desc}</div>
+    ${m.dado?`<div style="margin-top:4px;font-size:11px;color:#d4af37">🎲 ${m.dado}${m.cd?' | CD '+m.cd+': '+cd:''}</div>`:''}
+    <div style="margin-top:6px;font-size:10px;color:#555">▶ Clique para conjurar automaticamente</div>
+  </div>`).join('')}`:'<div style="text-align:center;padding:20px;color:#444">Esta classe não usa magias.</div>'}`;
+}
+
+async function executarHabilidade(nome,tipo,dado){
+  let resultado='',detalhe='',cor='#d4af37';
+  const pb=PROF_NV(G.pj.nivel);
+
+  if(tipo==='ataque'){
+    const roll=Math.floor(Math.random()*20)+1;
+    const crit=roll===20,fumb=roll===1;
+    const bonus=Math.max(MOD(G.pj.FOR),MOD(G.pj.DES))+pb;
+    const total=roll+bonus;
+    let dano=0;
+    if(!fumb){dano=rolarExpr(dado||'1d8');if(crit)dano*=2;}
+    resultado=`${roll}${bonus>=0?'+':''}${bonus} = ${total}`;
+    detalhe=`${crit?'💥 **CRÍTICO!** ':fumb?'💀 **FUMBLE!** ':''}\nRolagem: D20(${roll}) ${bonus>=0?'+':''}${bonus}\n${!fumb&&dano?`Dano: **${dano}**${crit?' (Crítico ×2)':''}`:''}`;
+    cor=crit?'#d4af37':fumb?'#f87171':'#e8e0d4';
+    mostrarDado(roll,'D20',crit,fumb);
+  }else if(tipo==='cura'){
+    const cura=rolarExpr(dado||'1d8')+MOD(G.pj.SAB);
+    G.pj.pv=Math.min(G.pj.pvMax,G.pj.pv+cura);
+    atualizarVitais();
+    resultado='+'+cura+' PV';
+    detalhe=`**${cura} PV curados!**\nPV atual: ${G.pj.pv}/${G.pj.pvMax}`;
+    cor='#4ade80';
+  }else{
+    resultado='Ativado';
+    detalhe=HABILIDADES_CLASSE[G.pj.classe]?.find(h=>h.n===nome)?.desc||'';
+    cor='#c084fc';
+  }
+  mostrarAcao(`⚔️ ${nome}`,resultado,detalhe,cor);
+  addJornal('dado',`⚔️ **${nome}**: ${resultado}`,'#d4af37');
+  // Narrar com IA
+  if(G.apiKey)await narrativa(`O jogador usou **${nome}**. Resultado: ${resultado}. ${detalhe}. Narre de forma épica e curta.`);
+}
+
+async function conjurarMagia(nome){
+  const pj=G.pj;
+  const pb=PROF_NV(pj.nivel);
+  const conj=CONJ_ATRIB[pj.classe];
+  const magia=(MAGIAS_CLASSE[pj.classe]||[]).find(m=>m.n===nome);
+  if(!magia)return;
+  const cd=conj?8+pb+MOD(pj[conj]):10;
+  let resultado='',detalhe='',cor='#c084fc';
+
+  if(magia.dado){
+    const dano=rolarExpr(magia.dado);
+    resultado=`${dano}`;
+    detalhe=`**${nome}** causa **${dano}** de dano${magia.cd?` (CD ${cd} ${magia.cd})`:''}.\n${magia.desc}`;
+    cor='#c084fc';
+  }else if(magia.tipo==='cura'){
+    const cura=rolarExpr(magia.dado||'1d8')+MOD(pj[conj||'SAB']);
+    pj.pv=Math.min(pj.pvMax,pj.pv+cura);
+    atualizarVitais();
+    resultado='+'+cura+' PV';
+    detalhe=`**${nome}** cura **${cura} PV**.`;
+    cor='#4ade80';
+  }else{
+    resultado='Conjurado!';
+    detalhe=magia.desc;
+  }
+  mostrarAcao(`✨ ${nome}`,resultado,detalhe,cor);
+  addJornal('dado',`✨ **${nome}**: ${resultado}`,'#c084fc');
+  if(G.apiKey)await narrativa(`O jogador conjurou **${nome}**. Resultado: ${resultado}. Narre o efeito de forma épica e curta.`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// COMBATE
+// ═══════════════════════════════════════════════════════════
+function iniciarCombate(inimigos=[]){
+  G.combateAtivo=true;
+  G.rodada=1;
+  G.turnoIdx=0;
+  G.tokens=[
+    {nome:G.pj.nome,tipo:'pj',init:Math.floor(Math.random()*20)+1+MOD(G.pj.DES),pv:G.pj.pv,pvMax:G.pj.pvMax,ca:G.pj.ca},
+    ...inimigos
+  ];
+  G.ordemInit=[...G.tokens].sort((a,b)=>b.init-a.init);
+  document.getElementById('win-combate').classList.add('open');
+  atualizarCombateUI();
+  addJornal('sistema','⚔️ **COMBATE INICIADO!** Rolando iniciativa...','#f87171');
+}
+function encerrarCombate(){
+  G.combateAtivo=false;
+  document.getElementById('win-combate').classList.remove('open');
+  addJornal('sistema','✅ Combate encerrado. Retornando à exploração.','#4ade80');
+}
+function proxTurno(){
+  G.turnoIdx=(G.turnoIdx+1)%G.ordemInit.length;
+  if(G.turnoIdx===0)G.rodada++;
+  document.getElementById('c-rodada').textContent=G.rodada;
+  atualizarCombateUI();
+}
+function atualizarCombateUI(){
+  const lista=document.getElementById('init-list');
+  const ativo=G.ordemInit[G.turnoIdx];
+  document.getElementById('turno-atual').textContent=ativo?`Vez de: ${ativo.nome}`:'';
+  lista.innerHTML=G.ordemInit.map((t,i)=>{
+    const isAtivo=i===G.turnoIdx;
+    const pct=t.pv/t.pvMax;
+    const cor=pct>0.5?'#4ade80':pct>0.25?'#fbbf24':'#f87171';
+    return `<div class="init-item${isAtivo?' ativo':''}">
+      <div class="init-roll">${t.init}</div>
+      <div class="init-info">
+        <div class="init-nome">${t.nome}</div>
+        <div class="init-pv" style="color:${cor}">❤️ ${t.pv}/${t.pvMax} | 🛡️${t.ca}</div>
+      </div>
+    </div>`;
   }).join('');
-  return`<div><h2 style="color:#d4af37;margin-bottom:6px;font-size:17px">🎒 Inventário da Campanha</h2><p style="color:#b8b0a4;font-size:13px;margin-bottom:18px">Itens concedidos. Salvos permanentemente.</p>${itens}</div>`;
+}
+async function acaoCombate(tipo){
+  const pj=G.pj;const pb=PROF_NV(pj.nivel);
+  if(tipo==='atacar'){
+    const roll=Math.floor(Math.random()*20)+1;
+    const crit=roll===20,fumb=roll===1;
+    const bonus=Math.max(MOD(pj.FOR),MOD(pj.DES))+pb;
+    const total=roll+bonus;
+    const dano=fumb?0:(rolarExpr('1d8')+MOD(pj.FOR))*(crit?2:1);
+    mostrarDado(roll,'D20',crit,fumb);
+    mostrarAcao('⚔️ Atacar',`${roll}+${bonus}=${total}`,`${crit?'💥 CRÍTICO! ':fumb?'💀 FUMBLE! ':''}${!fumb?`Dano: **${dano}**`:''}`,crit?'#d4af37':fumb?'#f87171':'#e8e0d4');
+    if(G.apiKey)await narrativa(`No combate, ${pj.nome} faz um ataque. D20: ${roll}, total: ${total}. ${crit?'CRÍTICO!':fumb?'FUMBLE!':''}. ${!fumb?'Dano: '+dano:'Falhou completamente.'}. Narre a ação de forma épica e breve.`);
+  }
 }
 
-function salvarKey(){const k=document.getElementById('api-inp')?.value.trim();if(!k)return;S.apiKey=k;localStorage.setItem('mesa_key',k);fechaMod('mod-api');addMsg({tipo:'sys',txt:'✅ API Key salva! A IA está ativa.'});}
+// ═══════════════════════════════════════════════════════════
+// MAPA TOP-DOWN
+// ═══════════════════════════════════════════════════════════
+const mapCanvas=document.getElementById('map-canvas');
+const mapCtx=mapCanvas.getContext('2d');
+let mapData={grade:[],w:50,h:38,tileSize:20,camX:0,camY:0,zoom:1,player:{tx:25,ty:19},frame:0};
 
+const CENS_MAP={
+  floresta:{bg:'#1e3a1e',chao:['#2d6b1a','#326618','#3a7a20'],road:'#5a4520',water:'#1a4a8a'},
+  dungeon:{bg:'#111',chao:['#222','#2a2a2a','#333'],road:'#1a1a1a',water:'#0a0a2a'},
+  deserto:{bg:'#2e2a1a',chao:['#c8a84a','#d4b455','#bc9c3e'],road:'#a88840',water:'#1a3a8a'},
+  cidade:{bg:'#1a1a2a',chao:['#4a4a4a','#555','#666'],road:'#333',water:'#1a3a6a'},
+  taverna:{bg:'#2a1a0a',chao:['#5a3818','#6a4820','#4a2c10'],road:'#3a2810',water:'#1a2a4a'},
+  caverna:{bg:'#080808',chao:['#111','#151515','#1a1a1a'],road:'#0d0d0d',water:'#050520'},
+};
+
+function initMapa(){
+  mapCanvas.width=window.innerWidth;
+  mapCanvas.height=window.innerHeight;
+  gerarGrade();
+  mapData.camX=window.innerWidth/2-mapData.player.tx*mapData.tileSize;
+  mapData.camY=window.innerHeight/2-mapData.player.ty*mapData.tileSize;
+  requestAnimationFrame(loopMapa);
+}
+
+function gerarGrade(){
+  const c=CENS_MAP[G.cenario]||CENS_MAP.floresta;
+  const {w,h}=mapData;
+  mapData.grade=[];
+  for(let y=0;y<h;y++){
+    mapData.grade[y]=[];
+    for(let x=0;x<w;x++){
+      const borda=x<1||y<1||x>=w-1||y>=h-1;
+      const r=Math.random();
+      mapData.grade[y][x]={
+        tipo:borda?'agua':r<0.08?'obstaculo':r<0.12?'caminho':'chao',
+        cor:borda?c.water:r<0.12?c.road:c.chao[Math.floor(Math.random()*c.chao.length)],
+      };
+    }
+  }
+  // Limpar centro
+  const cx=Math.floor(w/2),cy=Math.floor(h/2);
+  for(let dy=-4;dy<=4;dy++)for(let dx=-5;dx<=5;dx++){
+    if(mapData.grade[cy+dy]?.[cx+dx]){mapData.grade[cy+dy][cx+dx]={tipo:'chao',cor:CENS_MAP[G.cenario||'floresta'].chao[0]};}
+  }
+}
+
+function loopMapa(){
+  mapData.frame++;
+  desenharMapa();
+  requestAnimationFrame(loopMapa);
+}
+
+function desenharMapa(){
+  const {w,h,tileSize,camX,camY,zoom,player,grade,frame}=mapData;
+  const c=CENS_MAP[G.cenario]||CENS_MAP.floresta;
+  const ts=tileSize*zoom;
+  const W=mapCanvas.width,H=mapCanvas.height;
+  mapCtx.clearRect(0,0,W,H);
+  mapCtx.fillStyle=c.bg;mapCtx.fillRect(0,0,W,H);
+
+  const x0=Math.max(0,Math.floor(-camX/ts)-1);
+  const y0=Math.max(0,Math.floor(-camY/ts)-1);
+  const x1=Math.min(w-1,Math.ceil((W-camX)/ts)+1);
+  const y1=Math.min(h-1,Math.ceil((H-camY)/ts)+1);
+
+  for(let ty=y0;ty<=y1;ty++){
+    for(let tx=x0;tx<=x1;tx++){
+      const t=grade[ty]?.[tx];if(!t)continue;
+      const px=camX+tx*ts,py=camY+ty*ts;
+      mapCtx.fillStyle=t.cor;mapCtx.fillRect(px,py,ts,ts);
+      // Água animada
+      if(t.tipo==='agua'){
+        const w2=Math.sin(frame*.05+tx*.3+ty*.2)*.08+.92;
+        mapCtx.fillStyle=`rgba(100,160,255,${w2*.12})`;mapCtx.fillRect(px,py,ts,ts);
+      }
+      // Obstáculo
+      if(t.tipo==='obstaculo'&&ts>=10){
+        mapCtx.fillStyle='rgba(0,0,0,.35)';mapCtx.fillRect(px+ts*.1,py+ts*.1,ts*.8,ts*.8);
+      }
+      // Grid sutil
+      if(ts>=12){mapCtx.strokeStyle='rgba(0,0,0,.2)';mapCtx.lineWidth=.5;mapCtx.strokeRect(px,py,ts,ts);}
+    }
+  }
+
+  // Jogador
+  const px=camX+player.tx*ts+ts/2,py=camY+player.ty*ts+ts/2;
+  const bob=Math.sin(frame*.15)*ts*.05;
+  // Sombra
+  mapCtx.beginPath();mapCtx.ellipse(px,py+ts*.4,ts*.28,ts*.1,0,0,Math.PI*2);
+  mapCtx.fillStyle='rgba(0,0,0,.35)';mapCtx.fill();
+  // Corpo
+  mapCtx.fillStyle='#3060c0';mapCtx.fillRect(px-ts*.18,py+bob-ts*.3,ts*.36,ts*.35);
+  mapCtx.fillStyle='#c8905a';
+  mapCtx.beginPath();mapCtx.arc(px,py+bob-ts*.42,ts*.17,0,Math.PI*2);mapCtx.fill();
+  mapCtx.fillStyle='#a080c0';
+  mapCtx.beginPath();mapCtx.arc(px,py+bob-ts*.55,ts*.18,Math.PI,Math.PI*2);mapCtx.fill();
+  // Indicador
+  mapCtx.fillStyle='#f0d060';
+  mapCtx.beginPath();mapCtx.moveTo(px,py+bob-ts*.82);mapCtx.lineTo(px-ts*.1,py+bob-ts*.66);mapCtx.lineTo(px+ts*.1,py+bob-ts*.66);mapCtx.closePath();mapCtx.fill();
+}
+
+// Toque duplo para mover
+let lastTap=0;
+mapCanvas.addEventListener('pointerdown',e=>{
+  const now=Date.now();
+  if(now-lastTap<300){
+    const r=mapCanvas.getBoundingClientRect();
+    const ts=mapData.tileSize*mapData.zoom;
+    const tx=Math.floor((e.clientX-r.left-mapData.camX)/ts);
+    const ty=Math.floor((e.clientY-r.top-mapData.camY)/ts);
+    if(tx>=0&&ty>=0&&tx<mapData.w&&ty<mapData.h){
+      moverJogador(tx,ty);
+    }
+  }
+  lastTap=now;
+});
+
+let mapaArrastar=null;
+mapCanvas.addEventListener('pointerdown',e=>{mapaArrastar={px:e.clientX,py:e.clientY,cx:mapData.camX,cy:mapData.camY};mapCanvas.setPointerCapture(e.pointerId);});
+mapCanvas.addEventListener('pointermove',e=>{if(mapaArrastar){mapData.camX=mapaArrastar.cx+(e.clientX-mapaArrastar.px);mapData.camY=mapaArrastar.cy+(e.clientY-mapaArrastar.py);}});
+mapCanvas.addEventListener('pointerup',()=>mapaArrastar=null);
+mapCanvas.addEventListener('wheel',e=>{e.preventDefault();mapData.zoom=Math.max(.5,Math.min(4,mapData.zoom*(e.deltaY<0?1.12:.88)));},{passive:false});
+
+function moverJogador(tx,ty){
+  const {player,tileSize,zoom}=mapData;
+  const steps=Math.max(2,Math.abs(tx-player.tx)+Math.abs(ty-player.ty));
+  const ox=player.tx,oy=player.ty;let s=0;
+  const anim=setInterval(()=>{
+    s++;player.tx=ox+Math.round((tx-ox)*s/steps);player.ty=oy+Math.round((ty-oy)*s/steps);
+    // Seguir câmera
+    const ts=tileSize*zoom;
+    const targetX=mapCanvas.width/2-player.tx*ts-ts/2;
+    const targetY=mapCanvas.height/2-player.ty*ts-ts/2;
+    mapData.camX+=(targetX-mapData.camX)*.15;
+    mapData.camY+=(targetY-mapData.camY)*.15;
+    if(s>=steps)clearInterval(anim);
+  },50);
+}
+
+function mudarCenario(c){
+  G.cenario=c;gerarGrade();
+  addJornal('sistema',`🗺️ Cenário mudado para **${c}**.`,'#888');
+}
+
+window.addEventListener('resize',()=>{if(mapCanvas){mapCanvas.width=window.innerWidth;mapCanvas.height=window.innerHeight;}});
+
+// ═══════════════════════════════════════════════════════════
+// MICROFONE (Speech Recognition)
+// ═══════════════════════════════════════════════════════════
+function toggleMic(){
+  if(!G.micAtivo){
+    const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SpeechRecognition){alert('Reconhecimento de voz não suportado neste navegador.');return;}
+    G.recognition=new SpeechRecognition();
+    G.recognition.lang='pt-BR';G.recognition.continuous=false;G.recognition.interimResults=true;
+    G.recognition.onresult=e=>{
+      const txt=Array.from(e.results).map(r=>r[0].transcript).join('');
+      document.getElementById('msg-input').value=txt;
+      if(e.results[e.results.length-1].isFinal){
+        setTimeout(enviarMsg,500);
+      }
+    };
+    G.recognition.onend=()=>{G.micAtivo=false;document.getElementById('btn-mic').classList.remove('recording');document.getElementById('btn-mic').textContent='🎤';};
+    G.recognition.start();
+    G.micAtivo=true;
+    document.getElementById('btn-mic').classList.add('recording');
+    document.getElementById('btn-mic').textContent='⏹';
+  }else{
+    G.recognition?.stop();G.micAtivo=false;
+    document.getElementById('btn-mic').classList.remove('recording');
+    document.getElementById('btn-mic').textContent='🎤';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// TTS
+// ═══════════════════════════════════════════════════════════
+function falarTTS(txt){
+  if(!window.speechSynthesis)return;
+  const t=txt.replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').slice(0,300);
+  const u=new SpeechSynthesisUtterance(t);
+  u.lang='pt-BR';u.rate=0.95;u.pitch=0.9;
+  speechSynthesis.cancel();speechSynthesis.speak(u);
+}
+
+// ═══════════════════════════════════════════════════════════
+// JANELAS (toggle/drag)
+// ═══════════════════════════════════════════════════════════
+function toggleWin(id){
+  const el=document.getElementById(id);
+  if(el.classList.contains('open')){closeWin(id);}
+  else{openWin(id);}
+}
+function openWin(id){
+  document.getElementById(id).classList.add('open');
+  if(id==='win-ficha')renderFicha();
+  if(id==='win-magias')renderMagias();
+}
+function closeWin(id){document.getElementById(id).classList.remove('open');}
+
+// Drag
+function dragStart(e,id){
+  const el=document.getElementById(id);
+  const r=el.getBoundingClientRect();
+  const ox=e.clientX-r.left,oy=e.clientY-r.top;
+  function move(ev){el.style.left=Math.max(0,Math.min(window.innerWidth-100,ev.clientX-ox))+'px';el.style.top=Math.max(0,Math.min(window.innerHeight-40,ev.clientY-oy))+'px';}
+  function up(){document.removeEventListener('mousemove',move);document.removeEventListener('mouseup',up);}
+  document.addEventListener('mousemove',move);document.addEventListener('mouseup',up);
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════
+function selModo(m){
+  G.modo=m;
+  ['ia','hum'].forEach(x=>document.getElementById('m-'+x).classList.toggle('on',x===(m==='ia'?'ia':'hum')));
+}
+function selProv(p){
+  G.prov=p;
+  ['claude','openai','gemini'].forEach(x=>document.getElementById('pv-'+x).classList.toggle('on',x===p));
+  const hints={claude:'Grátis em console.anthropic.com',openai:'Grátis em platform.openai.com',gemini:'Grátis em aistudio.google.com'};
+  const labels={claude:'API Key do Claude (sk-ant-...)',openai:'API Key da OpenAI (sk-...)',gemini:'API Key do Gemini (AIza...)'};
+  document.getElementById('key-hint').textContent=hints[p];
+  document.getElementById('key-lbl').textContent=labels[p];
+  const inp=document.getElementById('e-key');
+  inp.placeholder=p==='claude'?'sk-ant-...':p==='openai'?'sk-...':'AIza...';
+}
+function mudarProv(p){G.prov=p;document.getElementById('cfg-prov').value=p;}
+function salvarKey(){
+  const k=document.getElementById('cfg-key').value.trim();
+  G.apiKey=k;localStorage.setItem('mesa_key',k);
+}
+function genSala(){return['DRAGAO','GOBLIN','ELFO','ANAO','RUNA'][Math.floor(Math.random()*5)]+'-'+Math.floor(10+Math.random()*90);}
+
+// ═══════════════════════════════════════════════════════════
+// TRATAMENTO DE ERROS GLOBAL
+// ═══════════════════════════════════════════════════════════
+window.onerror=function(msg,src,line,col,err){
+  console.error('Erro JS:',msg,'Linha:',line,err);
+  const box=document.getElementById('legenda');
+  if(box){
+    document.getElementById('leg-who').textContent='⚠️ ERRO';
+    document.getElementById('leg-who').style.color='#f87171';
+    document.getElementById('leg-txt').textContent=msg+' (L'+line+')';
+    box.style.display='block';
+  }
+  return false;
+};
+window.onunhandledrejection=function(e){
+  console.error('Promise rejeitada:',e.reason);
+};
+
+// ═══════════════════════════════════════════════════════════
 // INIT
-carregar();
-pg('entrada');
-document.getElementById('e-key').value=S.apiKey||localStorage.getItem('mesa_key')||'';
-const savedProv=localStorage.getItem('mesa_provedor')||'claude';
-S.provedor=savedProv;
-selProvedor(savedProv);
+// ═══════════════════════════════════════════════════════════
+// Carregar dados salvos
+const savedKey=localStorage.getItem('mesa_key');
+const savedProv=localStorage.getItem('mesa_prov');
+if(savedKey){document.getElementById('e-key').value=savedKey;G.apiKey=savedKey;}
+if(savedProv){selProv(savedProv);}
+document.getElementById('cfg-key').value=savedKey||'';
 </script>
 </body>
 </html>
