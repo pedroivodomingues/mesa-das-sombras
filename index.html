@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:;">
 <title>Mesa das Sombras</title>
 <style>
 /* ═══════════════════════════════════════════
@@ -296,24 +297,25 @@ input,textarea,select{font-family:inherit}
 #tela-entrada{
   position:fixed;inset:0;z-index:200;
   background:radial-gradient(ellipse at 50% 40%,#1a0a35,#050310);
-  display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:10px 12px 20px;overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
 .entrada-card{
   width:100%;max-width:420px;
   background:linear-gradient(160deg,rgba(20,12,40,.95),rgba(8,5,20,.98));
-  border:1px solid rgba(212,175,55,.2);border-radius:16px;padding:24px;
-  box-shadow:0 0 60px rgba(139,92,246,.15);
+  border:1px solid rgba(212,175,55,.2);border-radius:16px;padding:16px;
+  box-shadow:0 0 60px rgba(139,92,246,.15);margin:auto;
 }
-.entrada-logo{text-align:center;margin-bottom:24px}
-.entrada-espada{font-size:52px;margin-bottom:8px;animation:floatSword 3s ease-in-out infinite;display:block}
+.entrada-logo{text-align:center;margin-bottom:12px}
+.entrada-espada{font-size:36px;margin-bottom:4px;animation:floatSword 3s ease-in-out infinite;display:block}
 @keyframes floatSword{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-10px) rotate(5deg)}}
-.entrada-titulo{font-size:clamp(22px,6vw,32px);font-weight:900;color:#d4af37;letter-spacing:3px;text-transform:uppercase;text-shadow:0 0 20px rgba(212,175,55,.4);margin-bottom:4px}
+.entrada-titulo{font-size:clamp(18px,5vw,26px);font-weight:900;color:#d4af37;letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 20px rgba(212,175,55,.4);margin-bottom:2px}
 .entrada-sub{font-size:10px;color:#8b5cf6;letter-spacing:4px;text-transform:uppercase}
-.elbl{font-size:9px;color:#8b5cf6;letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:4px;margin-top:12px;display:block}
+.elbl{font-size:9px;color:#8b5cf6;letter-spacing:1px;font-weight:700;text-transform:uppercase;margin-bottom:3px;margin-top:8px;display:block}
 .einp{width:100%;padding:10px 14px;background:rgba(0,0,0,.5);border:1px solid rgba(139,92,246,.25);border-radius:8px;color:#e8e0d4;font-size:14px;outline:none;transition:border-color .2s}
 .einp:focus{border-color:rgba(212,175,55,.5)}
 .prov-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
-.prov-btn{padding:10px 4px;border-radius:8px;border:2px solid rgba(139,92,246,.2);background:rgba(0,0,0,.3);cursor:pointer;text-align:center;transition:all .2s}
+.prov-btn{padding:10px 4px;border-radius:8px;border:2px solid rgba(139,92,246,.2);background:rgba(0,0,0,.3);cursor:pointer;text-align:center;transition:all .2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;width:100%;font-family:inherit}
 .prov-btn.on{border-color:#d4af37;background:rgba(212,175,55,.1)}
 .prov-btn span{font-size:18px;display:block;margin-bottom:3px}
 .prov-btn small{font-size:9px;color:#d4af37;font-weight:700;display:block}
@@ -345,44 +347,65 @@ input,textarea,select{font-family:inherit}
     <div class="entrada-sub">RPG com Inteligência Artificial</div>
   </div>
 
-  <span class="elbl">Seu Nome de Aventureiro</span>
-  <input class="einp" id="e-nome" placeholder="Ex: Thorin, Lyria, Valdros...">
-
-  <span class="elbl">Nome da Campanha</span>
-  <input class="einp" id="e-camp" placeholder="Ex: A Maldição do Castelo Sombrio">
-
-  <span class="elbl">Modo de Jogo</span>
-  <div class="modo-grid">
-    <div class="modo-btn on" id="m-ia" onclick="selModo('ia')">
-      <span>🤖</span><b>Mestre IA</b><small>IA narra tudo</small>
+  <!-- Nome e Campanha em linha -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+    <div>
+      <span class="elbl">Seu Nome</span>
+      <input class="einp" id="e-nome" placeholder="Thorin...">
     </div>
-    <div class="modo-btn" id="m-hum" onclick="selModo('humano')">
-      <span>👑</span><b>Mestre Humano</b><small>Você narra</small>
+    <div>
+      <span class="elbl">Campanha</span>
+      <input class="einp" id="e-camp" placeholder="A Grande Aventura">
     </div>
   </div>
 
+  <!-- Modo -->
+  <span class="elbl" style="margin-top:8px">Modo</span>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+    <button class="modo-btn on" id="m-ia" onclick="selModo('ia')" type="button" style="padding:8px">
+      <span>🤖</span><b>Mestre IA</b>
+    </button>
+    <button class="modo-btn" id="m-hum" onclick="selModo('humano')" type="button" style="padding:8px">
+      <span>👑</span><b>Mestre Humano</b>
+    </button>
+  </div>
+
+  <!-- Narração -->
+  <span class="elbl">Narração</span>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+    <button class="modo-btn on" id="n-leitura" onclick="selNarr('leitura')" type="button" style="padding:8px">
+      <span>📖</span><b>Leitura</b>
+    </button>
+    <button class="modo-btn" id="n-voz" onclick="selNarr('voz')" type="button" style="padding:8px">
+      <span>🔊</span><b>Com Voz</b>
+    </button>
+  </div>
+
+  <!-- Provedor -->
   <span class="elbl">Provedor de IA</span>
-  <div class="prov-grid">
-    <div class="prov-btn on" id="pv-claude" onclick="selProv('claude')">
-      <span>🤖</span><small>Claude</small><span style="font-size:8px;color:#666;display:block">Anthropic</span>
-    </div>
-    <div class="prov-btn" id="pv-openai" onclick="selProv('openai')">
-      <span>💬</span><small>ChatGPT</small><span style="font-size:8px;color:#666;display:block">OpenAI</span>
-    </div>
-    <div class="prov-btn" id="pv-gemini" onclick="selProv('gemini')">
-      <span>✨</span><small>Gemini</small><span style="font-size:8px;color:#666;display:block">Google</span>
-    </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px">
+    <button class="prov-btn on" id="pv-claude" onclick="selProv('claude')" type="button">
+      <span>🤖</span><small>Claude</small>
+    </button>
+    <button class="prov-btn" id="pv-openai" onclick="selProv('openai')" type="button">
+      <span>💬</span><small>ChatGPT</small>
+    </button>
+    <button class="prov-btn" id="pv-gemini" onclick="selProv('gemini')" type="button">
+      <span>✨</span><small>Gemini</small>
+    </button>
   </div>
 
+  <!-- API Key -->
   <span class="elbl" id="key-lbl">API Key do Claude</span>
   <input class="einp" id="e-key" type="password" placeholder="sk-ant-...">
-  <p style="font-size:10px;color:#666;margin-top:4px" id="key-hint">Grátis em console.anthropic.com</p>
 
-  <span class="elbl">Código de Sala (multiplayer opcional)</span>
-  <input class="einp" id="e-sala" placeholder="Deixe vazio para criar nova sala">
+  <!-- Sala -->
+  <span class="elbl" style="margin-top:6px">Sala (multiplayer opcional)</span>
+  <input class="einp" id="e-sala" placeholder="Deixe vazio para criar">
 
-  <button class="ebtn ebtn-p" onclick="try{iniciarJogo()}catch(e){alert('Erro ao iniciar: '+e.message)}">⚔️ Entrar na Aventura</button>
-  <button class="ebtn ebtn-s" style="border:1px solid" onclick="document.getElementById('tela-entrada').style.display='none'">👁️ Entrar como Espectador</button>
+  <!-- Botões -->
+  <button class="ebtn ebtn-p" style="margin-top:10px" onclick="try{iniciarJogo()}catch(e){alert('Erro: '+e.message)}">⚔️ Entrar na Aventura</button>
+  <button class="ebtn" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#666;margin-top:4px;padding:8px" onclick="testarAPI()">🔌 Testar API</button>
 </div>
 </div>
 
@@ -633,7 +656,7 @@ const G={
   jornal:[],missoes:[],hist:[],
   combateAtivo:false,tokens:[],ordemInit:[],turnoIdx:0,rodada:1,
   // Config
-  tts:false,stt:true,
+  tts:false,stt:true,narracao:'leitura',
   // Mapa
   cenario:'floresta',
   // Dados
@@ -856,17 +879,30 @@ function iniciarJogo(){
   document.getElementById('pb-nome').textContent=nome;
   document.getElementById('pb-sub').textContent=`Lv${G.pj.nivel} ${G.pj.classe}`;
   document.getElementById('v-nome').textContent=nome;
+  G.tts=(G.narracao==='voz');
   document.getElementById('tela-entrada').style.display='none';
 
   // Iniciar mapa
   try{initMapa();}catch(e){console.error('Erro initMapa:',e);}
   try{atualizarVitais();}catch(e){console.error('Erro vitais:',e);}
 
-  // Narração inicial
-  if(G.modo==='ia'&&key){
-    narrativa(`A aventura "${camp}" começa. Narre a cena inicial de forma épica e imersiva, apresentando o ambiente onde ${nome} está.`);
+  // Narração inicial automática
+  addJornal('sistema',`⚔️ Aventura **"${camp}"** iniciada! Bem-vindo, ${nome}.`,'#d4af37');
+  if(key){
+    // Delay maior para iOS carregar completamente antes de chamar a API
+    mostrarLegenda('🐉 MESTRE','✨ Preparando a aventura...','#d4af37');
+    setTimeout(async()=>{
+      // Usar prompt curto para narração inicial (evita timeout)
+      const k2=G.apiKey||localStorage.getItem('mesa_key')||'';
+      console.log('Narração inicial | Key:',k2?k2.slice(0,8)+'...':'VAZIA','| Prov:',G.prov);
+      if(!k2){
+        mostrarLegenda('🐉 MESTRE','Configure sua API Key em ⚙️ para o Mestre narrar.','#d4af37');
+        return;
+      }
+      await narrativa(`Narre em português o início da aventura "${camp}". O herói é ${nome}. Seja épico e breve (2 parágrafos).`);
+    },3000);
   }else{
-    mostrarLegenda('🐉 MESTRE',`A aventura **"${camp}"** começa! ${G.modo==='humano'?'Use a barra inferior para narrar ou colocar falas de NPCs.':'Configure sua API Key nas configurações para ativar o Mestre IA.'}`,'#d4af37');
+    mostrarLegenda('🐉 MESTRE',`**A aventura "${camp}" começa!** Configure sua API Key em ⚙️ para ativar o Mestre IA.`,'#d4af37');
   }
 }
 
@@ -875,35 +911,67 @@ function iniciarJogo(){
 // ═══════════════════════════════════════════════════════════
 async function ia(userMsg,comHist=true){
   const k=G.apiKey||localStorage.getItem('mesa_key')||'';
-  if(!k){mostrarLegenda('⚠️ Aviso','Configure sua API Key em ⚙️ Configurações para ativar o Mestre IA.','#f87171');return null;}
-
+  if(!k){
+    mostrarLegenda('⚠️ Aviso','Configure sua API Key em ⚙️','#f87171');
+    return null;
+  }
   document.getElementById('typing-ind').style.display='block';
-  if(comHist)G.hist=[...G.hist.slice(-16),{role:'user',content:userMsg}];
+  if(comHist)G.hist=[...G.hist.slice(-8),{role:'user',content:userMsg}];
   const msgs=comHist?G.hist:[{role:'user',content:userMsg}];
-  const sys=buildSystemPrompt();
-
+  const sys=buildSystemPrompt().slice(0,1500);
+  let txt='';
   try{
-    let txt='';
     if(G.prov==='openai'){
-      const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'gpt-4o-mini',max_tokens:800,messages:[{role:'system',content:sys},...msgs]})});
-      const d=await r.json();
-      if(d.error){mostrarLegenda('⚠️ OpenAI',d.error.message,'#f87171');return null;}
-      txt=d.choices?.[0]?.message?.content||'';
+      txt=await new Promise((resolve)=>{
+        const xhr=new XMLHttpRequest();
+        xhr.open('POST','https://api.openai.com/v1/chat/completions',true);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.setRequestHeader('Authorization','Bearer '+k);
+        xhr.timeout=20000;
+        xhr.onload=()=>{
+          try{
+            const d=JSON.parse(xhr.responseText);
+            if(d.error){mostrarLegenda('⚠️ OpenAI',d.error.message,'#f87171');resolve('');return;}
+            resolve(d.choices?.[0]?.message?.content||'');
+          }catch(e){resolve('');}
+        };
+        xhr.onerror=()=>{mostrarLegenda('⚠️ OpenAI','Erro de rede ('+xhr.status+')','#f87171');resolve('');};
+        xhr.ontimeout=()=>{mostrarLegenda('⚠️ OpenAI','Tempo esgotado','#f87171');resolve('');};
+        xhr.send(JSON.stringify({model:'gpt-4o-mini',max_tokens:500,messages:[{role:'system',content:sys},...msgs.slice(-4)]}));
+      });
     }else if(G.prov==='gemini'){
-      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${k}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:msgs.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})),generationConfig:{maxOutputTokens:800}})});
-      const d=await r.json();
-      if(d.error){mostrarLegenda('⚠️ Gemini',d.error.message,'#f87171');return null;}
-      txt=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+      mostrarLegenda('⚠️ Gemini','Gemini não funciona no iPhone. Use Claude ou ChatGPT.','#fbbf24');
+      return null;
     }else{
-      const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:sys,messages:msgs})});
-      const d=await r.json();
-      if(d.error){if(d.error.type==='authentication_error')mostrarLegenda('⚠️ Claude','API Key inválida.','#f87171');return null;}
-      txt=d.content?.[0]?.text||'';
+      txt=await new Promise((resolve)=>{
+        const xhr=new XMLHttpRequest();
+        xhr.open('POST','https://api.anthropic.com/v1/messages',true);
+        xhr.setRequestHeader('Content-Type','application/json');
+        xhr.setRequestHeader('x-api-key',k);
+        xhr.setRequestHeader('anthropic-version','2023-06-01');
+        xhr.setRequestHeader('anthropic-dangerous-direct-browser-access','true');
+        xhr.timeout=20000;
+        xhr.onload=()=>{
+          try{
+            const d=JSON.parse(xhr.responseText);
+            if(d.error){mostrarLegenda('⚠️ Claude',d.error.message,'#f87171');resolve('');return;}
+            resolve(d.content?.[0]?.text||'');
+          }catch(e){resolve('');}
+        };
+        xhr.onerror=()=>{mostrarLegenda('⚠️ Claude','Erro de rede ('+xhr.status+')','#f87171');resolve('');};
+        xhr.ontimeout=()=>{mostrarLegenda('⚠️ Claude','Tempo esgotado','#f87171');resolve('');};
+        xhr.send(JSON.stringify({model:'claude-haiku-4-5',max_tokens:500,system:sys,messages:msgs.slice(-4)}));
+      });
     }
-    if(comHist)G.hist=[...G.hist,{role:'assistant',content:txt}];
-    return txt;
-  }catch(e){mostrarLegenda('⚠️ Erro','Sem conexão com a IA.','#f87171');return null;}
-  finally{document.getElementById('typing-ind').style.display='none';}
+    if(comHist&&txt)G.hist=[...G.hist,{role:'assistant',content:txt}];
+    return txt||null;
+  }catch(err){
+    console.error('Erro ia():',err);
+    mostrarLegenda('⚠️ Erro','Falha na conexão: '+err.message,'#f87171');
+    return null;
+  }finally{
+    document.getElementById('typing-ind').style.display='none';
+  }
 }
 
 async function narrativa(msg){
@@ -922,8 +990,8 @@ async function narrativa(msg){
   const txt=resp.replace(/\[ROLAGEM:[^\]]*\]/g,'').trim();
   mostrarLegenda('🐉 MESTRE',txt,'#d4af37');
   addJornal('mestre',txt,'#d4af37');
-  // TTS
-  if(G.tts)falarTTS(txt);
+  // TTS - falar com voz masculina
+  if(G.tts||G.narracao==='voz')falarTTS(txt);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1569,27 +1637,84 @@ window.addEventListener('resize',()=>{if(mapCanvas){mapCanvas.width=window.inner
 // MICROFONE (Speech Recognition)
 // ═══════════════════════════════════════════════════════════
 function toggleMic(){
+  const btn=document.getElementById('btn-mic');
+  const inp=document.getElementById('msg-input');
+
   if(!G.micAtivo){
-    const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!SpeechRecognition){alert('Reconhecimento de voz não suportado neste navegador.');return;}
-    G.recognition=new SpeechRecognition();
-    G.recognition.lang='pt-BR';G.recognition.continuous=false;G.recognition.interimResults=true;
-    G.recognition.onresult=e=>{
-      const txt=Array.from(e.results).map(r=>r[0].transcript).join('');
-      document.getElementById('msg-input').value=txt;
-      if(e.results[e.results.length-1].isFinal){
-        setTimeout(enviarMsg,500);
-      }
-    };
-    G.recognition.onend=()=>{G.micAtivo=false;document.getElementById('btn-mic').classList.remove('recording');document.getElementById('btn-mic').textContent='🎤';};
-    G.recognition.start();
-    G.micAtivo=true;
-    document.getElementById('btn-mic').classList.add('recording');
-    document.getElementById('btn-mic').textContent='⏹';
+    // Verificar suporte
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){
+      mostrarLegenda('⚠️ Voz','Reconhecimento de voz não disponível neste dispositivo.','#f87171');
+      return;
+    }
+
+    try{
+      G.recognition=new SR();
+      G.recognition.lang='pt-BR';
+      G.recognition.continuous=false;
+      G.recognition.interimResults=true;
+      G.recognition.maxAlternatives=1;
+
+      G.recognition.onstart=()=>{
+        G.micAtivo=true;
+        btn.classList.add('recording');
+        btn.textContent='⏹';
+        btn.style.background='rgba(220,38,38,.3)';
+        mostrarLegenda('🎤 OUVINDO','Fale agora... Toque ⏹ para parar.','#c084fc');
+        inp.placeholder='Ouvindo...';
+      };
+
+      G.recognition.onresult=e=>{
+        let txt='',final=false;
+        for(const r of e.results){
+          txt+=r[0].transcript;
+          if(r.isFinal)final=true;
+        }
+        inp.value=txt;
+        if(final){
+          setTimeout(()=>{
+            if(inp.value.trim())enviarMsg();
+          },600);
+        }
+      };
+
+      G.recognition.onerror=e=>{
+        console.error('Mic erro:',e.error);
+        const msgs={
+          'not-allowed':'Permissão de microfone negada. Acesse as configurações do Safari e permita o microfone.',
+          'no-speech':'Nenhuma fala detectada. Tente novamente.',
+          'network':'Erro de rede no reconhecimento de voz.',
+          'aborted':'Reconhecimento cancelado.'
+        };
+        mostrarLegenda('⚠️ Microfone',msgs[e.error]||'Erro: '+e.error,'#f87171');
+        G.micAtivo=false;
+        btn.classList.remove('recording');
+        btn.textContent='🎤';
+        btn.style.background='';
+        inp.placeholder='O que você faz? Fale com o Mestre...';
+      };
+
+      G.recognition.onend=()=>{
+        G.micAtivo=false;
+        btn.classList.remove('recording');
+        btn.textContent='🎤';
+        btn.style.background='';
+        inp.placeholder='O que você faz? Fale com o Mestre...';
+      };
+
+      G.recognition.start();
+
+    }catch(e){
+      mostrarLegenda('⚠️ Microfone','Erro ao iniciar microfone: '+e.message,'#f87171');
+    }
+
   }else{
-    G.recognition?.stop();G.micAtivo=false;
-    document.getElementById('btn-mic').classList.remove('recording');
-    document.getElementById('btn-mic').textContent='🎤';
+    G.recognition?.abort();
+    G.micAtivo=false;
+    btn.classList.remove('recording');
+    btn.textContent='🎤';
+    btn.style.background='';
+    inp.placeholder='O que você faz? Fale com o Mestre...';
   }
 }
 
@@ -1598,10 +1723,28 @@ function toggleMic(){
 // ═══════════════════════════════════════════════════════════
 function falarTTS(txt){
   if(!window.speechSynthesis)return;
-  const t=txt.replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1').slice(0,300);
+  const t=txt.replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1')
+             .replace(/\[.*?\]/g,'').trim().slice(0,500);
+  if(!t)return;
+  speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(t);
-  u.lang='pt-BR';u.rate=0.95;u.pitch=0.9;
-  speechSynthesis.cancel();speechSynthesis.speak(u);
+  u.lang='pt-BR';
+  u.rate=0.88;
+  u.pitch=0.75; // voz mais grave/masculina
+  u.volume=1;
+  // Tentar encontrar voz masculina em português
+  const vozes=speechSynthesis.getVoices();
+  const voz=vozes.find(v=>v.lang.startsWith('pt')&&v.name.toLowerCase().includes('male'))
+    ||vozes.find(v=>v.lang.startsWith('pt')&&!v.name.toLowerCase().includes('female'))
+    ||vozes.find(v=>v.lang.startsWith('pt'))
+    ||vozes.find(v=>v.lang.startsWith('en')&&v.name.toLowerCase().includes('male'));
+  if(voz)u.voice=voz;
+  speechSynthesis.speak(u);
+}
+
+// Carregar vozes quando disponíveis
+if(window.speechSynthesis){
+  speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1632,6 +1775,14 @@ function dragStart(e,id){
 // ═══════════════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════════════════════════
+function selNarr(n){
+  G.narracao=n;G.tts=(n==='voz');
+  ['leitura','voz'].forEach(x=>document.getElementById('n-'+x)?.classList.toggle('on',x===n));
+  if(n==='voz'&&!window.speechSynthesis){
+    mostrarLegenda('⚠️ Voz','Síntese de voz não disponível neste dispositivo.','#f87171');
+    selNarr('leitura');
+  }
+}
 function selModo(m){
   G.modo=m;
   ['ia','hum'].forEach(x=>document.getElementById('m-'+x).classList.toggle('on',x===(m==='ia'?'ia':'hum')));
@@ -1652,6 +1803,54 @@ function salvarKey(){
   const k=document.getElementById('cfg-key').value.trim();
   G.apiKey=k;localStorage.setItem('mesa_key',k);
 }
+async function testarAPI(){
+  const k=document.getElementById('e-key').value.trim();
+  const prov=G.prov;
+  if(!k){alert('Cole sua API Key primeiro!');return;}
+
+  // Verificar se está em HTTPS
+  const proto=location.protocol;
+  const host=location.hostname;
+  const info='Protocolo: '+proto+'\nHost: '+host+'\nProvedor: '+prov+'\nKey: '+k.slice(0,8)+'...';
+  if(proto==='file:'){
+    alert('❌ ARQUIVO LOCAL DETECTADO!\n\n'+info+'\n\nSolução:\nAbra o Safari e acesse:\nhttps://pedroivodomingues.github.io/mesa-das-sombras/index.html');
+    return;
+  }
+  alert('Ambiente:\n'+info+'\n\nTestando conexão...');
+
+  // Usar XMLHttpRequest - mais compatível com Safari iOS
+  const xhr=new XMLHttpRequest();
+  let url,body,headers=[];
+
+  if(prov==='openai'){
+    url='https://api.openai.com/v1/chat/completions';
+    body=JSON.stringify({model:'gpt-4o-mini',max_tokens:10,messages:[{role:'user',content:'oi'}]});
+    headers=[['Content-Type','application/json'],['Authorization','Bearer '+k]];
+  }else{
+    url='https://api.anthropic.com/v1/messages';
+    body=JSON.stringify({model:'claude-haiku-4-5',max_tokens:10,system:'ok',messages:[{role:'user',content:'oi'}]});
+    headers=[['Content-Type','application/json'],['x-api-key',k],['anthropic-version','2023-06-01'],['anthropic-dangerous-direct-browser-access','true']];
+  }
+
+  xhr.open('POST',url,true);
+  headers.forEach(([h,v])=>xhr.setRequestHeader(h,v));
+  xhr.timeout=15000;
+
+  xhr.onload=function(){
+    try{
+      const d=JSON.parse(xhr.responseText);
+      if(d.error)alert('❌ Erro API:\n'+d.error.message+'\n\nVerifique se a key está correta.');
+      else alert('✅ API funcionando!\nConexão OK com '+prov);
+    }catch(e){alert('Resposta: '+xhr.responseText.slice(0,200));}
+  };
+  xhr.onerror=function(){
+    alert('❌ Erro de rede (status='+xhr.status+')\n\nPossíveis causas:\n1. Internet instável\n2. VPN ativa\n3. Firewall bloqueando\n\nTente desativar VPN e testar novamente.');
+  };
+  xhr.ontimeout=function(){alert('❌ Tempo esgotado\nServidor demorou mais de 15s.');};
+  xhr.onerror=function(){alert('❌ Load failed\n\nO Safari está bloqueando a requisição.\nTente:\n1. Recarregar a página\n2. Verificar conexão\n3. Usar modo privado');};
+  xhr.send(body);
+}
+
 function genSala(){return['DRAGAO','GOBLIN','ELFO','ANAO','RUNA'][Math.floor(Math.random()*5)]+'-'+Math.floor(10+Math.random()*90);}
 
 // ═══════════════════════════════════════════════════════════
