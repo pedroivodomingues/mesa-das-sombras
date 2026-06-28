@@ -364,13 +364,13 @@ input,textarea,select{font-family:inherit}
   <span class="elbl">Provedor de IA</span>
   <div class="prov-grid">
     <div class="prov-btn on" id="pv-claude" onclick="selProv('claude')">
-      <span>🤖</span><small>Claude</small><tiny>Anthropic</tiny>
+      <span>🤖</span><small>Claude</small><span style="font-size:8px;color:#666;display:block">Anthropic</span>
     </div>
     <div class="prov-btn" id="pv-openai" onclick="selProv('openai')">
-      <span>💬</span><small>ChatGPT</small><tiny>OpenAI</tiny>
+      <span>💬</span><small>ChatGPT</small><span style="font-size:8px;color:#666;display:block">OpenAI</span>
     </div>
     <div class="prov-btn" id="pv-gemini" onclick="selProv('gemini')">
-      <span>✨</span><small>Gemini</small><tiny>Google</tiny>
+      <span>✨</span><small>Gemini</small><span style="font-size:8px;color:#666;display:block">Google</span>
     </div>
   </div>
 
@@ -381,7 +381,7 @@ input,textarea,select{font-family:inherit}
   <span class="elbl">Código de Sala (multiplayer opcional)</span>
   <input class="einp" id="e-sala" placeholder="Deixe vazio para criar nova sala">
 
-  <button class="ebtn ebtn-p" onclick="iniciarJogo()">⚔️ Entrar na Aventura</button>
+  <button class="ebtn ebtn-p" onclick="try{iniciarJogo()}catch(e){alert('Erro ao iniciar: '+e.message)}">⚔️ Entrar na Aventura</button>
   <button class="ebtn ebtn-s" style="border:1px solid" onclick="document.getElementById('tela-entrada').style.display='none'">👁️ Entrar como Espectador</button>
 </div>
 </div>
@@ -835,17 +835,17 @@ Exemplo: [ROLAGEM: Persuasão | CD 15 | Sucesso — o mercador cede]`;
 // INICIAR JOGO
 // ═══════════════════════════════════════════════════════════
 function iniciarJogo(){
-  const nome=document.getElementById('e-nome').value.trim();
-  const camp=document.getElementById('e-camp').value.trim();
+  const nome=document.getElementById('e-nome').value.trim()||'Aventureiro';
+  const camp=document.getElementById('e-camp').value.trim()||'A Grande Aventura';
   const key=document.getElementById('e-key').value.trim();
-  if(!nome||!camp)return alert('Preencha seu nome e o nome da campanha!');
 
   G.nome=nome;G.campanha=camp;G.apiKey=key;
   G.pj.nome=nome;
 
-  // Salvar key
-  if(key)localStorage.setItem('mesa_key',key);
-  if(key)localStorage.setItem('mesa_prov',G.prov);
+  // Salvar key e provedor sempre
+  localStorage.setItem('mesa_key',key||'');
+  localStorage.setItem('mesa_prov',G.prov);
+  console.log('Iniciando com provedor:', G.prov, '| Key:', key?'configurada':'não configurada');
 
   // Sala
   const salaInput=document.getElementById('e-sala').value.trim();
@@ -859,8 +859,8 @@ function iniciarJogo(){
   document.getElementById('tela-entrada').style.display='none';
 
   // Iniciar mapa
-  initMapa();
-  atualizarVitais();
+  try{initMapa();}catch(e){console.error('Erro initMapa:',e);}
+  try{atualizarVitais();}catch(e){console.error('Erro vitais:',e);}
 
   // Narração inicial
   if(G.modo==='ia'&&key){
@@ -1433,12 +1433,14 @@ const CENS_MAP={
 };
 
 function initMapa(){
-  mapCanvas.width=window.innerWidth;
-  mapCanvas.height=window.innerHeight;
-  gerarGrade();
-  mapData.camX=window.innerWidth/2-mapData.player.tx*mapData.tileSize;
-  mapData.camY=window.innerHeight/2-mapData.player.ty*mapData.tileSize;
-  requestAnimationFrame(loopMapa);
+  try{
+    mapCanvas.width=window.innerWidth;
+    mapCanvas.height=window.innerHeight;
+    gerarGrade();
+    mapData.camX=window.innerWidth/2-mapData.player.tx*mapData.tileSize;
+    mapData.camY=window.innerHeight/2-mapData.player.ty*mapData.tileSize;
+    requestAnimationFrame(loopMapa);
+  }catch(e){console.error('initMapa erro:',e);}
 }
 
 function gerarGrade(){
@@ -1636,6 +1638,7 @@ function selModo(m){
 }
 function selProv(p){
   G.prov=p;
+  console.log('Provedor selecionado:', p);
   ['claude','openai','gemini'].forEach(x=>document.getElementById('pv-'+x).classList.toggle('on',x===p));
   const hints={claude:'Grátis em console.anthropic.com',openai:'Grátis em platform.openai.com',gemini:'Grátis em aistudio.google.com'};
   const labels={claude:'API Key do Claude (sk-ant-...)',openai:'API Key da OpenAI (sk-...)',gemini:'API Key do Gemini (AIza...)'};
@@ -1673,11 +1676,12 @@ window.onunhandledrejection=function(e){
 // INIT
 // ═══════════════════════════════════════════════════════════
 // Carregar dados salvos
-const savedKey=localStorage.getItem('mesa_key');
-const savedProv=localStorage.getItem('mesa_prov');
-if(savedKey){document.getElementById('e-key').value=savedKey;G.apiKey=savedKey;}
-if(savedProv){selProv(savedProv);}
-document.getElementById('cfg-key').value=savedKey||'';
+const savedKey=localStorage.getItem('mesa_key')||'';
+const savedProv=localStorage.getItem('mesa_prov')||'claude';
+document.getElementById('e-key').value=savedKey;
+G.apiKey=savedKey;
+selProv(savedProv);
+document.getElementById('cfg-key').value=savedKey;
 </script>
 </body>
 </html>
